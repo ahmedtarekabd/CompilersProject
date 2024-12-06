@@ -1,0 +1,243 @@
+Grammar
+
+    0 $accept: S $end
+
+    1 S: E
+
+    2 E: E '+' T
+    3  | E '-' T
+    4  | T
+
+    5 T: T '*' F
+    6  | T '/' F
+    7  | F
+
+    8 F: '(' E ')'
+    9  | '-' F
+   10  | INTEGER
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+'(' (40) 8
+')' (41) 8
+'*' (42) 5
+'+' (43) 2
+'-' (45) 3 9
+'/' (47) 6
+error (256)
+INTEGER (258) 10
+
+
+Nonterminals, with rules where they appear
+
+$accept (10)
+    on left: 0
+S (11)
+    on left: 1, on right: 0
+E (12)
+    on left: 2 3 4, on right: 1 2 3 8
+T (13)
+    on left: 5 6 7, on right: 2 3 4 5 6
+F (14)
+    on left: 8 9 10, on right: 5 6 7 9
+
+
+state 0
+
+    0 $accept: . S $end
+
+    INTEGER  shift, and go to state 1
+    '-'      shift, and go to state 2
+    '('      shift, and go to state 3
+
+    S  go to state 4
+    E  go to state 5
+    T  go to state 6
+    F  go to state 7
+
+
+state 1
+
+   10 F: INTEGER .
+
+    $default  reduce using rule 10 (F)
+
+
+state 2
+
+    9 F: '-' . F
+
+    INTEGER  shift, and go to state 1
+    '-'      shift, and go to state 2
+    '('      shift, and go to state 3
+
+    F  go to state 8
+
+
+state 3
+
+    8 F: '(' . E ')'
+
+    INTEGER  shift, and go to state 1
+    '-'      shift, and go to state 2
+    '('      shift, and go to state 3
+
+    E  go to state 9
+    T  go to state 6
+    F  go to state 7
+
+
+state 4
+
+    0 $accept: S . $end
+
+    $end  shift, and go to state 10
+
+
+state 5
+
+    1 S: E .
+    2 E: E . '+' T
+    3  | E . '-' T
+
+    '+'  shift, and go to state 11
+    '-'  shift, and go to state 12
+
+    $default  reduce using rule 1 (S)
+
+
+state 6
+
+    4 E: T .
+    5 T: T . '*' F
+    6  | T . '/' F
+
+    '*'  shift, and go to state 13
+    '/'  shift, and go to state 14
+
+    $default  reduce using rule 4 (E)
+
+
+state 7
+
+    7 T: F .
+
+    $default  reduce using rule 7 (T)
+
+
+state 8
+
+    9 F: '-' F .
+
+    $default  reduce using rule 9 (F)
+
+
+state 9
+
+    2 E: E . '+' T
+    3  | E . '-' T
+    8 F: '(' E . ')'
+
+    '+'  shift, and go to state 11
+    '-'  shift, and go to state 12
+    ')'  shift, and go to state 15
+
+
+state 10
+
+    0 $accept: S $end .
+
+    $default  accept
+
+
+state 11
+
+    2 E: E '+' . T
+
+    INTEGER  shift, and go to state 1
+    '-'      shift, and go to state 2
+    '('      shift, and go to state 3
+
+    T  go to state 16
+    F  go to state 7
+
+
+state 12
+
+    3 E: E '-' . T
+
+    INTEGER  shift, and go to state 1
+    '-'      shift, and go to state 2
+    '('      shift, and go to state 3
+
+    T  go to state 17
+    F  go to state 7
+
+
+state 13
+
+    5 T: T '*' . F
+
+    INTEGER  shift, and go to state 1
+    '-'      shift, and go to state 2
+    '('      shift, and go to state 3
+
+    F  go to state 18
+
+
+state 14
+
+    6 T: T '/' . F
+
+    INTEGER  shift, and go to state 1
+    '-'      shift, and go to state 2
+    '('      shift, and go to state 3
+
+    F  go to state 19
+
+
+state 15
+
+    8 F: '(' E ')' .
+
+    $default  reduce using rule 8 (F)
+
+
+state 16
+
+    2 E: E '+' T .
+    5 T: T . '*' F
+    6  | T . '/' F
+
+    '*'  shift, and go to state 13
+    '/'  shift, and go to state 14
+
+    $default  reduce using rule 2 (E)
+
+
+state 17
+
+    3 E: E '-' T .
+    5 T: T . '*' F
+    6  | T . '/' F
+
+    '*'  shift, and go to state 13
+    '/'  shift, and go to state 14
+
+    $default  reduce using rule 3 (E)
+
+
+state 18
+
+    5 T: T '*' F .
+
+    $default  reduce using rule 5 (T)
+
+
+state 19
+
+    6 T: T '/' F .
+
+    $default  reduce using rule 6 (T)
