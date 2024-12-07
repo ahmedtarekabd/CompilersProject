@@ -19,32 +19,33 @@
 
 /* Production rules */
 %%
-STMT : EXP                   { printf("%d\n", $1); }
+STMT : LOGICAL_EXP                   { printf("%d\n", $1); }
      ;
 
 /* Logical expressions have the lowest precedence */
 LOGICAL_EXP : REL_EXP OR LOGICAL_EXP   { $$ = $1 || $3; }
-            | REL_EXP AND LOGICAL_EXP  { $$ = $1 && $3; }
+            | REL_EXP AND LOGICAL_EXP  { $$ = $1 && $3;  printf("AND %d\n", $$); }
             | REL_EXP                  { $$ = $1; }
             ;
 
 /* Comparison expressions (medium precedence) */
+//^ Tested 
 REL_EXP : EXP EQ EXP         { $$ = $1 == $3; }
         | EXP NE EXP         { $$ = $1 != $3; }
         | EXP LT EXP         { $$ = $1 < $3; }
         | EXP LE EXP         { $$ = $1 <= $3; }
-        | EXP GT EXP         { $$ = $1 > $3; printf("hiii\n"); }
+        | EXP GT EXP         { $$ = $1 > $3; }
         | EXP GE EXP         { $$ = $1 >= $3; }
         | EXP                { $$ = $1; }
         ;
 
 /* Arithmetic expressions (highest precedence) */
-EXP : EXP ADD TERM           { $$ = $1 + $3; }
-    | EXP SUB TERM           { $$ = $1 - $3; }
+EXP : EXP ADD TERM           { $$ = $1 + $3; printf("ADD %d\n", $$); }
+    | EXP SUB TERM           { $$ = $1 - $3; printf("SUB %d\n", $$); }
     | TERM                   { $$ = $1; }
     ;
 
-TERM : TERM MUL FACTOR       { $$ = $1 * $3; printf("multiply\n") }
+TERM : TERM MUL FACTOR       { $$ = $1 * $3;}
      | TERM DIV FACTOR       { 
          if ($3 == 0) { 
              yyerror("Division by zero"); 
@@ -56,10 +57,10 @@ TERM : TERM MUL FACTOR       { $$ = $1 * $3; printf("multiply\n") }
      | FACTOR                { $$ = $1; }
      ;
 
-FACTOR : '(' LOGICAL_EXP ')' { $$ = $2; }
+FACTOR : LPAREN LOGICAL_EXP RPAREN { $$ = $2; printf("Factor: %d\n", $$); }
        | SUB FACTOR          { $$ = -$2; }
        | NOT FACTOR          { $$ = !$2; }
-       | INTEGER             { $$ = $1;printf("jojo")}
+       | INTEGER             { $$ = $1;}
        ;
 %%
 
