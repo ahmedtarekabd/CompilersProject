@@ -4,12 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdbool.h>
 // Enum to represent data types
 typedef enum {
     TYPE_INT,
     TYPE_FLOAT,
-    TYPE_CHAR
+    TYPE_CHAR,
+    TYPE_UNKNOWN
 } DataType;
 
 // Struct to represent a symbol table entry
@@ -30,7 +31,9 @@ extern int var_count; // to keep track of how many variables we've added
 // Function to get the value of a variable
 int get_var_value(char *var_name);
 
+bool put_var(char *var_name, DataType type);
+
 // Function to assign a value to a variable
-void assign_var(char *var_name, int value, DataType type);
+void assign_var(char *var_name, float value);
 
 #endif // SYMBOL_TABLE_H

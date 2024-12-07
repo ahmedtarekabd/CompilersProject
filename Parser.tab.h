@@ -2,7 +2,7 @@ typedef union {
     int i;
     char c;
     float f;
-    char *s;  // Use char * for strings
+    char *s;  
 } YYSTYPE;
 #define	POW	257
 #define	NOT	258

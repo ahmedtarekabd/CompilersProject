@@ -13,7 +13,7 @@
     int i;
     char c;
     float f;
-    char *s;  // Use char * for strings
+    char *s;  
 }
 
 %token POW NOT OR AND EQ NE LT LE GT GE ASSIGN LPAREN RPAREN LBRACE RBRACE SEMICOLON
@@ -29,9 +29,11 @@
 %%
 
 /* Production rules */
+/* Production rules */
 STMTS : STMTS STMT SEMICOLON { /* Handle multiple statements */ }
       | STMT SEMICOLON       { /* Handle a single statement */ }
       ;
+
 
 STMT : LOGICAL_EXP                   { printf("%d\n", $1); }
      | ASSIGNMENT                     { /* Assignment is handled in the action */ }
@@ -39,7 +41,7 @@ STMT : LOGICAL_EXP                   { printf("%d\n", $1); }
 
 ASSIGNMENT : ID ASSIGN EXP            { 
                                         // Assign the value of EXP to the variable ID
-                                        assign_var($1, $3, TYPE_INT); 
+                                        assign_var($1, $3); 
                                         printf("%s = %d\n", $1, $3); // For debugging
                                       }
           ;
@@ -58,7 +60,7 @@ REL_EXP : EXP EQ EXP         { $$ = $1 == $3; }
         | EXP                { $$ = $1; }
         ;
 
-EXP : EXP ADD TERM           { $$ = $1 + $3; }
+EXP : EXP ADD TERM           { $$ = $1 + $3; printf("ADD %d %d\n", $1, $3); }
     | EXP SUB TERM           { $$ = $1 - $3; }
     | TERM                   { $$ = $1; }
     ;
@@ -78,10 +80,10 @@ TERM : TERM MUL FACTOR       { $$ = $1 * $3; }
 FACTOR : LPAREN LOGICAL_EXP RPAREN { $$ = $2; }
        | SUB FACTOR          { $$ = -$2; }
        | NOT FACTOR          { $$ = !$2; }
-       | INTEGER             { $$ = $1;}
+       | INTEGER             { $$ = $1; }
        | FLOAT               { $$ = $1; }
        | CHAR                { $$ = $1; }
-       | ID                   { $$ = get_var_value($1); } /* Retrieve the variable value */
+       | ID                  { $$ = get_var_value($1); } /* Retrieve the variable value */
        ;
 
 %% 

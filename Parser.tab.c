@@ -50,7 +50,7 @@ typedef union {
     int i;
     char c;
     float f;
-    char *s;  // Use char * for strings
+    char *s;  
 } YYSTYPE;
 #include <stdio.h>
 
@@ -123,9 +123,9 @@ static const short yyrhs[] = {    31,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-    32,    33,    36,    37,    40,    47,    48,    49,    52,    53,
-    54,    55,    56,    57,    58,    61,    62,    63,    66,    67,
-    75,    78,    79,    80,    81,    82,    83,    84
+    33,    34,    38,    39,    42,    49,    50,    51,    54,    55,
+    56,    57,    58,    59,    60,    63,    64,    65,    68,    69,
+    77,    80,    81,    82,    83,    84,    85,    86
 };
 #endif
 
@@ -745,87 +745,87 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 32 "parser.y"
+#line 33 "parser.y"
 { /* Handle multiple statements */ ;
     break;}
 case 2:
-#line 33 "parser.y"
+#line 34 "parser.y"
 { /* Handle a single statement */ ;
     break;}
 case 3:
-#line 36 "parser.y"
+#line 38 "parser.y"
 { printf("%d\n", yyvsp[0].i); ;
     break;}
 case 4:
-#line 37 "parser.y"
+#line 39 "parser.y"
 { /* Assignment is handled in the action */ ;
     break;}
 case 5:
-#line 40 "parser.y"
+#line 42 "parser.y"
 { 
                                         // Assign the value of EXP to the variable ID
-                                        assign_var(yyvsp[-2].s, yyvsp[0].i, TYPE_INT); 
+                                        assign_var(yyvsp[-2].s, yyvsp[0].i); 
                                         printf("%s = %d\n", yyvsp[-2].s, yyvsp[0].i); // For debugging
                                       ;
     break;}
 case 6:
-#line 47 "parser.y"
+#line 49 "parser.y"
 { yyval.i = yyvsp[-2].i || yyvsp[0].i; ;
     break;}
 case 7:
-#line 48 "parser.y"
+#line 50 "parser.y"
 { yyval.i = yyvsp[-2].i && yyvsp[0].i; ;
     break;}
 case 8:
-#line 49 "parser.y"
+#line 51 "parser.y"
 { yyval.i = yyvsp[0].i; ;
     break;}
 case 9:
-#line 52 "parser.y"
+#line 54 "parser.y"
 { yyval.i = yyvsp[-2].i == yyvsp[0].i; ;
     break;}
 case 10:
-#line 53 "parser.y"
+#line 55 "parser.y"
 { yyval.i = yyvsp[-2].i != yyvsp[0].i; ;
     break;}
 case 11:
-#line 54 "parser.y"
+#line 56 "parser.y"
 { yyval.i = yyvsp[-2].i < yyvsp[0].i; ;
     break;}
 case 12:
-#line 55 "parser.y"
+#line 57 "parser.y"
 { yyval.i = yyvsp[-2].i <= yyvsp[0].i; ;
     break;}
 case 13:
-#line 56 "parser.y"
+#line 58 "parser.y"
 { yyval.i = yyvsp[-2].i > yyvsp[0].i; ;
     break;}
 case 14:
-#line 57 "parser.y"
+#line 59 "parser.y"
 { yyval.i = yyvsp[-2].i >= yyvsp[0].i; ;
     break;}
 case 15:
-#line 58 "parser.y"
+#line 60 "parser.y"
 { yyval.i = yyvsp[0].i; ;
     break;}
 case 16:
-#line 61 "parser.y"
-{ yyval.i = yyvsp[-2].i + yyvsp[0].i; ;
+#line 63 "parser.y"
+{ yyval.i = yyvsp[-2].i + yyvsp[0].i; printf("ADD %d %d\n", yyvsp[-2].i, yyvsp[0].i); ;
     break;}
 case 17:
-#line 62 "parser.y"
+#line 64 "parser.y"
 { yyval.i = yyvsp[-2].i - yyvsp[0].i; ;
     break;}
 case 18:
-#line 63 "parser.y"
+#line 65 "parser.y"
 { yyval.i = yyvsp[0].i; ;
     break;}
 case 19:
-#line 66 "parser.y"
+#line 68 "parser.y"
 { yyval.i = yyvsp[-2].i * yyvsp[0].i; ;
     break;}
 case 20:
-#line 67 "parser.y"
+#line 69 "parser.y"
 { 
          if (yyvsp[0].i == 0) { 
              yyerror("Division by zero"); 
@@ -836,35 +836,35 @@ case 20:
      ;
     break;}
 case 21:
-#line 75 "parser.y"
+#line 77 "parser.y"
 { yyval.i = yyvsp[0].i; ;
     break;}
 case 22:
-#line 78 "parser.y"
+#line 80 "parser.y"
 { yyval.i = yyvsp[-1].i; ;
     break;}
 case 23:
-#line 79 "parser.y"
+#line 81 "parser.y"
 { yyval.i = -yyvsp[0].i; ;
     break;}
 case 24:
-#line 80 "parser.y"
+#line 82 "parser.y"
 { yyval.i = !yyvsp[0].i; ;
     break;}
 case 25:
-#line 81 "parser.y"
-{ yyval.i = yyvsp[0].i;;
+#line 83 "parser.y"
+{ yyval.i = yyvsp[0].i; ;
     break;}
 case 26:
-#line 82 "parser.y"
+#line 84 "parser.y"
 { yyval.i = yyvsp[0].f; ;
     break;}
 case 27:
-#line 83 "parser.y"
+#line 85 "parser.y"
 { yyval.i = yyvsp[0].c; ;
     break;}
 case 28:
-#line 84 "parser.y"
+#line 86 "parser.y"
 { yyval.i = get_var_value(yyvsp[0].s); ;
     break;}
 }
@@ -1089,7 +1089,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 87 "parser.y"
+#line 89 "parser.y"
  
 
 void yyerror(const char *s) {
