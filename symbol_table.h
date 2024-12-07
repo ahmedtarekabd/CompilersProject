@@ -29,7 +29,7 @@ extern SymbolTableEntry symbol_table[MAX_VARS]; // array to store symbol table e
 extern int var_count; // to keep track of how many variables we've added
 
 // Function to get the value of a variable
-int get_var_value(char *var_name);
+float get_var_value(char *var_name);
 
 bool put_var(char *var_name, DataType type);
 

@@ -9,6 +9,8 @@
 
 
 %%
+"if"        { return IF; }
+"else"      { return ELSE; }
 [0-9]+\.[0-9]+  { yylval.f = atof(yytext); printf("Float: %f\n", yylval.f); return FLOAT; }
 [0-9]+      { yylval.i = atoi(yytext); return INTEGER; }
 [ \t\n]     { /* Ignore whitespace */ }
@@ -76,6 +78,9 @@ float[ \t]+[a-zA-Z_][a-zA-Z0-9_]*([ \t]*)? {
 "{"         { return LBRACE; }
 "}"         { return RBRACE; }
 ";"         { return SEMICOLON; }
+
+
+
 
 
 %%

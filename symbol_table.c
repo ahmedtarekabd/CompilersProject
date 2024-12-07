@@ -4,7 +4,7 @@ SymbolTableEntry symbol_table[MAX_VARS]; // array to store symbol table entries
 int var_count = 0; // to keep track of how many variables we've added
 
 // Function to get the value of a variable
-int get_var_value(char *var_name) {
+float get_var_value(char *var_name) {
     for (int i = 0; i < var_count; i++) {
         if (strcmp(symbol_table[i].name, var_name) == 0) {
             if (symbol_table[i].type == TYPE_INT) {
@@ -12,7 +12,7 @@ int get_var_value(char *var_name) {
                 return symbol_table[i].value.i_val;
             } else if (symbol_table[i].type == TYPE_FLOAT) {
                 printf("Found %f\n", symbol_table[i].value.f_val);
-                return (int)symbol_table[i].value.f_val;
+                return symbol_table[i].value.f_val;
             } else if (symbol_table[i].type == TYPE_CHAR) {
                 return (int)symbol_table[i].value.c_val;
             }
