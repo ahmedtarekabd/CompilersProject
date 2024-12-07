@@ -20,7 +20,7 @@ E : E '+' T     {$$ = $1 + $3;}
 | T             {$$ = $1;}
 ;
 T : T '*' F     {$$ = $1 * $3;}
-| T '/' F       {if ($3 == 0) {yyerror("Division by zero");} else $$ = $1 / $3;}
+| T '/' F       {if ($3 == 0) {yyerror("Division by zero"); exit(1)} else $$ = $1 / $3;}
 | F             {$$ = $1;}
 ;
 F : '(' E ')'   {$$ = $2;}
