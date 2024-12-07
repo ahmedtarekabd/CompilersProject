@@ -3,582 +3,763 @@
 Terminals which are not used:
 
    POW
-   ASSIGN
    LBRACE
    RBRACE
-   SEMICOLON
    IF
    ELSE
    SWITCH
    INT
-   FLOAT
-   CHAR
 
 
 
 Grammar
-rule 1    STMT -> LOGICAL_EXP
-rule 2    LOGICAL_EXP -> REL_EXP OR LOGICAL_EXP
-rule 3    LOGICAL_EXP -> REL_EXP AND LOGICAL_EXP
-rule 4    LOGICAL_EXP -> REL_EXP
-rule 5    REL_EXP -> EXP EQ EXP
-rule 6    REL_EXP -> EXP NE EXP
-rule 7    REL_EXP -> EXP LT EXP
-rule 8    REL_EXP -> EXP LE EXP
-rule 9    REL_EXP -> EXP GT EXP
-rule 10   REL_EXP -> EXP GE EXP
-rule 11   REL_EXP -> EXP
-rule 12   EXP -> EXP ADD TERM
-rule 13   EXP -> EXP SUB TERM
-rule 14   EXP -> TERM
-rule 15   TERM -> TERM MUL FACTOR
-rule 16   TERM -> TERM DIV FACTOR
-rule 17   TERM -> FACTOR
-rule 18   FACTOR -> LPAREN LOGICAL_EXP RPAREN
-rule 19   FACTOR -> SUB FACTOR
-rule 20   FACTOR -> NOT FACTOR
-rule 21   FACTOR -> INTEGER
+rule 1    STMTS -> STMTS STMT SEMICOLON
+rule 2    STMTS -> STMT SEMICOLON
+rule 3    STMT -> LOGICAL_EXP
+rule 4    STMT -> ASSIGNMENT
+rule 5    ASSIGNMENT -> ID ASSIGN EXP
+rule 6    LOGICAL_EXP -> REL_EXP OR LOGICAL_EXP
+rule 7    LOGICAL_EXP -> REL_EXP AND LOGICAL_EXP
+rule 8    LOGICAL_EXP -> REL_EXP
+rule 9    REL_EXP -> EXP EQ EXP
+rule 10   REL_EXP -> EXP NE EXP
+rule 11   REL_EXP -> EXP LT EXP
+rule 12   REL_EXP -> EXP LE EXP
+rule 13   REL_EXP -> EXP GT EXP
+rule 14   REL_EXP -> EXP GE EXP
+rule 15   REL_EXP -> EXP
+rule 16   EXP -> EXP ADD TERM
+rule 17   EXP -> EXP SUB TERM
+rule 18   EXP -> TERM
+rule 19   TERM -> TERM MUL FACTOR
+rule 20   TERM -> TERM DIV FACTOR
+rule 21   TERM -> FACTOR
+rule 22   FACTOR -> LPAREN LOGICAL_EXP RPAREN
+rule 23   FACTOR -> SUB FACTOR
+rule 24   FACTOR -> NOT FACTOR
+rule 25   FACTOR -> INTEGER
+rule 26   FACTOR -> FLOAT
+rule 27   FACTOR -> CHAR
+rule 28   FACTOR -> ID
 
 Terminals, with rules where they appear
 
 $ (-1)
 error (256)
 POW (257)
-NOT (258) 20
-OR (259) 2
-AND (260) 3
-EQ (261) 5
-NE (262) 6
-LT (263) 7
-LE (264) 8
-GT (265) 9
-GE (266) 10
-ASSIGN (267)
-LPAREN (268) 18
-RPAREN (269) 18
+NOT (258) 24
+OR (259) 6
+AND (260) 7
+EQ (261) 9
+NE (262) 10
+LT (263) 11
+LE (264) 12
+GT (265) 13
+GE (266) 14
+ASSIGN (267) 5
+LPAREN (268) 22
+RPAREN (269) 22
 LBRACE (270)
 RBRACE (271)
-SEMICOLON (272)
+SEMICOLON (272) 1 2
 IF (273)
 ELSE (274)
 SWITCH (275)
 INT (276)
-FLOAT (277)
-CHAR (278)
-SUB (279) 13 19
-ADD (280) 12
-DIV (281) 16
-MUL (282) 15
-INTEGER (283) 21
+FLOAT (277) 26
+CHAR (278) 27
+SUB (279) 17 23
+ADD (280) 16
+DIV (281) 20
+MUL (282) 19
+INTEGER (283) 25
+ID (284) 5 28
 
 Nonterminals, with rules where they appear
 
-STMT (30)
-    on left: 1
-LOGICAL_EXP (31)
-    on left: 2 3 4, on right: 1 2 3 18
-REL_EXP (32)
-    on left: 5 6 7 8 9 10 11, on right: 2 3 4
-EXP (33)
-    on left: 12 13 14, on right: 5 6 7 8 9 10 11 12 13
-TERM (34)
-    on left: 15 16 17, on right: 12 13 14 15 16
-FACTOR (35)
-    on left: 18 19 20 21, on right: 15 16 17 19 20
+STMTS (31)
+    on left: 1 2, on right: 1
+STMT (32)
+    on left: 3 4, on right: 1 2
+ASSIGNMENT (33)
+    on left: 5, on right: 4
+LOGICAL_EXP (34)
+    on left: 6 7 8, on right: 3 6 7 22
+REL_EXP (35)
+    on left: 9 10 11 12 13 14 15, on right: 6 7 8
+EXP (36)
+    on left: 16 17 18, on right: 5 9 10 11 12 13 14 15 16 17
+TERM (37)
+    on left: 19 20 21, on right: 16 17 18 19 20
+FACTOR (38)
+    on left: 22 23 24 25 26 27 28, on right: 19 20 21 23 24
 
 
 state 0
 
     NOT 	shift, and go to state 1
     LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 7
 
-    STMT	go to state 38
-    LOGICAL_EXP	go to state 5
-    REL_EXP	go to state 6
-    EXP 	go to state 7
-    TERM	go to state 8
-    FACTOR	go to state 9
+    STMTS	go to state 8
+    STMT	go to state 9
+    ASSIGNMENT	go to state 10
+    LOGICAL_EXP	go to state 11
+    REL_EXP	go to state 12
+    EXP 	go to state 13
+    TERM	go to state 14
+    FACTOR	go to state 15
 
 
 
 state 1
 
-    FACTOR  ->  NOT . FACTOR   (rule 20)
+    FACTOR  ->  NOT . FACTOR   (rule 24)
 
     NOT 	shift, and go to state 1
     LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
 
-    FACTOR	go to state 10
+    FACTOR	go to state 17
 
 
 
 state 2
 
-    FACTOR  ->  LPAREN . LOGICAL_EXP RPAREN   (rule 18)
+    FACTOR  ->  LPAREN . LOGICAL_EXP RPAREN   (rule 22)
 
     NOT 	shift, and go to state 1
     LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
 
-    LOGICAL_EXP	go to state 11
-    REL_EXP	go to state 6
-    EXP 	go to state 7
-    TERM	go to state 8
-    FACTOR	go to state 9
+    LOGICAL_EXP	go to state 18
+    REL_EXP	go to state 12
+    EXP 	go to state 13
+    TERM	go to state 14
+    FACTOR	go to state 15
 
 
 
 state 3
 
-    FACTOR  ->  SUB . FACTOR   (rule 19)
+    FACTOR  ->  FLOAT .   (rule 26)
 
-    NOT 	shift, and go to state 1
-    LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
-
-    FACTOR	go to state 12
+    $default	reduce using rule 26 (FACTOR)
 
 
 
 state 4
 
-    FACTOR  ->  INTEGER .   (rule 21)
+    FACTOR  ->  CHAR .   (rule 27)
 
-    $default	reduce using rule 21 (FACTOR)
+    $default	reduce using rule 27 (FACTOR)
 
 
 
 state 5
 
-    STMT  ->  LOGICAL_EXP .   (rule 1)
+    FACTOR  ->  SUB . FACTOR   (rule 23)
 
-    $default	reduce using rule 1 (STMT)
+    NOT 	shift, and go to state 1
+    LPAREN	shift, and go to state 2
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
+
+    FACTOR	go to state 19
 
 
 
 state 6
 
-    LOGICAL_EXP  ->  REL_EXP . OR LOGICAL_EXP   (rule 2)
-    LOGICAL_EXP  ->  REL_EXP . AND LOGICAL_EXP   (rule 3)
-    LOGICAL_EXP  ->  REL_EXP .   (rule 4)
+    FACTOR  ->  INTEGER .   (rule 25)
 
-    OR  	shift, and go to state 13
-    AND 	shift, and go to state 14
-
-    $default	reduce using rule 4 (LOGICAL_EXP)
+    $default	reduce using rule 25 (FACTOR)
 
 
 
 state 7
 
-    REL_EXP  ->  EXP . EQ EXP   (rule 5)
-    REL_EXP  ->  EXP . NE EXP   (rule 6)
-    REL_EXP  ->  EXP . LT EXP   (rule 7)
-    REL_EXP  ->  EXP . LE EXP   (rule 8)
-    REL_EXP  ->  EXP . GT EXP   (rule 9)
-    REL_EXP  ->  EXP . GE EXP   (rule 10)
-    REL_EXP  ->  EXP .   (rule 11)
-    EXP  ->  EXP . ADD TERM   (rule 12)
-    EXP  ->  EXP . SUB TERM   (rule 13)
+    ASSIGNMENT  ->  ID . ASSIGN EXP   (rule 5)
+    FACTOR  ->  ID .   (rule 28)
 
-    EQ  	shift, and go to state 15
-    NE  	shift, and go to state 16
-    LT  	shift, and go to state 17
-    LE  	shift, and go to state 18
-    GT  	shift, and go to state 19
-    GE  	shift, and go to state 20
-    SUB 	shift, and go to state 21
-    ADD 	shift, and go to state 22
+    ASSIGN	shift, and go to state 20
 
-    $default	reduce using rule 11 (REL_EXP)
+    $default	reduce using rule 28 (FACTOR)
 
 
 
 state 8
 
-    EXP  ->  TERM .   (rule 14)
-    TERM  ->  TERM . MUL FACTOR   (rule 15)
-    TERM  ->  TERM . DIV FACTOR   (rule 16)
+    STMTS  ->  STMTS . STMT SEMICOLON   (rule 1)
 
-    DIV 	shift, and go to state 23
-    MUL 	shift, and go to state 24
+    $   	go to state 50
+    NOT 	shift, and go to state 1
+    LPAREN	shift, and go to state 2
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 7
 
-    $default	reduce using rule 14 (EXP)
+    STMT	go to state 21
+    ASSIGNMENT	go to state 10
+    LOGICAL_EXP	go to state 11
+    REL_EXP	go to state 12
+    EXP 	go to state 13
+    TERM	go to state 14
+    FACTOR	go to state 15
 
 
 
 state 9
 
-    TERM  ->  FACTOR .   (rule 17)
+    STMTS  ->  STMT . SEMICOLON   (rule 2)
 
-    $default	reduce using rule 17 (TERM)
+    SEMICOLON	shift, and go to state 22
 
 
 
 state 10
 
-    FACTOR  ->  NOT FACTOR .   (rule 20)
+    STMT  ->  ASSIGNMENT .   (rule 4)
 
-    $default	reduce using rule 20 (FACTOR)
+    $default	reduce using rule 4 (STMT)
 
 
 
 state 11
 
-    FACTOR  ->  LPAREN LOGICAL_EXP . RPAREN   (rule 18)
+    STMT  ->  LOGICAL_EXP .   (rule 3)
 
-    RPAREN	shift, and go to state 25
+    $default	reduce using rule 3 (STMT)
 
 
 
 state 12
 
-    FACTOR  ->  SUB FACTOR .   (rule 19)
+    LOGICAL_EXP  ->  REL_EXP . OR LOGICAL_EXP   (rule 6)
+    LOGICAL_EXP  ->  REL_EXP . AND LOGICAL_EXP   (rule 7)
+    LOGICAL_EXP  ->  REL_EXP .   (rule 8)
 
-    $default	reduce using rule 19 (FACTOR)
+    OR  	shift, and go to state 23
+    AND 	shift, and go to state 24
+
+    $default	reduce using rule 8 (LOGICAL_EXP)
 
 
 
 state 13
 
-    LOGICAL_EXP  ->  REL_EXP OR . LOGICAL_EXP   (rule 2)
+    REL_EXP  ->  EXP . EQ EXP   (rule 9)
+    REL_EXP  ->  EXP . NE EXP   (rule 10)
+    REL_EXP  ->  EXP . LT EXP   (rule 11)
+    REL_EXP  ->  EXP . LE EXP   (rule 12)
+    REL_EXP  ->  EXP . GT EXP   (rule 13)
+    REL_EXP  ->  EXP . GE EXP   (rule 14)
+    REL_EXP  ->  EXP .   (rule 15)
+    EXP  ->  EXP . ADD TERM   (rule 16)
+    EXP  ->  EXP . SUB TERM   (rule 17)
 
-    NOT 	shift, and go to state 1
-    LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
+    EQ  	shift, and go to state 25
+    NE  	shift, and go to state 26
+    LT  	shift, and go to state 27
+    LE  	shift, and go to state 28
+    GT  	shift, and go to state 29
+    GE  	shift, and go to state 30
+    SUB 	shift, and go to state 31
+    ADD 	shift, and go to state 32
 
-    LOGICAL_EXP	go to state 26
-    REL_EXP	go to state 6
-    EXP 	go to state 7
-    TERM	go to state 8
-    FACTOR	go to state 9
+    $default	reduce using rule 15 (REL_EXP)
 
 
 
 state 14
 
-    LOGICAL_EXP  ->  REL_EXP AND . LOGICAL_EXP   (rule 3)
+    EXP  ->  TERM .   (rule 18)
+    TERM  ->  TERM . MUL FACTOR   (rule 19)
+    TERM  ->  TERM . DIV FACTOR   (rule 20)
 
-    NOT 	shift, and go to state 1
-    LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
+    DIV 	shift, and go to state 33
+    MUL 	shift, and go to state 34
 
-    LOGICAL_EXP	go to state 27
-    REL_EXP	go to state 6
-    EXP 	go to state 7
-    TERM	go to state 8
-    FACTOR	go to state 9
+    $default	reduce using rule 18 (EXP)
 
 
 
 state 15
 
-    REL_EXP  ->  EXP EQ . EXP   (rule 5)
+    TERM  ->  FACTOR .   (rule 21)
 
-    NOT 	shift, and go to state 1
-    LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
-
-    EXP 	go to state 28
-    TERM	go to state 8
-    FACTOR	go to state 9
+    $default	reduce using rule 21 (TERM)
 
 
 
 state 16
 
-    REL_EXP  ->  EXP NE . EXP   (rule 6)
+    FACTOR  ->  ID .   (rule 28)
 
-    NOT 	shift, and go to state 1
-    LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
-
-    EXP 	go to state 29
-    TERM	go to state 8
-    FACTOR	go to state 9
+    $default	reduce using rule 28 (FACTOR)
 
 
 
 state 17
 
-    REL_EXP  ->  EXP LT . EXP   (rule 7)
+    FACTOR  ->  NOT FACTOR .   (rule 24)
 
-    NOT 	shift, and go to state 1
-    LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
-
-    EXP 	go to state 30
-    TERM	go to state 8
-    FACTOR	go to state 9
+    $default	reduce using rule 24 (FACTOR)
 
 
 
 state 18
 
-    REL_EXP  ->  EXP LE . EXP   (rule 8)
+    FACTOR  ->  LPAREN LOGICAL_EXP . RPAREN   (rule 22)
 
-    NOT 	shift, and go to state 1
-    LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
-
-    EXP 	go to state 31
-    TERM	go to state 8
-    FACTOR	go to state 9
+    RPAREN	shift, and go to state 35
 
 
 
 state 19
 
-    REL_EXP  ->  EXP GT . EXP   (rule 9)
+    FACTOR  ->  SUB FACTOR .   (rule 23)
 
-    NOT 	shift, and go to state 1
-    LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
-
-    EXP 	go to state 32
-    TERM	go to state 8
-    FACTOR	go to state 9
+    $default	reduce using rule 23 (FACTOR)
 
 
 
 state 20
 
-    REL_EXP  ->  EXP GE . EXP   (rule 10)
+    ASSIGNMENT  ->  ID ASSIGN . EXP   (rule 5)
 
     NOT 	shift, and go to state 1
     LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
 
-    EXP 	go to state 33
-    TERM	go to state 8
-    FACTOR	go to state 9
+    EXP 	go to state 36
+    TERM	go to state 14
+    FACTOR	go to state 15
 
 
 
 state 21
 
-    EXP  ->  EXP SUB . TERM   (rule 13)
+    STMTS  ->  STMTS STMT . SEMICOLON   (rule 1)
 
-    NOT 	shift, and go to state 1
-    LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
-
-    TERM	go to state 34
-    FACTOR	go to state 9
+    SEMICOLON	shift, and go to state 37
 
 
 
 state 22
 
-    EXP  ->  EXP ADD . TERM   (rule 12)
+    STMTS  ->  STMT SEMICOLON .   (rule 2)
 
-    NOT 	shift, and go to state 1
-    LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
-
-    TERM	go to state 35
-    FACTOR	go to state 9
+    $default	reduce using rule 2 (STMTS)
 
 
 
 state 23
 
-    TERM  ->  TERM DIV . FACTOR   (rule 16)
+    LOGICAL_EXP  ->  REL_EXP OR . LOGICAL_EXP   (rule 6)
 
     NOT 	shift, and go to state 1
     LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
 
-    FACTOR	go to state 36
+    LOGICAL_EXP	go to state 38
+    REL_EXP	go to state 12
+    EXP 	go to state 13
+    TERM	go to state 14
+    FACTOR	go to state 15
 
 
 
 state 24
 
-    TERM  ->  TERM MUL . FACTOR   (rule 15)
+    LOGICAL_EXP  ->  REL_EXP AND . LOGICAL_EXP   (rule 7)
 
     NOT 	shift, and go to state 1
     LPAREN	shift, and go to state 2
-    SUB 	shift, and go to state 3
-    INTEGER	shift, and go to state 4
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
 
-    FACTOR	go to state 37
+    LOGICAL_EXP	go to state 39
+    REL_EXP	go to state 12
+    EXP 	go to state 13
+    TERM	go to state 14
+    FACTOR	go to state 15
 
 
 
 state 25
 
-    FACTOR  ->  LPAREN LOGICAL_EXP RPAREN .   (rule 18)
+    REL_EXP  ->  EXP EQ . EXP   (rule 9)
 
-    $default	reduce using rule 18 (FACTOR)
+    NOT 	shift, and go to state 1
+    LPAREN	shift, and go to state 2
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
+
+    EXP 	go to state 40
+    TERM	go to state 14
+    FACTOR	go to state 15
 
 
 
 state 26
 
-    LOGICAL_EXP  ->  REL_EXP OR LOGICAL_EXP .   (rule 2)
+    REL_EXP  ->  EXP NE . EXP   (rule 10)
 
-    $default	reduce using rule 2 (LOGICAL_EXP)
+    NOT 	shift, and go to state 1
+    LPAREN	shift, and go to state 2
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
+
+    EXP 	go to state 41
+    TERM	go to state 14
+    FACTOR	go to state 15
 
 
 
 state 27
 
-    LOGICAL_EXP  ->  REL_EXP AND LOGICAL_EXP .   (rule 3)
+    REL_EXP  ->  EXP LT . EXP   (rule 11)
 
-    $default	reduce using rule 3 (LOGICAL_EXP)
+    NOT 	shift, and go to state 1
+    LPAREN	shift, and go to state 2
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
+
+    EXP 	go to state 42
+    TERM	go to state 14
+    FACTOR	go to state 15
 
 
 
 state 28
 
-    REL_EXP  ->  EXP EQ EXP .   (rule 5)
-    EXP  ->  EXP . ADD TERM   (rule 12)
-    EXP  ->  EXP . SUB TERM   (rule 13)
+    REL_EXP  ->  EXP LE . EXP   (rule 12)
 
-    SUB 	shift, and go to state 21
-    ADD 	shift, and go to state 22
+    NOT 	shift, and go to state 1
+    LPAREN	shift, and go to state 2
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
 
-    $default	reduce using rule 5 (REL_EXP)
+    EXP 	go to state 43
+    TERM	go to state 14
+    FACTOR	go to state 15
 
 
 
 state 29
 
-    REL_EXP  ->  EXP NE EXP .   (rule 6)
-    EXP  ->  EXP . ADD TERM   (rule 12)
-    EXP  ->  EXP . SUB TERM   (rule 13)
+    REL_EXP  ->  EXP GT . EXP   (rule 13)
 
-    SUB 	shift, and go to state 21
-    ADD 	shift, and go to state 22
+    NOT 	shift, and go to state 1
+    LPAREN	shift, and go to state 2
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
 
-    $default	reduce using rule 6 (REL_EXP)
+    EXP 	go to state 44
+    TERM	go to state 14
+    FACTOR	go to state 15
 
 
 
 state 30
 
-    REL_EXP  ->  EXP LT EXP .   (rule 7)
-    EXP  ->  EXP . ADD TERM   (rule 12)
-    EXP  ->  EXP . SUB TERM   (rule 13)
+    REL_EXP  ->  EXP GE . EXP   (rule 14)
 
-    SUB 	shift, and go to state 21
-    ADD 	shift, and go to state 22
+    NOT 	shift, and go to state 1
+    LPAREN	shift, and go to state 2
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
 
-    $default	reduce using rule 7 (REL_EXP)
+    EXP 	go to state 45
+    TERM	go to state 14
+    FACTOR	go to state 15
 
 
 
 state 31
 
-    REL_EXP  ->  EXP LE EXP .   (rule 8)
-    EXP  ->  EXP . ADD TERM   (rule 12)
-    EXP  ->  EXP . SUB TERM   (rule 13)
+    EXP  ->  EXP SUB . TERM   (rule 17)
 
-    SUB 	shift, and go to state 21
-    ADD 	shift, and go to state 22
+    NOT 	shift, and go to state 1
+    LPAREN	shift, and go to state 2
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
 
-    $default	reduce using rule 8 (REL_EXP)
+    TERM	go to state 46
+    FACTOR	go to state 15
 
 
 
 state 32
 
-    REL_EXP  ->  EXP GT EXP .   (rule 9)
-    EXP  ->  EXP . ADD TERM   (rule 12)
-    EXP  ->  EXP . SUB TERM   (rule 13)
+    EXP  ->  EXP ADD . TERM   (rule 16)
 
-    SUB 	shift, and go to state 21
-    ADD 	shift, and go to state 22
+    NOT 	shift, and go to state 1
+    LPAREN	shift, and go to state 2
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
 
-    $default	reduce using rule 9 (REL_EXP)
+    TERM	go to state 47
+    FACTOR	go to state 15
 
 
 
 state 33
 
-    REL_EXP  ->  EXP GE EXP .   (rule 10)
-    EXP  ->  EXP . ADD TERM   (rule 12)
-    EXP  ->  EXP . SUB TERM   (rule 13)
+    TERM  ->  TERM DIV . FACTOR   (rule 20)
 
-    SUB 	shift, and go to state 21
-    ADD 	shift, and go to state 22
+    NOT 	shift, and go to state 1
+    LPAREN	shift, and go to state 2
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
 
-    $default	reduce using rule 10 (REL_EXP)
+    FACTOR	go to state 48
 
 
 
 state 34
 
-    EXP  ->  EXP SUB TERM .   (rule 13)
-    TERM  ->  TERM . MUL FACTOR   (rule 15)
-    TERM  ->  TERM . DIV FACTOR   (rule 16)
+    TERM  ->  TERM MUL . FACTOR   (rule 19)
 
-    DIV 	shift, and go to state 23
-    MUL 	shift, and go to state 24
+    NOT 	shift, and go to state 1
+    LPAREN	shift, and go to state 2
+    FLOAT	shift, and go to state 3
+    CHAR	shift, and go to state 4
+    SUB 	shift, and go to state 5
+    INTEGER	shift, and go to state 6
+    ID  	shift, and go to state 16
 
-    $default	reduce using rule 13 (EXP)
+    FACTOR	go to state 49
 
 
 
 state 35
 
-    EXP  ->  EXP ADD TERM .   (rule 12)
-    TERM  ->  TERM . MUL FACTOR   (rule 15)
-    TERM  ->  TERM . DIV FACTOR   (rule 16)
+    FACTOR  ->  LPAREN LOGICAL_EXP RPAREN .   (rule 22)
 
-    DIV 	shift, and go to state 23
-    MUL 	shift, and go to state 24
-
-    $default	reduce using rule 12 (EXP)
+    $default	reduce using rule 22 (FACTOR)
 
 
 
 state 36
 
-    TERM  ->  TERM DIV FACTOR .   (rule 16)
+    ASSIGNMENT  ->  ID ASSIGN EXP .   (rule 5)
+    EXP  ->  EXP . ADD TERM   (rule 16)
+    EXP  ->  EXP . SUB TERM   (rule 17)
 
-    $default	reduce using rule 16 (TERM)
+    SUB 	shift, and go to state 31
+    ADD 	shift, and go to state 32
+
+    $default	reduce using rule 5 (ASSIGNMENT)
 
 
 
 state 37
 
-    TERM  ->  TERM MUL FACTOR .   (rule 15)
+    STMTS  ->  STMTS STMT SEMICOLON .   (rule 1)
 
-    $default	reduce using rule 15 (TERM)
+    $default	reduce using rule 1 (STMTS)
 
 
 
 state 38
 
-    $   	go to state 39
+    LOGICAL_EXP  ->  REL_EXP OR LOGICAL_EXP .   (rule 6)
+
+    $default	reduce using rule 6 (LOGICAL_EXP)
 
 
 
 state 39
 
-    $   	go to state 40
+    LOGICAL_EXP  ->  REL_EXP AND LOGICAL_EXP .   (rule 7)
+
+    $default	reduce using rule 7 (LOGICAL_EXP)
 
 
 
 state 40
+
+    REL_EXP  ->  EXP EQ EXP .   (rule 9)
+    EXP  ->  EXP . ADD TERM   (rule 16)
+    EXP  ->  EXP . SUB TERM   (rule 17)
+
+    SUB 	shift, and go to state 31
+    ADD 	shift, and go to state 32
+
+    $default	reduce using rule 9 (REL_EXP)
+
+
+
+state 41
+
+    REL_EXP  ->  EXP NE EXP .   (rule 10)
+    EXP  ->  EXP . ADD TERM   (rule 16)
+    EXP  ->  EXP . SUB TERM   (rule 17)
+
+    SUB 	shift, and go to state 31
+    ADD 	shift, and go to state 32
+
+    $default	reduce using rule 10 (REL_EXP)
+
+
+
+state 42
+
+    REL_EXP  ->  EXP LT EXP .   (rule 11)
+    EXP  ->  EXP . ADD TERM   (rule 16)
+    EXP  ->  EXP . SUB TERM   (rule 17)
+
+    SUB 	shift, and go to state 31
+    ADD 	shift, and go to state 32
+
+    $default	reduce using rule 11 (REL_EXP)
+
+
+
+state 43
+
+    REL_EXP  ->  EXP LE EXP .   (rule 12)
+    EXP  ->  EXP . ADD TERM   (rule 16)
+    EXP  ->  EXP . SUB TERM   (rule 17)
+
+    SUB 	shift, and go to state 31
+    ADD 	shift, and go to state 32
+
+    $default	reduce using rule 12 (REL_EXP)
+
+
+
+state 44
+
+    REL_EXP  ->  EXP GT EXP .   (rule 13)
+    EXP  ->  EXP . ADD TERM   (rule 16)
+    EXP  ->  EXP . SUB TERM   (rule 17)
+
+    SUB 	shift, and go to state 31
+    ADD 	shift, and go to state 32
+
+    $default	reduce using rule 13 (REL_EXP)
+
+
+
+state 45
+
+    REL_EXP  ->  EXP GE EXP .   (rule 14)
+    EXP  ->  EXP . ADD TERM   (rule 16)
+    EXP  ->  EXP . SUB TERM   (rule 17)
+
+    SUB 	shift, and go to state 31
+    ADD 	shift, and go to state 32
+
+    $default	reduce using rule 14 (REL_EXP)
+
+
+
+state 46
+
+    EXP  ->  EXP SUB TERM .   (rule 17)
+    TERM  ->  TERM . MUL FACTOR   (rule 19)
+    TERM  ->  TERM . DIV FACTOR   (rule 20)
+
+    DIV 	shift, and go to state 33
+    MUL 	shift, and go to state 34
+
+    $default	reduce using rule 17 (EXP)
+
+
+
+state 47
+
+    EXP  ->  EXP ADD TERM .   (rule 16)
+    TERM  ->  TERM . MUL FACTOR   (rule 19)
+    TERM  ->  TERM . DIV FACTOR   (rule 20)
+
+    DIV 	shift, and go to state 33
+    MUL 	shift, and go to state 34
+
+    $default	reduce using rule 16 (EXP)
+
+
+
+state 48
+
+    TERM  ->  TERM DIV FACTOR .   (rule 20)
+
+    $default	reduce using rule 20 (TERM)
+
+
+
+state 49
+
+    TERM  ->  TERM MUL FACTOR .   (rule 19)
+
+    $default	reduce using rule 19 (TERM)
+
+
+
+state 50
+
+    $   	go to state 51
+
+
+
+state 51
 
     $default	accept

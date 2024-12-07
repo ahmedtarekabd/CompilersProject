@@ -1,5 +1,8 @@
 typedef union {
     int i;
+    char c;
+    float f;
+    char *s;  // Use char * for strings
 } YYSTYPE;
 #define	POW	257
 #define	NOT	258
@@ -28,6 +31,7 @@ typedef union {
 #define	DIV	281
 #define	MUL	282
 #define	INTEGER	283
+#define	ID	284
 
 
 extern YYSTYPE yylval;

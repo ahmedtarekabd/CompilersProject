@@ -383,7 +383,7 @@ char *yytext;
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>  // Include this header for strdup
-    #include "P.tab.h"
+    #include "Parser.tab.h"
 #line 388 "lex.yy.c"
 
 /* Macros after this point can all be overridden by user definitions in
@@ -673,7 +673,7 @@ YY_RULE_SETUP
 case 11:
 YY_RULE_SETUP
 #line 20 ".\\Lexer.l"
-{ return AND; }
+{ return AND;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP

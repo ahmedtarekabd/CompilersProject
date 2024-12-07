@@ -2,7 +2,7 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>  // Include this header for strdup
-    #include "P.tab.h"
+    #include "Parser.tab.h"
 %}
 
 %%
