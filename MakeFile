@@ -1,4 +1,4 @@
 all:
-	bison -d -v Parser.y  
+	bison -d -v P.y  
 	flex .\Lexer.l        
-	gcc .\Parser.tab.c lex.yy.c -o compiler.exe
+	gcc .\P.tab.c lex.yy.c -o compiler.exe

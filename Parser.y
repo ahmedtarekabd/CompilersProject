@@ -9,11 +9,17 @@
 %}
 %union {
     int i;
+    char c;
+    float f;
+    char *s;
 }
 %token POW NOT OR AND EQ NE LT LE GT GE ASSIGN LPAREN RPAREN LBRACE RBRACE SEMICOLON
 %token IF ELSE SWITCH INT FLOAT CHAR
 %token SUB ADD DIV MUL
 %token <i> INTEGER
+%token <f> FLOAT
+%token <c> CHAR
+%token <s> ID
 %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT
 
 
@@ -61,8 +67,11 @@ FACTOR : LPAREN LOGICAL_EXP RPAREN { $$ = $2; printf("Factor: %d\n", $$); }
        | SUB FACTOR          { $$ = -$2; }
        | NOT FACTOR          { $$ = !$2; }
        | INTEGER             { $$ = $1;}
+       | FLOAT               { $$ = $1; }
+       | CHAR                { $$ = $1; }
+       | ID                  
        ;
-%%
+%% 
 
 void yyerror(const char *s) {
     fprintf(stderr, "%s\n", s);

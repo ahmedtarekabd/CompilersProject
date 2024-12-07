@@ -1,13 +1,14 @@
 %{
     #include <stdio.h>
     #include <stdlib.h>
-
-    #include "Parser.tab.h"
+    #include <string.h>  // Include this header for strdup
+    #include "P.tab.h"
 %}
 
 %%
 [0-9]+      { yylval.i = atoi(yytext); return INTEGER; }
 [ \t\n]     { /* Ignore whitespace */ }
+[a-zA-Z_][a-zA-Z0-9_]* { yylval.s = strdup(yytext); return ID; }  // Adjusted identifier rule
 "+"         { return ADD; }
 "-"         { return SUB; }
 "*"         { return MUL; }
@@ -16,7 +17,7 @@
 
 "!"         { return NOT; }
 "||"        { return OR; }
-"&&"        { return AND; }
+"&&"        { return AND;}
 "=="        { return EQ; }
 "!="        { return NE; }
 "<"         { return LT; }
@@ -31,26 +32,6 @@
 "}"         { return RBRACE; }
 ";"         { return SEMICOLON; }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"if"        { return IF; }
-"else"      { return ELSE; }
-"switch"    { return SWITCH; }
-"int"       { return INT; }
-"float"     { return FLOAT; }
-"char"      { return CHAR; }
 
 %%
 
