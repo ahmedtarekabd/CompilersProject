@@ -39,7 +39,33 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     INTEGER = 258
+     POW = 258,
+     NOT = 259,
+     OR = 260,
+     AND = 261,
+     EQ = 262,
+     NE = 263,
+     LT = 264,
+     LE = 265,
+     GT = 266,
+     GE = 267,
+     ASSIGN = 268,
+     LPAREN = 269,
+     RPAREN = 270,
+     LBRACE = 271,
+     RBRACE = 272,
+     SEMICOLON = 273,
+     IF = 274,
+     ELSE = 275,
+     SWITCH = 276,
+     INT = 277,
+     FLOAT = 278,
+     CHAR = 279,
+     SUB = 280,
+     ADD = 281,
+     DIV = 282,
+     MUL = 283,
+     INTEGER = 284
    };
 #endif
 
@@ -57,7 +83,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 61 "Parser.tab.h"
+#line 87 "Parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
