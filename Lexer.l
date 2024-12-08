@@ -9,52 +9,101 @@
 
 
 %%
+"for"       { return FOR; }
+"while"     { return WHILE; }
+"repeat"    { return REPEAT; }
+"until"     { return UNTIL; }
+"switch"    { return SWITCH; }
+"case"      { return CASE; }
+"default"   { return DEFAULT; }
+"break"     { return BREAK; }
 "if"        { return IF; }
 "else"      { return ELSE; }
+
+(void|int|float|char)[ \t]+[a-zA-Z_][a-zA-Z0-9_]*([ \t]*)?\(((int|float|char)[ \t]+[a-zA-Z_][a-zA-Z0-9_]*([ \t]*)?)*)
+{
+    
+}
+
 [0-9]+\.[0-9]+  { yylval.f = atof(yytext); printf("Float: %f\n", yylval.f); return FLOAT; }
 [0-9]+      { yylval.i = atoi(yytext); return INTEGER; }
 [ \t\n]     { /* Ignore whitespace */ }
 [a-zA-Z_][a-zA-Z0-9_]* { yylval.s = strdup(yytext); return ID; }  // Adjusted identifier rule
 
-int[ \t]+[a-zA-Z_][a-zA-Z0-9_]*([ \t]*)? {
-    char *token = strdup(yytext + 3); // Skip "int"
+const[ \t]+(int|float|char)[ \t]+[a-zA-Z_][a-zA-Z0-9_]*([ \t]*)? {
+    char *token = strdup(yytext + 5); // Skip "const"
     while (*token == ' ' || *token == '\t') token++; // Skip leading spaces
 
-    char *var_name = strtok(token, " ");
-    char *value = strtok(NULL, " ");
-    yylval.s = var_name;
-    if(put_var(var_name, TYPE_INT))
-    {   
-        if (value != NULL) {
-            printf("Variable %s initialized to %d\n", var_name, atoi(value));
-        } else {
-            printf("Variable %s declared with default value 0\n", var_name);
-        }
-    }
-    return ID;
-    // else
-    // {
-    //     printf("heereeee");
-    //     yyerror(strcat("Variable already declared: ",var_name));
-    // }
-}
-
-float[ \t]+[a-zA-Z_][a-zA-Z0-9_]*([ \t]*)? {
-    char *token = strdup(yytext + 5); // Skip "float"
-    while (*token == ' ' || *token == '\t') token++; // Skip leading spaces
-
-    char *var_name = strtok(token, " ");
-    char *value = strtok(NULL, " ");
-    yylval.s = var_name;
-    put_var(var_name, TYPE_FLOAT);
-
-    if (value != NULL) {
-        printf("Variable %s initialized to %f\n", var_name, atof(value));
+    // Extract data type
+    char *data_type = strtok(token, " ");
+    DataType type;
+    if (strcmp(data_type, "int") == 0) {
+        type = TYPE_CONST_INT;
+    } else if (strcmp(data_type, "float") == 0) {
+        type = TYPE_CONST_FLOAT;
+    } else if (strcmp(data_type, "char") == 0) {
+        type = TYPE_CONST_CHAR;
     } else {
-        printf("Variable %s declared with default value 0.0\n", var_name);
+        printf("Error: Unknown data type '%s'.\n", data_type);
+        return ERROR;
     }
+
+    // Extract variable name
+    char *var_name = strtok(NULL, " ");
+    if (var_name == NULL) {
+        printf("Error: Missing variable name.\n");
+        return ERROR;
+    }
+
+    yylval.s = var_name;
+    // Validate and add to symbol table
+    if (put_var(var_name, type)) {
+        printf("Constant %s of type %s declared.\n", var_name, data_type);
+    }
+
+
     return ID;
 }
+
+
+(int|float|char)[ \t]+[a-zA-Z_][a-zA-Z0-9_]*([ \t]*)? {
+    char *token = strdup(yytext); // Copy the entire matched string
+
+    // Extract data type
+    char *data_type = strtok(token, " ");
+    DataType type;
+    if (strcmp(data_type, "int") == 0) {
+        type = TYPE_INT;
+    } else if (strcmp(data_type, "float") == 0) {
+        type = TYPE_FLOAT;
+    } else if (strcmp(data_type, "char") == 0) {
+        type = TYPE_CHAR;
+    } else {
+        fprintf(stderr, "Error: Unknown data type '%s'.\n", data_type);
+        free(token);
+        return ERROR; // Return an error token for invalid data types
+    }
+
+    // Extract variable name
+    char *var_name = strtok(NULL, " ");
+    if (var_name == NULL) {
+        fprintf(stderr, "Error: Missing variable name after type '%s'.\n", data_type);
+        free(token);
+        return ERROR; // Return an error token for missing variable names
+    }
+
+    yylval.s = var_name;
+
+    if (put_var(var_name, type)) {
+        printf("Variable %s of type %s declared.\n", var_name, data_type);
+    } else {
+        fprintf(stderr, "Error: Variable %s could not be added to the symbol table.\n", var_name);
+    }
+
+    return ID; // Return a valid identifier token
+}
+
+
 
 "+"         { return ADD; }
 "-"         { return SUB; }
@@ -78,7 +127,7 @@ float[ \t]+[a-zA-Z_][a-zA-Z0-9_]*([ \t]*)? {
 "{"         { return LBRACE; }
 "}"         { return RBRACE; }
 ";"         { return SEMICOLON; }
-
+":"         { return COLON; }
 
 
 

@@ -10,6 +10,9 @@ typedef enum {
     TYPE_INT,
     TYPE_FLOAT,
     TYPE_CHAR,
+    TYPE_CONST_INT,
+    TYPE_CONST_FLOAT,
+    TYPE_CONST_CHAR,
     TYPE_UNKNOWN
 } DataType;
 
@@ -17,11 +20,13 @@ typedef enum {
 typedef struct {
     char name[100];
     DataType type;
+    //bool is_function;
     union {
         int i_val;
         float f_val;
         char c_val;
     } value;
+    bool is_initialized;
 } SymbolTableEntry;
 
 #define MAX_VARS 100

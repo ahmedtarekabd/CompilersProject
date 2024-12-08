@@ -16,9 +16,12 @@
     char *s;  
 }
 
-%token POW NOT OR AND EQ NE LT LE GT GE ASSIGN LPAREN RPAREN LBRACE RBRACE SEMICOLON
-%token IF ELSE SWITCH
+%token POW NOT OR AND EQ NE LT LE GT GE ASSIGN LPAREN RPAREN LBRACE RBRACE SEMICOLON COLON
+%token FOR WHILE REPEAT UNTIL
+%token IF ELSE SWITCH CASE BREAK DEFAULT
 %token SUB ADD DIV MUL
+%token ERROR
+
 %token <i> INTEGER
 %token <f> FLOAT
 %token <c> CHAR
@@ -28,7 +31,7 @@
 %type <i> LOGICAL_EXP REL_EXP
 %type <f> EXP TERM FACTOR
 %type <i> STMT STMTS ASSIGNMENT
-%type <i> MATCHED_IF UNMATCHED_IF
+%type <i> MATCHED_IF UNMATCHED_IF FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP SWITCH_CASE CASES CASE_BLOCK
 
 %%
 
@@ -36,17 +39,86 @@
 
 STMTS : STMTS STMT  { /* Handle multiple statements */ }
       | STMT        { /* Handle a single statement */ }
+      | ERROR       { fprintf(stderr, "Syntax error: Skipping invalid statement.\n"); yyerrok; }
       ;
 
 STMT: MATCHED_IF                    
-    | UNMATCHED_IF                  
+    | UNMATCHED_IF  
+    | SWITCH_CASE 
+    | FOR_LOOP    
+    | WHILE_LOOP        
+    | REPEAT_UNTIL_LOOP   
     | ASSIGNMENT SEMICOLON          
     | LOGICAL_EXP SEMICOLON         { printf("%d\n", $1); }
     ;
+SWITCH_CASE: SWITCH LPAREN ID RPAREN LBRACE CASES CASE_DEFAULT RBRACE
+    {
+        printf("Switch case\n");
+        printf("Switch value: %f\n", $3);
+        // switch ($3) {
+        //     $6;
+        //     default:
+        //         $9;
+        //         break;
+        // }
+    }
+;
+CASE_DEFAULT: DEFAULT COLON STMTS BREAK SEMICOLON
+    {
+        printf("Default case\n");
+        // default:
+        //     $4;
+        //     break;
+    }
+    | 
+    ;
+CASES: CASES CASE_BLOCK
+     | CASE_BLOCK
+;
 
+CASE_BLOCK: CASE INTEGER COLON CASE_STMTS BREAK SEMICOLON
+    {
+        printf("Case %d\n", $2);
+        // case $2:
+        //     $4;
+        //     break;
+    }
+
+;
+CASE_STMTS: STMTS
+          | 
+          ;
+
+
+FOR_LOOP: FOR LPAREN ASSIGNMENT SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT RPAREN LBRACE STMTS RBRACE
+    {
+        for ($3; $5; $7) {
+            printf("For loop\n");
+            $10;  
+        }
+    }
+;
+WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE STMTS RBRACE
+    {
+        while ($3) {
+            printf("While loop\n");
+            $6;  
+        }
+    }
+
+;
+REPEAT_UNTIL_LOOP: REPEAT LBRACE STMTS RBRACE UNTIL LPAREN LOGICAL_EXP RPAREN SEMICOLON
+    {
+        do {
+            printf("Repeat until loop\n");
+            $3;  
+        } while (!$7);
+    }
+;
 MATCHED_IF: 
     IF LPAREN LOGICAL_EXP RPAREN LBRACE MATCHED_IF RBRACE ELSE LBRACE MATCHED_IF RBRACE
     {
+
         printf("matched 1");
         if ($3) {
             $$ = $6;  // Execute the first `if` branch
@@ -91,8 +163,8 @@ UNMATCHED_IF:
 ASSIGNMENT : ID ASSIGN EXP 
     { 
         // Assign the value of EXP to the variable ID
+
         assign_var($1, $3); 
-        printf("%s = %f\n", $1, $3); // For debugging
     }             
 ;
 
@@ -133,7 +205,7 @@ FACTOR : LPAREN LOGICAL_EXP RPAREN { $$ = $2; }
        | INTEGER             { $$ = $1; }
        | FLOAT               { $$ = $1; }
        | CHAR                { $$ = $1; }
-       | ID                  { $$ = get_var_value($1); } /* Retrieve the variable value */
+       | ID                  { $$ = get_var_value($1); printf("ID %s\n", $1); }
        ;
 
 %% 

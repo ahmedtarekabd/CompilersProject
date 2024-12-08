@@ -55,17 +55,26 @@
      LBRACE = 271,
      RBRACE = 272,
      SEMICOLON = 273,
-     IF = 274,
-     ELSE = 275,
-     SWITCH = 276,
-     SUB = 277,
-     ADD = 278,
-     DIV = 279,
-     MUL = 280,
-     INTEGER = 281,
-     FLOAT = 282,
-     CHAR = 283,
-     ID = 284
+     COLON = 274,
+     FOR = 275,
+     WHILE = 276,
+     REPEAT = 277,
+     UNTIL = 278,
+     IF = 279,
+     ELSE = 280,
+     SWITCH = 281,
+     CASE = 282,
+     BREAK = 283,
+     DEFAULT = 284,
+     SUB = 285,
+     ADD = 286,
+     DIV = 287,
+     MUL = 288,
+     ERROR = 289,
+     INTEGER = 290,
+     FLOAT = 291,
+     CHAR = 292,
+     ID = 293
    };
 #endif
 
@@ -76,7 +85,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 13 "Parser.y"
+#line 12 "Parser.y"
 
     int i;
     char c;
@@ -86,7 +95,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 90 "Parser.tab.h"
+#line 99 "Parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
