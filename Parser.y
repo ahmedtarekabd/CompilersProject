@@ -20,7 +20,10 @@
 %token FOR WHILE REPEAT UNTIL
 %token IF ELSE SWITCH CASE BREAK DEFAULT
 %token SUB ADD DIV MUL
+%token INT_TYPE FLOAT_TYPE CHAR_TYPE VOID_TYPE
+%token RETURN COMMA 
 %token ERROR
+
 
 %token <i> INTEGER
 %token <f> FLOAT
@@ -29,9 +32,11 @@
 
 // %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS
 %type <i> LOGICAL_EXP REL_EXP
-%type <f> EXP TERM FACTOR
+%type <f> EXP TERM FACTOR FUNCTION_STMTS
 %type <i> STMT STMTS ASSIGNMENT
 %type <i> MATCHED_IF UNMATCHED_IF FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP SWITCH_CASE CASES CASE_BLOCK
+%type <i> FUNCTION_DECL FUNCTION_BODY  PARAMS PARAM
+%type <s> PARAM_TYPE RETURN_TYPE
 
 %%
 
@@ -40,7 +45,14 @@
 STMTS : STMTS STMT  { /* Handle multiple statements */ }
       | STMT        { /* Handle a single statement */ }
       | ERROR       { fprintf(stderr, "Syntax error: Skipping invalid statement.\n"); yyerrok; }
+      | BLOCK
       ;
+      
+BLOCK: LBRACE STMTS RBRACE
+    {
+        printf("Block parsed\n");
+    }
+    ;
 
 STMT: MATCHED_IF                    
     | UNMATCHED_IF  
@@ -48,9 +60,56 @@ STMT: MATCHED_IF
     | FOR_LOOP    
     | WHILE_LOOP        
     | REPEAT_UNTIL_LOOP   
+    | FUNCTION_DECL SEMICOLON
+    | FUNCTION_DECL FUNCTION_BODY
     | ASSIGNMENT SEMICOLON          
     | LOGICAL_EXP SEMICOLON         { printf("%d\n", $1); }
     ;
+
+FUNCTION_DECL: RETURN_TYPE ID LPAREN PARAMS RPAREN
+    {
+        printf("Function declaration\n");
+        // Declare a function with the given return type, name, and parameters
+        // declare_function($1, $2, $4);
+    }
+;
+
+FUNCTION_BODY: LBRACE FUNCTION_STMTS RBRACE
+    {
+        printf("Function body parsed\n");
+    }
+    ;
+
+FUNCTION_STMTS: STMTS RETURN EXP SEMICOLON
+              | RETURN EXP SEMICOLON
+              | RETURN SEMICOLON
+              ;
+
+
+PARAMS: PARAMS COMMA PARAM
+      | PARAM
+      | 
+      ;
+
+PARAM: PARAM_TYPE ID
+    {
+        printf("Parameter: Type: %s, Name: %s\n", $1, $2);
+        // TODO: 
+        // $$ = add_parameter($1, $2); // Add parameter to list
+    }
+    ;
+
+PARAM_TYPE: INT_TYPE
+          | FLOAT_TYPE
+          | CHAR_TYPE
+          ;
+
+RETURN_TYPE: VOID_TYPE      
+           | INT_TYPE       
+           | FLOAT_TYPE     
+           | CHAR_TYPE      
+           ;
+
 SWITCH_CASE: SWITCH LPAREN ID RPAREN LBRACE CASES CASE_DEFAULT RBRACE
     {
         printf("Switch case\n");

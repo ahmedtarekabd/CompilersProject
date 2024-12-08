@@ -17,13 +17,17 @@
 "case"      { return CASE; }
 "default"   { return DEFAULT; }
 "break"     { return BREAK; }
+"return"    { return RETURN; }
 "if"        { return IF; }
 "else"      { return ELSE; }
 
-(void|int|float|char)[ \t]+[a-zA-Z_][a-zA-Z0-9_]*([ \t]*)?\(((int|float|char)[ \t]+[a-zA-Z_][a-zA-Z0-9_]*([ \t]*)?)*)
-{
-    
-}
+"void"      { return VOID_TYPE; }
+"int"       { return INT_TYPE; }
+"float"     { return FLOAT_TYPE; }
+"char"      { return CHAR_TYPE; }
+
+
+
 
 [0-9]+\.[0-9]+  { yylval.f = atof(yytext); printf("Float: %f\n", yylval.f); return FLOAT; }
 [0-9]+      { yylval.i = atoi(yytext); return INTEGER; }
@@ -128,6 +132,7 @@ const[ \t]+(int|float|char)[ \t]+[a-zA-Z_][a-zA-Z0-9_]*([ \t]*)? {
 "}"         { return RBRACE; }
 ";"         { return SEMICOLON; }
 ":"         { return COLON; }
+","         { return COMMA; }
 
 
 

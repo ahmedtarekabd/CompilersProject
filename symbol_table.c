@@ -39,6 +39,72 @@ bool put_var(char *var_name, DataType type) {
     return true;
 }
 
+bool put_function(char *func_name, DataType return_type, DataType *param_types, int param_count) {
+    if (var_count >= MAX_VARS) {
+        printf("Error: Symbol table is full, cannot add function %s\n", func_name);
+        return false;
+    }
+
+    for (int i = 0; i < var_count; i++) {
+        if (strcmp(symbol_table[i].name, func_name) == 0) {
+            printf("Error: Function or variable already exists with name %s\n", func_name);
+            return false;
+        }
+    }
+
+    // Add the function to the symbol table
+    strcpy(symbol_table[var_count].name, func_name);
+    symbol_table[var_count].type = return_type;
+    symbol_table[var_count].is_function = true;
+    symbol_table[var_count].func_info.param_count = param_count;
+
+    // Copy parameter types
+    for (int i = 0; i < param_count; i++) {
+        symbol_table[var_count].func_info.param_types[i] = param_types[i];
+    }
+
+    printf("Added function %s to symbol table with return type %d\n", func_name, return_type);
+    var_count++;
+    return true;
+}
+
+DataType get_func_type(char *name, bool *is_function) {
+    for (int i = 0; i < var_count; i++) {
+        if (strcmp(symbol_table[i].name, name) == 0) {
+            *is_function = symbol_table[i].is_function;
+            return symbol_table[i].type;
+        }
+    }
+    return TYPE_UNKNOWN;
+}
+
+bool call_function(char *func_name, DataType *arg_types, int arg_count) {
+    for (int i = 0; i < var_count; i++) {
+        if (symbol_table[i].is_function && strcmp(symbol_table[i].name, func_name) == 0) {
+            if (symbol_table[i].func_info.param_count != arg_count) {
+                printf("Error: Function %s expects %d arguments but got %d\n",
+                       func_name, symbol_table[i].func_info.param_count, arg_count);
+                return false;
+            }
+
+            for (int j = 0; j < arg_count; j++) {
+                if (symbol_table[i].func_info.param_types[j] != arg_types[j]) {
+                    printf("Error: Parameter %d of function %s expects type %d but got %d\n",
+                           j + 1, func_name, symbol_table[i].func_info.param_types[j], arg_types[j]);
+                    return false;
+                }
+            }
+
+            printf("Function %s called successfully.\n", func_name);
+            return true;
+        }
+    }
+
+    printf("Error: Function %s not found in symbol table.\n", func_name);
+    return false;
+}
+
+
 DataType get_var_type(char *var_name) {
     for (int i = 0; i < var_count; i++) {
         if (strcmp(symbol_table[i].name, var_name) == 0) {

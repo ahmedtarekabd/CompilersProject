@@ -1,9 +1,1 @@
-int x=5;
-switch(x){
-   case 5:
-   x=x+1;
-   break;
-   default:
-   x=0;
-   break;
-}
+int sum(int x);

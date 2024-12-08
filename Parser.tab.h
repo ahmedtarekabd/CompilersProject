@@ -70,11 +70,17 @@
      ADD = 286,
      DIV = 287,
      MUL = 288,
-     ERROR = 289,
-     INTEGER = 290,
-     FLOAT = 291,
-     CHAR = 292,
-     ID = 293
+     INT_TYPE = 289,
+     FLOAT_TYPE = 290,
+     CHAR_TYPE = 291,
+     VOID_TYPE = 292,
+     RETURN = 293,
+     COMMA = 294,
+     ERROR = 295,
+     INTEGER = 296,
+     FLOAT = 297,
+     CHAR = 298,
+     ID = 299
    };
 #endif
 
@@ -95,7 +101,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 99 "Parser.tab.h"
+#line 105 "Parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

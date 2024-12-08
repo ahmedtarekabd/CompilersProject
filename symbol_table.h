@@ -20,12 +20,19 @@ typedef enum {
 typedef struct {
     char name[100];
     DataType type;
-    //bool is_function;
-    union {
-        int i_val;
-        float f_val;
-        char c_val;
-    } value;
+    bool is_function;
+     union {
+        struct {               // For variables
+            int i_val;
+            float f_val;
+            char c_val;
+        } value;
+
+        struct {               // For functions
+            DataType param_types[10]; // Types of the function's parameters
+            int param_count;          // Number of parameters
+        } func_info;
+    };
     bool is_initialized;
 } SymbolTableEntry;
 
@@ -40,5 +47,9 @@ bool put_var(char *var_name, DataType type);
 
 // Function to assign a value to a variable
 void assign_var(char *var_name, float value);
+
+bool put_function(char *func_name, DataType return_type, DataType *param_types, int param_count);
+
+bool call_function(char *func_name, DataType *arg_types, int arg_count);
 
 #endif // SYMBOL_TABLE_H
