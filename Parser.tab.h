@@ -74,13 +74,14 @@
      FLOAT_TYPE = 290,
      CHAR_TYPE = 291,
      VOID_TYPE = 292,
-     RETURN = 293,
-     COMMA = 294,
-     ERROR = 295,
-     INTEGER = 296,
-     FLOAT = 297,
-     CHAR = 298,
-     ID = 299
+     CONST = 293,
+     RETURN = 294,
+     COMMA = 295,
+     ERROR = 296,
+     INTEGER = 297,
+     FLOAT = 298,
+     CHAR = 299,
+     ID = 300
    };
 #endif
 
@@ -91,7 +92,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 12 "Parser.y"
+#line 13 "Parser.y"
 
     int i;
     char c;
@@ -101,7 +102,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 105 "Parser.tab.h"
+#line 106 "Parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

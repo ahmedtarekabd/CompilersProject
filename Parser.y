@@ -2,6 +2,7 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
+    #include <math.h>
     #include "symbol_table.h"  // Include the symbol table header
 
     void yyerror(const char *s);
@@ -20,7 +21,7 @@
 %token FOR WHILE REPEAT UNTIL
 %token IF ELSE SWITCH CASE BREAK DEFAULT
 %token SUB ADD DIV MUL
-%token INT_TYPE FLOAT_TYPE CHAR_TYPE VOID_TYPE
+%token INT_TYPE FLOAT_TYPE CHAR_TYPE VOID_TYPE CONST
 %token RETURN COMMA 
 %token ERROR
 
@@ -30,13 +31,15 @@
 %token <c> CHAR
 %token <s> ID
 
-// %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS
+// %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS 
 %type <i> LOGICAL_EXP REL_EXP
-%type <f> EXP TERM FACTOR FUNCTION_STMTS
-%type <i> STMT STMTS ASSIGNMENT
+%type <f> EXP TERM FACTOR POWER//FUNCTION_STMTS
+%type <i> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION
 %type <i> MATCHED_IF UNMATCHED_IF FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP SWITCH_CASE CASES CASE_BLOCK
-%type <i> FUNCTION_DECL FUNCTION_BODY  PARAMS PARAM
-%type <s> PARAM_TYPE RETURN_TYPE
+// %type <i> FUNCTION_DECL FUNCTION_BODY  PARAMS PARAM
+%type <s> PARAM_TYPE //RETURN_TYPE
+
+
 
 %%
 
@@ -45,14 +48,20 @@
 STMTS : STMTS STMT  { /* Handle multiple statements */ }
       | STMT        { /* Handle a single statement */ }
       | ERROR       { fprintf(stderr, "Syntax error: Skipping invalid statement.\n"); yyerrok; }
-      | BLOCK
       ;
       
-BLOCK: LBRACE STMTS RBRACE
-    {
-        printf("Block parsed\n");
-    }
-    ;
+BLOCK : LBRACE {
+           enterScope();  // Enter a new scope
+       }
+       STMTS RBRACE {
+           exitScope();   // Exit the current scope
+       }
+       {
+           printf("Block parsed\n");
+       }
+
+       ;
+
 
 STMT: MATCHED_IF                    
     | UNMATCHED_IF  
@@ -60,55 +69,79 @@ STMT: MATCHED_IF
     | FOR_LOOP    
     | WHILE_LOOP        
     | REPEAT_UNTIL_LOOP   
-    | FUNCTION_DECL SEMICOLON
-    | FUNCTION_DECL FUNCTION_BODY
-    | ASSIGNMENT SEMICOLON          
+    // | FUNCTION_DECL SEMICOLON
+    // | FUNCTION_DECL FUNCTION_BODY
+    | BLOCK
+    | DECLARATION 
+    | CONST_DECLARATION 
+    | ASSIGNMENT           
     | LOGICAL_EXP SEMICOLON         { printf("%d\n", $1); }
     ;
 
-FUNCTION_DECL: RETURN_TYPE ID LPAREN PARAMS RPAREN
-    {
-        printf("Function declaration\n");
-        // Declare a function with the given return type, name, and parameters
-        // declare_function($1, $2, $4);
-    }
-;
+DECLARATION: PARAM_TYPE ID SEMICOLON {
+                if (lookupSymbol($2) && isSymbolDeclaredInCurrentScope($2)) {
+                    yyerror("Variable already declared in this scope");
+                } else {
+                    addSymbol($2, $1, false);  // Add variable to current scope
+                }
+            }
+            ;
 
-FUNCTION_BODY: LBRACE FUNCTION_STMTS RBRACE
-    {
-        printf("Function body parsed\n");
-    }
-    ;
+CONST_DECLARATION: CONST PARAM_TYPE ID SEMICOLON {
+                if (lookupSymbol($3) && isSymbolDeclaredInCurrentScope($3)) {
+                    yyerror("Variable already declared in this scope");
+                } else {
+                    addSymbol($3, $2, true);  // Add variable to current scope
+                }
+            }
+            ;
 
-FUNCTION_STMTS: STMTS RETURN EXP SEMICOLON
-              | RETURN EXP SEMICOLON
-              | RETURN SEMICOLON
-              ;
+// FUNCTION_DECL: DECLARATION LPAREN PARAMS RPAREN
+//     {
+//         printf("Function declaration\n");
+//         // Declare a function with the given return type, name, and parameters
+//         // declare_function($1, $2, $4);
+//     }
+// ;
+
+// FUNCTION_BODY: LBRACE FUNCTION_STMTS RBRACE
+//     {
+//         printf("Function body parsed\n");
+//     }
+//     ;
+
+// FUNCTION_STMTS: STMTS RETURN EXP SEMICOLON  
+//               | RETURN EXP SEMICOLON
+//               | RETURN SEMICOLON
+//               ;
 
 
-PARAMS: PARAMS COMMA PARAM
-      | PARAM
-      | 
-      ;
+// PARAMS: PARAMS COMMA PARAM
+//       | PARAM
+//       | { $$ = 0; }
+//       ;
 
-PARAM: PARAM_TYPE ID
-    {
-        printf("Parameter: Type: %s, Name: %s\n", $1, $2);
-        // TODO: 
-        // $$ = add_parameter($1, $2); // Add parameter to list
-    }
-    ;
+// PARAM : PARAM_TYPE ID {
+//             printf("Parameter %s of type %s\n", $2, $1);
+//             if (lookupSymbol($2)) {
+//                 yyerror("Variable already declared in this scope");
+//             } else {
+//                 printf("Parameter %s of type %s\n", $2, $1);
+//                 addSymbol($2, $1);  // Add variable to current scope
+//             }
+//             // $$ = $2;
+//         }
+//         ;
 
-PARAM_TYPE: INT_TYPE
-          | FLOAT_TYPE
-          | CHAR_TYPE
+
+PARAM_TYPE: INT_TYPE        { $$ = "int"; }
+          | FLOAT_TYPE      { $$ = "float"; }
+          | CHAR_TYPE       { $$ = "char"; }
           ;
 
-RETURN_TYPE: VOID_TYPE      
-           | INT_TYPE       
-           | FLOAT_TYPE     
-           | CHAR_TYPE      
-           ;
+// RETURN_TYPE: VOID_TYPE      
+//            | PARAM_TYPE     
+//            ;
 
 SWITCH_CASE: SWITCH LPAREN ID RPAREN LBRACE CASES CASE_DEFAULT RBRACE
     {
@@ -206,7 +239,10 @@ UNMATCHED_IF:
             printf("If statement executed\n");
         }
     }
-  | IF LPAREN LOGICAL_EXP RPAREN LBRACE MATCHED_IF RBRACE ELSE LBRACE UNMATCHED_IF RBRACE
+  | IF LPAREN LOGICAL_EXP RPAREN LBRACE {enterScope()} 
+    MATCHED_IF RBRACE {exitScope()}
+    ELSE LBRACE {enterScope()}
+    UNMATCHED_IF RBRACE {exitScope()}
     {
         printf("unmatched 2");
         if ($3) {
@@ -219,12 +255,13 @@ UNMATCHED_IF:
     }
 ;
 
-ASSIGNMENT : ID ASSIGN EXP 
+ASSIGNMENT : ID ASSIGN EXP SEMICOLON
     { 
         // Assign the value of EXP to the variable ID
 
-        assign_var($1, $3); 
-    }             
+        // assign_var($1, $3); 
+        updateSymbolValue($1, $3);
+    }            
 ;
 
 LOGICAL_EXP : REL_EXP OR LOGICAL_EXP   { $$ = $1 || $3; }
@@ -246,8 +283,8 @@ EXP : EXP ADD TERM           { $$ = $1 + $3; printf("ADD %f %f\n", $1, $3); }
     | TERM                   { $$ = $1; }
     ;
 
-TERM : TERM MUL FACTOR       { $$ = $1 * $3; }
-     | TERM DIV FACTOR       { 
+TERM : TERM MUL POWER       { $$ = $1 * $3; }
+     | TERM DIV POWER       { 
          if ($3 == 0) { 
              yyerror("Division by zero"); 
              exit(1); 
@@ -255,17 +292,61 @@ TERM : TERM MUL FACTOR       { $$ = $1 * $3; }
              $$ = $1 / $3; 
          }
      }
-     | FACTOR                { $$ = $1; }
+      
+     | POWER                { $$ = $1; }
      ;
 
-FACTOR : LPAREN LOGICAL_EXP RPAREN { $$ = $2; }
-       | SUB FACTOR          { $$ = -$2; }
-       | NOT FACTOR          { $$ = !$2; }
-       | INTEGER             { $$ = $1; }
-       | FLOAT               { $$ = $1; }
-       | CHAR                { $$ = $1; }
-       | ID                  { $$ = get_var_value($1); printf("ID %s\n", $1); }
+POWER : FACTOR POW POWER    { $$ = pow($1, $3); }
+      | FACTOR              { $$ = $1; }
+      ;
+
+FACTOR : LPAREN LOGICAL_EXP RPAREN 
+        { 
+            $$ = $2; 
+            printf("Logical expression evaluated.\n"); 
+        }
+       | SUB FACTOR          
+        { 
+            $$ = -$2; 
+            printf("Negation applied: %f\n", $$); 
+        }
+       | NOT FACTOR          
+        { 
+            $$ = !$2; 
+            printf("Logical NOT applied: %d\n", $$); 
+        }
+       | INTEGER             
+        { 
+            $$ = $1; 
+            printf("Integer constant: %d\n", $1); 
+        }
+       | FLOAT               
+        { 
+            $$ = $1; 
+            printf("Float constant: %f\n", $1); 
+        }
+       | CHAR                
+        { 
+            $$ = $1; 
+            printf("Character constant: '%c'\n", $1); 
+        }
+       | ID                  
+        { 
+            // Look up the variable in the symbol table
+            SymbolTableEntry *entry = lookupSymbol($1);
+            if (!entry) {
+                yyerror("Variable not declared in any scope");
+            } else {
+                if (!entry->isInitialized) {
+                    yyerror("Variable used before initialization");
+                }
+                entry->isUsed = 1;  // Mark the variable as used
+                $$ = lookupSymbol($1)->value;  // Retrieve its runtime value
+                printf("Variable '%s' of type '%s' used. Value: %f\n", $1, entry->type, $$);
+            }
+        }
        ;
+
 
 %% 
 
