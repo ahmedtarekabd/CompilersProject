@@ -72,7 +72,7 @@ int updateSymbolValue(char *name, float value) {
         printf("Error: Symbol '%s' not found.\n", name);
         return 0;  // Symbol not found
     }
-    printf("/////// is init %d\n", entry->isInitialized);
+    // printf("/////// is init %d\n", entry->isInitialized);
     if (entry->isConst && entry->isInitialized) {
         printf("Error: Cannot update value of constant symbol '%s'.\n", name);
         return 0;  // Cannot update value of constant symbol

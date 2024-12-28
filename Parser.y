@@ -271,11 +271,9 @@ ASSIGNMENT : ID ASSIGN LOGICAL_EXP SEMICOLON
         if (!entry) {
             yyerror("Variable not declared in any scope");
         } else {
-            if (!entry->isInitialized) {
-                SymbolTableEntry *temp = addQuadruple("ASSIGN", entry, $3);
-                updateSymbolValue($1, ($3)->value);
-                entry->isInitialized = 1;  // Mark the variable as initialized
-            }
+            SymbolTableEntry *temp = addQuadruple("ASSIGN", entry, $3);
+            updateSymbolValue($1, ($3)->value);
+            entry->isInitialized = 1;  // Mark the variable as initialized
         }
         $$ = $3;
     }            
