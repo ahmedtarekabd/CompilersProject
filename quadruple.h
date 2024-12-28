@@ -14,6 +14,10 @@ typedef struct {
     char result[50];    // The result of the operation
 } Quadruple;
 
+typedef struct {
+    char *loopLabel;
+    char *exitLabel;
+} Labels;
 // Max number of quadruples
 #define MAX_QUADRUPLES 1000
 
@@ -25,5 +29,7 @@ extern int tempCounter;
 char *newTemp();
 SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, SymbolTableEntry *operand2);
 void printQuadruples();
-
+void addQuadrupleLabel(SymbolTableEntry *condition , char * loopLabel , char* exitLabel, bool beforeSomeCode);
+void writeQuadrupleToFile(int i) ;
+void writeCommandToFile(char *command) ;
 #endif // QUADRUPLE_H

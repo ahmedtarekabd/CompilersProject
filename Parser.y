@@ -9,6 +9,7 @@
     void yyerror(const char *s);
     int yylex(void);
     extern FILE *yyin;
+    Labels *labels ;
 %}
 
 %union {
@@ -37,7 +38,7 @@
 // %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS 
 %type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP
 %type <symbolTableEntry> EXP TERM FACTOR POWER//FUNCTION_STMTS
-%type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION
+%type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION ASSIGNMENT_FORLOOP
 // %type <i> MATCHED_IF UNMATCHED_IF 
 // %type <symbolTableEntry> FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP SWITCH_CASE CASES CASE_BLOCK
 // %type <i> FUNCTION_DECL FUNCTION_BODY  PARAMS PARAM
@@ -188,39 +189,60 @@ PARAM_TYPE: INT_TYPE        { $$ = "int"; }
 //           | 
 //           ;
 
+/*
+if  i>=6 goto label2
+label1: 
+some code
+if (i<6) goto label1
+label2:
+*/
+/*
 
-FOR_LOOP:
-    FOR LPAREN ASSIGNMENT SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT RPAREN 
+
+FOR_LOOP: FOR LPAREN ASSIGNMENT SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT RPAREN 
+    LBRACE
         {
             // Start a new scope for the loop
-            enterScope();
-
-            // Generate the label for the condition check
-            char *conditionLabel = newLabel();
-            printf("%s:\n", conditionLabel);
-
-            // Generate the logical expression (condition) quadruple
+            symbolTable.enterScope();
             SymbolTableEntry *condition = $5; // Assuming LOGICAL_EXP returns a SymbolTableEntry*
-
-            // Generate the label to exit the loop
-            char *exitLabel = newLabel();
-
-            // Add a quadruple to check the condition and branch to the exit label if false
-            addQuadruple("IF_FALSE", condition, NULL, exitLabel);
+            LoopLabels *labels = (LoopLabels *)malloc(sizeof(LoopLabels));
+            labels->loopLabel = newLabel();
+            labels->exitLabel = newLabel();
+            addQuadrupleLabel(condition, labels->loopLabel, labels->exitLabel, true);
+            $$ = labels;
         }
         STMTS 
+        RBRACE
         {
-            // Generate the increment statement quadruple (for the third part of the for loop)
-            addQuadruple($7->operat, $7->operand1, $7->operand2);
+            // Use the loopLabel and exitLabel here
+            printf("Loop Label: %s\n", $1->loopLabel);
+            printf("Exit Label: %s\n", $1->exitLabel);
+            free($1);
+            symbolTable.exitScope();
+        }
+    ;
 
-            // Jump back to the condition check
-            addQuadruple("GOTO", NULL, NULL, conditionLabel);
-
-            // Print the exit label
-            char *exitLabel = newLabel();
-            printf("%s:\n", exitLabel);
-
-            // Exit the scope of the loop
+*/
+FOR_LOOP:
+    FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN 
+    LBRACE
+        {
+            // Start a new scope for the loop
+            printf("heeey1\n");
+            enterScope();
+            SymbolTableEntry *condition = $5; // Assuming LOGICAL_EXP returns a SymbolTableEntry*
+            labels = (Labels *)malloc(sizeof(Labels));
+            labels->loopLabel = newLabel();
+            labels->exitLabel = newLabel();
+            addQuadrupleLabel(condition, labels->loopLabel, labels->exitLabel, true);
+            
+        }
+        STMTS 
+        RBRACE
+        {
+            printf("heeey\n");
+            addQuadrupleLabel(NULL, labels->loopLabel, labels->exitLabel, false);
+            free(labels);
             exitScope();
         }
     ;
@@ -308,6 +330,24 @@ ASSIGNMENT : ID ASSIGN LOGICAL_EXP SEMICOLON
         $$ = $3;
     }            
 ;
+
+ASSIGNMENT_FORLOOP : ID ASSIGN LOGICAL_EXP 
+    { 
+        // Assign the value of EXP to the variable ID
+        // assign_var($1, $3); 
+        SymbolTableEntry *entry = lookupSymbol($1);
+        if (!entry) {
+            yyerror("Variable not declared in any scope");
+        } else {
+            SymbolTableEntry *temp = addQuadruple("ASSIGN", entry, $3);
+            updateSymbolValue($1, ($3)->value);
+            entry->isInitialized = 1;  // Mark the variable as initialized
+        }
+        $$ = $3;
+    }            
+;
+
+
 
 LOGICAL_EXP : REL_EXP OR LOGICAL_EXP   { $$ = addQuadruple("OR", $1, $3); }
             | REL_EXP AND LOGICAL_EXP  { $$ = addQuadruple("AND", $1, $3); }

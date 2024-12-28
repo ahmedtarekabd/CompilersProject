@@ -46,7 +46,7 @@ SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, S
 
     strncpy(quadruples[quadIndex].result, result_copy, sizeof(quadruples[quadIndex].result) - 1);
     quadruples[quadIndex].result[sizeof(quadruples[quadIndex].result) - 1] = '\0'; // Null-terminate
-
+    writeQuadrupleToFile(quadIndex);
     quadIndex++;
 
     // Determine the type of the result variable (same as the type of operand1)
@@ -58,8 +58,37 @@ SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, S
     return entry; // Return the symbol table entry for the result
 }
 
+// Function to generate a new label 
+void addQuadrupleLabel(SymbolTableEntry *condition , char * loopLabel , char* exitLabel, bool beforeSomeCode) {
+    // Store quadruple using copied values
+    if (quadIndex >= MAX_QUADRUPLES) {
+        fprintf(stderr, "Quadruple storage overflow!\n");
+        exit(1);
+    }
+    /*
+    label1: 
+    if condition false goto label2
+    some code
+    goto label1
+    label2:
+    */
+    if (beforeSomeCode) { 
+        char * conditionName = condition->name;
+        printf("ana get");
+        char command[256]; // Adjust the size as needed
+        sprintf(command, "%s:\nif %s false goto %s", loopLabel,conditionName, exitLabel);
+        writeCommandToFile(command);
+    }else{
+        char command[256]; // Adjust the size as needed
+        sprintf(command, "goto %s\n%s:", loopLabel,exitLabel);
+        writeCommandToFile(command);
+    }
+    quadIndex++;
+}
+    
 
-// Function to print all generated quadruples
+// Function to print all generated quadruples 
+
 void printQuadruples() {
     printf("Generated Quadruples:\n");
     for (int i = 0; i < quadIndex; i++) {
@@ -70,4 +99,28 @@ void printQuadruples() {
                quadruples[i].operand2[0] ? quadruples[i].operand2 : "NULL", // Handle empty operand2
                quadruples[i].result);
     }
+}
+//function to write one quadruple to a file 
+void writeQuadrupleToFile(int i) {
+    FILE *file = fopen("quadruples.txt", "a");
+    if (file == NULL) {
+        fprintf(stderr, "Error opening file!\n");
+        exit(1);
+    }
+
+    fprintf(file, "%d: (Operator: %s, Operand1: %s, Operand2: %s, Result: %s)\n", 
+            i, 
+            quadruples[i].operat,
+            quadruples[i].operand1[0] ? quadruples[i].operand1 : "NULL", // Handle empty operand1
+            quadruples[i].operand2[0] ? quadruples[i].operand2 : "NULL", // Handle empty operand2
+            quadruples[i].result);
+}
+void writeCommandToFile(char *command) {
+    FILE *file = fopen("quadruples.txt", "a");
+    if (file == NULL) {
+        fprintf(stderr, "Error opening file!\n");
+        exit(1);
+    }
+
+    fprintf(file, "%s\n", command);
 }
