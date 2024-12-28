@@ -37,7 +37,7 @@
 %token <s> ID
 
 // %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS 
-%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP
+%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP WHILE_LOOP
 %type <symbolTableEntry> EXP TERM FACTOR POWER//FUNCTION_STMTS
 %type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION ASSIGNMENT_FORLOOP
 // %type <i> MATCHED_IF UNMATCHED_IF 
@@ -74,13 +74,14 @@ STMT:
 //     | UNMATCHED_IF  
 //     | 
     // SWITCH_CASE 
-    // | WHILE_LOOP        
+    // |       
     // | REPEAT_UNTIL_LOOP   
     // | FUNCTION_DECL SEMICOLON
     // | FUNCTION_DECL FUNCTION_BODY
     // | 
     BLOCK
     | FOR_LOOP    
+    | WHILE_LOOP
     | DECLARATION 
     | CONST_DECLARATION 
     | ASSIGNMENT           
@@ -213,27 +214,45 @@ FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNME
         RBRACE
         {   
             Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
-            printf("jojo\n");
-            printf("inside parse.y\n");
-            printf("labels->loopLabel: %s\n", labels->loopLabel);
-            printf("labels->exitLabel: %s\n", labels->exitLabel);
+           
             addQuadrupleLabel(NULL, labels->loopLabel, labels->exitLabel, false);
             free(labels);
             exitScope();
         }
     ;
 
+/*
+while (i<6) {
+    some code
+}
+---->
+label1:
+if i>=6 goto label2
+some code
+goto label1
+label2:
+*/
 
-
-// WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE STMTS RBRACE
-//     {
-//         while ($3) {
-//             printf("While loop\n");
-//             $6;  
-//         }
-//     }
-
-// ;
+WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE
+   {
+            // Start a new scope for the loop
+            enterScope();
+            SymbolTableEntry *condition = $3; // Assuming LOGICAL_EXP returns a SymbolTableEntry*
+            Labels *labels = (Labels *)malloc(sizeof(Labels));
+            labels->loopLabel = newLabel();
+            labels->exitLabel = newLabel();
+            addQuadrupleLabel(condition, labels->loopLabel, labels->exitLabel, true);
+            pushLabelStack(&labelStack, labels);  // Push labels onto the stack
+        }
+ STMTS RBRACE
+     {   
+            Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
+           
+            addQuadrupleLabel(NULL, labels->loopLabel, labels->exitLabel, false);
+            free(labels);
+            exitScope();
+        }
+;
 // REPEAT_UNTIL_LOOP: REPEAT LBRACE STMTS RBRACE UNTIL LPAREN LOGICAL_EXP RPAREN SEMICOLON
 //     {
 //         do {
