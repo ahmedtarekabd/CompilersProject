@@ -35,7 +35,7 @@
 %token <s> ID
 
 // %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS 
-%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK
+%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP
 %type <symbolTableEntry> EXP TERM FACTOR POWER//FUNCTION_STMTS
 %type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION
 // %type <i> MATCHED_IF UNMATCHED_IF 
@@ -72,13 +72,13 @@ STMT:
 //     | UNMATCHED_IF  
 //     | 
     // SWITCH_CASE 
-    // | FOR_LOOP    
     // | WHILE_LOOP        
     // | REPEAT_UNTIL_LOOP   
     // | FUNCTION_DECL SEMICOLON
     // | FUNCTION_DECL FUNCTION_BODY
     // | 
     BLOCK
+    | FOR_LOOP    
     | DECLARATION 
     | CONST_DECLARATION 
     | ASSIGNMENT           
@@ -189,14 +189,44 @@ PARAM_TYPE: INT_TYPE        { $$ = "int"; }
 //           ;
 
 
-// FOR_LOOP: FOR LPAREN ASSIGNMENT SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT RPAREN LBRACE STMTS RBRACE
-//     {
-//         for ($3; $5; $7) {
-//             printf("For loop\n");
-//             $10;  
-//         }
-//     }
-// ;
+FOR_LOOP:
+    FOR LPAREN ASSIGNMENT SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT RPAREN 
+        {
+            // Start a new scope for the loop
+            enterScope();
+
+            // Generate the label for the condition check
+            char *conditionLabel = newLabel();
+            printf("%s:\n", conditionLabel);
+
+            // Generate the logical expression (condition) quadruple
+            SymbolTableEntry *condition = $5; // Assuming LOGICAL_EXP returns a SymbolTableEntry*
+
+            // Generate the label to exit the loop
+            char *exitLabel = newLabel();
+
+            // Add a quadruple to check the condition and branch to the exit label if false
+            addQuadruple("IF_FALSE", condition, NULL, exitLabel);
+        }
+        STMTS 
+        {
+            // Generate the increment statement quadruple (for the third part of the for loop)
+            addQuadruple($7->operat, $7->operand1, $7->operand2);
+
+            // Jump back to the condition check
+            addQuadruple("GOTO", NULL, NULL, conditionLabel);
+
+            // Print the exit label
+            char *exitLabel = newLabel();
+            printf("%s:\n", exitLabel);
+
+            // Exit the scope of the loop
+            exitScope();
+        }
+    ;
+
+
+
 // WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE STMTS RBRACE
 //     {
 //         while ($3) {
@@ -342,9 +372,7 @@ FACTOR : LPAREN LOGICAL_EXP RPAREN
         }
        | INTEGER             
         { 
-
             $$ = addSymbol($1, "int", false);
-
             printf("Integer constant: %s\n", $1); 
         }
        | FLOAT               

@@ -13,6 +13,16 @@ char *newTemp() {
     printf("Creating new temp: %s\n", tempName);
     return tempName;
 }
+char* newLabel() {
+    static int labelCounter = 0; // Counter to ensure uniqueness
+    char* label = (char*)malloc(20 * sizeof(char)); // Allocate memory for the label
+    if (!label) {
+        fprintf(stderr, "Memory allocation failed for newLabel.\n");
+        exit(1);
+    }
+    snprintf(label, 20, "L%d", labelCounter++); // Create label in the format L0, L1, L2, ...
+    return label;
+}
 
 void enterScope() {
     Scope *newScope = (Scope *)malloc(sizeof(Scope));
