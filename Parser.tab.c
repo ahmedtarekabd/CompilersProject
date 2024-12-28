@@ -76,15 +76,16 @@
     #include <math.h>
     #include "symbol_table.h"  // Include the symbol table header
     #include "quadruple.h"
+    #include "utils/label_stack.h"
 
     void yyerror(const char *s);
     int yylex(void);
     extern FILE *yyin;
-    Labels *labels ;
+    LabelStack *labelStack;
 
 
 /* Line 189 of yacc.c  */
-#line 88 "Parser.tab.c"
+#line 89 "Parser.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -164,7 +165,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 15 "Parser.y"
+#line 16 "Parser.y"
 
     int i;
     char c;
@@ -176,7 +177,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 180 "Parser.tab.c"
+#line 181 "Parser.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -188,7 +189,7 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 192 "Parser.tab.c"
+#line 193 "Parser.tab.c"
 
 #ifdef short
 # undef short
@@ -492,11 +493,11 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    53,    53,    54,    55,    58,    61,    58,    81,    82,
-      83,    84,    85,    86,    89,    98,   145,   146,   147,   229,
-     227,   318,   334,   352,   353,   354,   357,   358,   359,   360,
-     361,   362,   363,   366,   371,   376,   379,   380,   391,   394,
-     395,   398,   403,   408,   413,   418,   423,   428
+       0,    54,    54,    55,    56,    59,    62,    59,    82,    83,
+      84,    85,    86,    87,    90,    99,   146,   147,   148,   202,
+     200,   294,   310,   328,   329,   330,   333,   334,   335,   336,
+     337,   338,   339,   342,   347,   352,   355,   356,   367,   370,
+     371,   374,   379,   384,   389,   394,   399,   404
 };
 #endif
 
@@ -1469,28 +1470,28 @@ yyreduce:
         case 2:
 
 /* Line 1455 of yacc.c  */
-#line 53 "Parser.y"
+#line 54 "Parser.y"
     { /* Handle multiple statements */ ;}
     break;
 
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 54 "Parser.y"
+#line 55 "Parser.y"
     { /* Handle a single statement */ ;}
     break;
 
   case 4:
 
 /* Line 1455 of yacc.c  */
-#line 55 "Parser.y"
+#line 56 "Parser.y"
     { fprintf(stderr, "Syntax error: Skipping invalid statement.\n"); yyerrok; ;}
     break;
 
   case 5:
 
 /* Line 1455 of yacc.c  */
-#line 58 "Parser.y"
+#line 59 "Parser.y"
     {
            enterScope();  // Enter a new scope
        ;}
@@ -1499,7 +1500,7 @@ yyreduce:
   case 6:
 
 /* Line 1455 of yacc.c  */
-#line 61 "Parser.y"
+#line 62 "Parser.y"
     {
            exitScope();   // Exit the current scope
        ;}
@@ -1508,7 +1509,7 @@ yyreduce:
   case 7:
 
 /* Line 1455 of yacc.c  */
-#line 64 "Parser.y"
+#line 65 "Parser.y"
     {
            printf("Block parsed\n");
        ;}
@@ -1517,7 +1518,7 @@ yyreduce:
   case 14:
 
 /* Line 1455 of yacc.c  */
-#line 89 "Parser.y"
+#line 90 "Parser.y"
     {
                 if (lookupSymbol((yyvsp[(2) - (3)].s)) && isSymbolDeclaredInCurrentScope((yyvsp[(2) - (3)].s))) {
                     yyerror("Variable already declared in this scope");
@@ -1530,7 +1531,7 @@ yyreduce:
   case 15:
 
 /* Line 1455 of yacc.c  */
-#line 98 "Parser.y"
+#line 99 "Parser.y"
     {
                 if (lookupSymbol((yyvsp[(3) - (4)].s)) && isSymbolDeclaredInCurrentScope((yyvsp[(3) - (4)].s))) {
                     yyerror("Variable already declared in this scope");
@@ -1543,47 +1544,50 @@ yyreduce:
   case 16:
 
 /* Line 1455 of yacc.c  */
-#line 145 "Parser.y"
+#line 146 "Parser.y"
     { (yyval.Dtype) = "int"; ;}
     break;
 
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 146 "Parser.y"
+#line 147 "Parser.y"
     { (yyval.Dtype) = "float"; ;}
     break;
 
   case 18:
 
 /* Line 1455 of yacc.c  */
-#line 147 "Parser.y"
+#line 148 "Parser.y"
     { (yyval.Dtype) = "char"; ;}
     break;
 
   case 19:
 
 /* Line 1455 of yacc.c  */
-#line 229 "Parser.y"
+#line 202 "Parser.y"
     {
             // Start a new scope for the loop
-            printf("heeey1\n");
             enterScope();
             SymbolTableEntry *condition = (yyvsp[(5) - (9)].symbolTableEntry); // Assuming LOGICAL_EXP returns a SymbolTableEntry*
-            labels = (Labels *)malloc(sizeof(Labels));
+            Labels *labels = (Labels *)malloc(sizeof(Labels));
             labels->loopLabel = newLabel();
             labels->exitLabel = newLabel();
             addQuadrupleLabel(condition, labels->loopLabel, labels->exitLabel, true);
-            
+            pushLabelStack(&labelStack, labels);  // Push labels onto the stack
         ;}
     break;
 
   case 20:
 
 /* Line 1455 of yacc.c  */
-#line 242 "Parser.y"
-    {
-            printf("heeey\n");
+#line 214 "Parser.y"
+    {   
+            Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
+            printf("jojo\n");
+            printf("inside parse.y\n");
+            printf("labels->loopLabel: %s\n", labels->loopLabel);
+            printf("labels->exitLabel: %s\n", labels->exitLabel);
             addQuadrupleLabel(NULL, labels->loopLabel, labels->exitLabel, false);
             free(labels);
             exitScope();
@@ -1593,7 +1597,7 @@ yyreduce:
   case 21:
 
 /* Line 1455 of yacc.c  */
-#line 319 "Parser.y"
+#line 295 "Parser.y"
     { 
         // Assign the value of EXP to the variable ID
         // assign_var($1, $3); 
@@ -1612,7 +1616,7 @@ yyreduce:
   case 22:
 
 /* Line 1455 of yacc.c  */
-#line 335 "Parser.y"
+#line 311 "Parser.y"
     { 
         // Assign the value of EXP to the variable ID
         // assign_var($1, $3); 
@@ -1631,77 +1635,77 @@ yyreduce:
   case 23:
 
 /* Line 1455 of yacc.c  */
-#line 352 "Parser.y"
+#line 328 "Parser.y"
     { (yyval.symbolTableEntry) = addQuadruple("OR", (yyvsp[(1) - (3)].symbolTableEntry), (yyvsp[(3) - (3)].symbolTableEntry)); ;}
     break;
 
   case 24:
 
 /* Line 1455 of yacc.c  */
-#line 353 "Parser.y"
+#line 329 "Parser.y"
     { (yyval.symbolTableEntry) = addQuadruple("AND", (yyvsp[(1) - (3)].symbolTableEntry), (yyvsp[(3) - (3)].symbolTableEntry)); ;}
     break;
 
   case 25:
 
 /* Line 1455 of yacc.c  */
-#line 354 "Parser.y"
+#line 330 "Parser.y"
     { (yyval.symbolTableEntry) = (yyvsp[(1) - (1)].symbolTableEntry);  ;}
     break;
 
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 357 "Parser.y"
+#line 333 "Parser.y"
     { (yyval.symbolTableEntry) = addQuadruple("EQ", (yyvsp[(1) - (3)].symbolTableEntry), (yyvsp[(3) - (3)].symbolTableEntry)); ;}
     break;
 
   case 27:
 
 /* Line 1455 of yacc.c  */
-#line 358 "Parser.y"
+#line 334 "Parser.y"
     { (yyval.symbolTableEntry) = addQuadruple("NE", (yyvsp[(1) - (3)].symbolTableEntry), (yyvsp[(3) - (3)].symbolTableEntry)); ;}
     break;
 
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 359 "Parser.y"
+#line 335 "Parser.y"
     { (yyval.symbolTableEntry) = addQuadruple("LT", (yyvsp[(1) - (3)].symbolTableEntry), (yyvsp[(3) - (3)].symbolTableEntry)); ;}
     break;
 
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 360 "Parser.y"
+#line 336 "Parser.y"
     { (yyval.symbolTableEntry) = addQuadruple("LE", (yyvsp[(1) - (3)].symbolTableEntry), (yyvsp[(3) - (3)].symbolTableEntry)); ;}
     break;
 
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 361 "Parser.y"
+#line 337 "Parser.y"
     { (yyval.symbolTableEntry) = addQuadruple("GT", (yyvsp[(1) - (3)].symbolTableEntry), (yyvsp[(3) - (3)].symbolTableEntry)); ;}
     break;
 
   case 31:
 
 /* Line 1455 of yacc.c  */
-#line 362 "Parser.y"
+#line 338 "Parser.y"
     { (yyval.symbolTableEntry) = addQuadruple("GE", (yyvsp[(1) - (3)].symbolTableEntry), (yyvsp[(3) - (3)].symbolTableEntry)); ;}
     break;
 
   case 32:
 
 /* Line 1455 of yacc.c  */
-#line 363 "Parser.y"
+#line 339 "Parser.y"
     { (yyval.symbolTableEntry) = (yyvsp[(1) - (1)].symbolTableEntry); ;}
     break;
 
   case 33:
 
 /* Line 1455 of yacc.c  */
-#line 367 "Parser.y"
+#line 343 "Parser.y"
     {
         (yyval.symbolTableEntry) = addQuadruple("ADD", (yyvsp[(1) - (3)].symbolTableEntry), (yyvsp[(3) - (3)].symbolTableEntry));
         printf("Adding %s and %s\n", ((yyvsp[(1) - (3)].symbolTableEntry))->name, ((yyvsp[(3) - (3)].symbolTableEntry))->name);
@@ -1711,7 +1715,7 @@ yyreduce:
   case 34:
 
 /* Line 1455 of yacc.c  */
-#line 372 "Parser.y"
+#line 348 "Parser.y"
     {
         (yyval.symbolTableEntry) = addQuadruple("SUB", (yyvsp[(1) - (3)].symbolTableEntry), (yyvsp[(3) - (3)].symbolTableEntry));
         printf("Subtracting %s from %s\n", ((yyvsp[(3) - (3)].symbolTableEntry))->name, ((yyvsp[(1) - (3)].symbolTableEntry))->name);
@@ -1721,21 +1725,21 @@ yyreduce:
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 376 "Parser.y"
+#line 352 "Parser.y"
     { (yyval.symbolTableEntry) = (yyvsp[(1) - (1)].symbolTableEntry); ;}
     break;
 
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 379 "Parser.y"
+#line 355 "Parser.y"
     { (yyval.symbolTableEntry) = addQuadruple("MUL", (yyvsp[(1) - (3)].symbolTableEntry), (yyvsp[(3) - (3)].symbolTableEntry)); ;}
     break;
 
   case 37:
 
 /* Line 1455 of yacc.c  */
-#line 381 "Parser.y"
+#line 357 "Parser.y"
     { 
          if (strcmp(((yyvsp[(3) - (3)].symbolTableEntry))->name, "0") == 0) { 
             yyerror("Division by zero"); 
@@ -1750,28 +1754,28 @@ yyreduce:
   case 38:
 
 /* Line 1455 of yacc.c  */
-#line 391 "Parser.y"
+#line 367 "Parser.y"
     { (yyval.symbolTableEntry) = (yyvsp[(1) - (1)].symbolTableEntry); ;}
     break;
 
   case 39:
 
 /* Line 1455 of yacc.c  */
-#line 394 "Parser.y"
+#line 370 "Parser.y"
     { (yyval.symbolTableEntry) = addQuadruple("POW", (yyvsp[(1) - (3)].symbolTableEntry), (yyvsp[(3) - (3)].symbolTableEntry)); ;}
     break;
 
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 395 "Parser.y"
+#line 371 "Parser.y"
     { (yyval.symbolTableEntry) = (yyvsp[(1) - (1)].symbolTableEntry); ;}
     break;
 
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 399 "Parser.y"
+#line 375 "Parser.y"
     { 
             (yyval.symbolTableEntry) = (yyvsp[(2) - (3)].symbolTableEntry); 
             printf("Logical expression evaluated.\n"); 
@@ -1781,7 +1785,7 @@ yyreduce:
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 404 "Parser.y"
+#line 380 "Parser.y"
     { 
             (yyval.symbolTableEntry) = addQuadruple("NEG", (yyvsp[(2) - (2)].symbolTableEntry), NULL);
             printf("Negation applied: %f\n", (yyval.symbolTableEntry)); 
@@ -1791,7 +1795,7 @@ yyreduce:
   case 43:
 
 /* Line 1455 of yacc.c  */
-#line 409 "Parser.y"
+#line 385 "Parser.y"
     { 
             (yyval.symbolTableEntry) = addQuadruple("NOT", (yyvsp[(2) - (2)].symbolTableEntry), NULL);
             printf("Logical NOT applied: %d\n", (yyval.symbolTableEntry)); 
@@ -1801,7 +1805,7 @@ yyreduce:
   case 44:
 
 /* Line 1455 of yacc.c  */
-#line 414 "Parser.y"
+#line 390 "Parser.y"
     { 
             (yyval.symbolTableEntry) = addSymbol((yyvsp[(1) - (1)].s), "int", false);
             printf("Integer constant: %s\n", (yyvsp[(1) - (1)].s)); 
@@ -1811,7 +1815,7 @@ yyreduce:
   case 45:
 
 /* Line 1455 of yacc.c  */
-#line 419 "Parser.y"
+#line 395 "Parser.y"
     { 
             (yyval.symbolTableEntry) = addSymbol((yyvsp[(1) - (1)].s), "float", false);
             printf("Float constant: %s\n", (yyvsp[(1) - (1)].s));
@@ -1821,7 +1825,7 @@ yyreduce:
   case 46:
 
 /* Line 1455 of yacc.c  */
-#line 424 "Parser.y"
+#line 400 "Parser.y"
     { 
             (yyval.symbolTableEntry) = addSymbol((yyvsp[(1) - (1)].s), "char", false);
             printf("Character constant: %s\n", (yyvsp[(1) - (1)].s));
@@ -1831,7 +1835,7 @@ yyreduce:
   case 47:
 
 /* Line 1455 of yacc.c  */
-#line 429 "Parser.y"
+#line 405 "Parser.y"
     { 
             // Look up the variable in the symbol table
             SymbolTableEntry *entry = lookupSymbol((yyvsp[(1) - (1)].s));
@@ -1851,7 +1855,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 1855 "Parser.tab.c"
+#line 1859 "Parser.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2063,7 +2067,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 446 "Parser.y"
+#line 422 "Parser.y"
  
 
 void yyerror(const char *s) {

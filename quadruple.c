@@ -71,14 +71,17 @@ void addQuadrupleLabel(SymbolTableEntry *condition , char * loopLabel , char* ex
     some code
     goto label1
     label2:
-    */
+    */ 
+    printf("loop labels: %s %s\n", loopLabel, exitLabel);
     if (beforeSomeCode) { 
         char * conditionName = condition->name;
-        printf("ana get");
+        printf("ana get before some code\n");
+        
         char command[256]; // Adjust the size as needed
         sprintf(command, "%s:\nif %s false goto %s", loopLabel,conditionName, exitLabel);
         writeCommandToFile(command);
     }else{
+        printf("ana get after some code\n");
         char command[256]; // Adjust the size as needed
         sprintf(command, "goto %s\n%s:", loopLabel,exitLabel);
         writeCommandToFile(command);

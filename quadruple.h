@@ -14,10 +14,7 @@ typedef struct {
     char result[50];    // The result of the operation
 } Quadruple;
 
-typedef struct {
-    char *loopLabel;
-    char *exitLabel;
-} Labels;
+
 // Max number of quadruples
 #define MAX_QUADRUPLES 1000
 

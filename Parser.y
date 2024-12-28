@@ -5,11 +5,12 @@
     #include <math.h>
     #include "symbol_table.h"  // Include the symbol table header
     #include "quadruple.h"
+    #include "utils/label_stack.h"
 
     void yyerror(const char *s);
     int yylex(void);
     extern FILE *yyin;
-    Labels *labels ;
+    LabelStack *labelStack;
 %}
 
 %union {
@@ -196,51 +197,26 @@ some code
 if (i<6) goto label1
 label2:
 */
-/*
-
-
-FOR_LOOP: FOR LPAREN ASSIGNMENT SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT RPAREN 
+FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN 
     LBRACE
         {
             // Start a new scope for the loop
-            symbolTable.enterScope();
-            SymbolTableEntry *condition = $5; // Assuming LOGICAL_EXP returns a SymbolTableEntry*
-            LoopLabels *labels = (LoopLabels *)malloc(sizeof(LoopLabels));
-            labels->loopLabel = newLabel();
-            labels->exitLabel = newLabel();
-            addQuadrupleLabel(condition, labels->loopLabel, labels->exitLabel, true);
-            $$ = labels;
-        }
-        STMTS 
-        RBRACE
-        {
-            // Use the loopLabel and exitLabel here
-            printf("Loop Label: %s\n", $1->loopLabel);
-            printf("Exit Label: %s\n", $1->exitLabel);
-            free($1);
-            symbolTable.exitScope();
-        }
-    ;
-
-*/
-FOR_LOOP:
-    FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN 
-    LBRACE
-        {
-            // Start a new scope for the loop
-            printf("heeey1\n");
             enterScope();
             SymbolTableEntry *condition = $5; // Assuming LOGICAL_EXP returns a SymbolTableEntry*
-            labels = (Labels *)malloc(sizeof(Labels));
+            Labels *labels = (Labels *)malloc(sizeof(Labels));
             labels->loopLabel = newLabel();
             labels->exitLabel = newLabel();
             addQuadrupleLabel(condition, labels->loopLabel, labels->exitLabel, true);
-            
+            pushLabelStack(&labelStack, labels);  // Push labels onto the stack
         }
         STMTS 
         RBRACE
-        {
-            printf("heeey\n");
+        {   
+            Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
+            printf("jojo\n");
+            printf("inside parse.y\n");
+            printf("labels->loopLabel: %s\n", labels->loopLabel);
+            printf("labels->exitLabel: %s\n", labels->exitLabel);
             addQuadrupleLabel(NULL, labels->loopLabel, labels->exitLabel, false);
             free(labels);
             exitScope();
