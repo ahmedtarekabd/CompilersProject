@@ -1,14 +1,12 @@
 { int x;
     int i;
     int j;
-   i=5;
-   while(i<10)
-   {
-    x=x+1;
-   while(i<20)
-    {
-        j=j+2;
-    }
-
-   }
+    int x;
+    
+  repeat {
+    i=i+1;
+    repeat{
+        j=j+1;
+    } until(x<5);
+  } until (i<2);
 }

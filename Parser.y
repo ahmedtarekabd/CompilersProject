@@ -37,7 +37,7 @@
 %token <s> ID
 
 // %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS 
-%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP WHILE_LOOP
+%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP
 %type <symbolTableEntry> EXP TERM FACTOR POWER//FUNCTION_STMTS
 %type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION ASSIGNMENT_FORLOOP
 // %type <i> MATCHED_IF UNMATCHED_IF 
@@ -82,6 +82,7 @@ STMT:
     BLOCK
     | FOR_LOOP    
     | WHILE_LOOP
+    | REPEAT_UNTIL_LOOP
     | DECLARATION 
     | CONST_DECLARATION 
     | ASSIGNMENT           
@@ -253,14 +254,39 @@ WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE
             exitScope();
         }
 ;
-// REPEAT_UNTIL_LOOP: REPEAT LBRACE STMTS RBRACE UNTIL LPAREN LOGICAL_EXP RPAREN SEMICOLON
-//     {
-//         do {
-//             printf("Repeat until loop\n");
-//             $3;  
-//         } while (!$7);
-//     }
-// ;
+/* 
+repeat {
+    some code
+} until (i<6)
+---->
+label1:
+some code
+if i<6 goto label1
+
+*/
+REPEAT_UNTIL_LOOP: REPEAT LBRACE 
+{
+    enterScope();
+    Labels *labels = (Labels *)malloc(sizeof(Labels));
+    labels->loopLabel = newLabel();
+    
+    pushLabelStack(&labelStack, labels);  // Push labels onto the stack
+    addQuadrupleLabel(NULL, labels->loopLabel, NULL, true);
+
+}
+STMTS RBRACE
+ UNTIL LPAREN LOGICAL_EXP 
+ {
+    SymbolTableEntry *condition = $8;
+    Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
+    addQuadrupleLabel(condition, labels->loopLabel, NULL, false);
+    free(labels);
+    exitScope();
+
+}
+ RPAREN SEMICOLON
+    
+;
 
 // MATCHED_IF: 
 //     IF LPAREN LOGICAL_EXP RPAREN LBRACE MATCHED_IF RBRACE ELSE LBRACE MATCHED_IF RBRACE
@@ -445,13 +471,23 @@ void yyerror(const char *s) {
 }
 
 int main(int argc, char **argv) {
+
+     // Clear the contents of quadruples.txt
+    FILE *quadFile = fopen("quadruples.txt", "w");
+    if (quadFile == NULL) {
+        fprintf(stderr, "Error opening quadruples.txt for writing!\n");
+        return 1;
+    }
+    fclose(quadFile);
+    
     if (argc > 1) {
         yyin = fopen(argv[1], "r");
         if (!yyin) {
             perror(argv[1]);
             return 1;
         }
-    }
+    } 
+  
     if (yyparse() == 0) {
         printf("Parsing successful\n");
         printQuadruples();
