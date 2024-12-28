@@ -1,29 +1,34 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include "symbol_table.h"
+#include <string.h> 
+
+typedef enum {
+    TYPE_INT,
+    TYPE_FLOAT,
+    TYPE_CHAR,
+    TYPE_CONST_INT,
+    TYPE_CONST_FLOAT,
+    TYPE_CONST_CHAR,
+    TYPE_UNKNOWN
+} DataType;
+
+typedef struct SymbolTable {
+    char *name;               // Variable or function name
+    char *type;               // Data type (e.g., int, float)
+    int isInitialized;        // 1 if initialized, 0 otherwise
+    int isUsed;               // 1 if used, 0 otherwise
+    float value;              // Store variable's value (assuming the type is numeric)
+    struct SymbolTable *next; // Pointer to next symbol in this table
+} SymbolTableEntry;
+
+typedef struct Scope {
+    SymbolTableEntry *symbols;  // Linked list of symbols
+    struct Scope *parent;       // Pointer to the parent scope
+} Scope;
 
 Scope *currentScope = NULL;  // Pointer to the current (innermost) scope
-int tempCounter = 0;
 
-char *newTemp() {
-    static char tempName[16]   ;    
-    snprintf(tempName, sizeof(tempName), "t%d", tempCounter++);
-    printf("Creating new temp: %s\n", tempName);
-    return tempName;
-}
-char* newLabel() {
-    static int labelCounter = 0; // Counter to ensure uniqueness
-    char* label = (char*)malloc(20 * sizeof(char)); // Allocate memory for the label
-    if (!label) {
-        fprintf(stderr, "Memory allocation failed for newLabel.\n");
-        exit(1);
-    }
-    snprintf(label, 20, "L%d", labelCounter++); // Create label in the format L0, L1, L2, ...
-    return label;
-}
-
+// Function to enter a new scope
 void enterScope() {
     Scope *newScope = (Scope *)malloc(sizeof(Scope));
     newScope->symbols = NULL;
@@ -31,28 +36,26 @@ void enterScope() {
     currentScope = newScope;
 }
 
+// Function to exit the current scope
 void exitScope() {
     Scope *oldScope = currentScope;
     currentScope = currentScope->parent;
     free(oldScope);
 }
 
-
-SymbolTableEntry *addSymbol(char *name, char *type, bool isConst) {
+// Function to add a symbol to the current scope
+void addSymbol(char *name, char *type) {
     SymbolTableEntry *entry = (SymbolTableEntry *)malloc(sizeof(SymbolTableEntry));
     entry->name = strdup(name);
     entry->type = strdup(type);
-    entry->isConst = isConst;
     entry->isInitialized = 0;
     entry->isUsed = 0;
     entry->value = 0.0;  // Initialize value to 0
     entry->next = currentScope->symbols;
     currentScope->symbols = entry;
-
-    printf("Added symbol '%s' with type: %s isConst = %i\n", name, type, isConst);
-    return entry;
 }
 
+// Function to look up a symbol in the current scope and all parent scopes
 SymbolTableEntry *lookupSymbol(char *name) {
     Scope *scope = currentScope;
     while (scope) {
@@ -61,31 +64,17 @@ SymbolTableEntry *lookupSymbol(char *name) {
             if (strcmp(entry->name, name) == 0) return entry;
             entry = entry->next;
         }
-
         scope = scope->parent;  // Go to parent scope
     }
     return NULL;  // Symbol not found
 }
 
-bool isSymbolDeclaredInCurrentScope(char *name) {
-    SymbolTableEntry *entry = currentScope->symbols;
-    while (entry) {
-        if (strcmp(entry->name, name) == 0) return true;
-        entry = entry->next;
-    }
-    return false;
-}
-
+// Function to update a symbol's value in the symbol table
 int updateSymbolValue(char *name, float value) {
     SymbolTableEntry *entry = lookupSymbol(name);
     if (entry == NULL) {
         printf("Error: Symbol '%s' not found.\n", name);
         return 0;  // Symbol not found
-    }
-    // printf("/////// is init %d\n", entry->isInitialized);
-    if (entry->isConst && entry->isInitialized) {
-        printf("Error: Cannot update value of constant symbol '%s'.\n", name);
-        return 0;  // Cannot update value of constant symbol
     }
     entry->value = value;  // Update value
     entry->isInitialized = 1;  // Mark as initialized
@@ -93,6 +82,7 @@ int updateSymbolValue(char *name, float value) {
     return 1;  // Successfully updated
 }
 
+// Function to display all symbols in the current scope
 void displayScope() {
     SymbolTableEntry *entry = currentScope->symbols;
     while (entry) {

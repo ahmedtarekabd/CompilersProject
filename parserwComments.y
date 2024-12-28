@@ -4,7 +4,6 @@
     #include <string.h>
     #include <math.h>
     #include "symbol_table.h"  // Include the symbol table header
-    #include "quadruple.h"
 
     void yyerror(const char *s);
     int yylex(void);
@@ -17,7 +16,7 @@
     float f;
     char *s;  
     char *Dtype;
-    SymbolTableEntry *symbolTableEntry;
+    SymbolTableEntry symbolTableEntry;
 }
 
 %token POW NOT OR AND EQ NE LT LE GT GE ASSIGN LPAREN RPAREN LBRACE RBRACE SEMICOLON COLON
@@ -35,7 +34,7 @@
 %token <s> ID
 
 // %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS 
-%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP
+%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK
 %type <symbolTableEntry> EXP TERM FACTOR POWER//FUNCTION_STMTS
 %type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION
 // %type <i> MATCHED_IF UNMATCHED_IF 
@@ -72,13 +71,13 @@ STMT:
 //     | UNMATCHED_IF  
 //     | 
     // SWITCH_CASE 
+    // | FOR_LOOP    
     // | WHILE_LOOP        
     // | REPEAT_UNTIL_LOOP   
     // | FUNCTION_DECL SEMICOLON
     // | FUNCTION_DECL FUNCTION_BODY
     // | 
     BLOCK
-    | FOR_LOOP    
     | DECLARATION 
     | CONST_DECLARATION 
     | ASSIGNMENT           
@@ -189,44 +188,14 @@ PARAM_TYPE: INT_TYPE        { $$ = "int"; }
 //           ;
 
 
-FOR_LOOP:
-    FOR LPAREN ASSIGNMENT SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT RPAREN 
-        {
-            // Start a new scope for the loop
-            enterScope();
-
-            // Generate the label for the condition check
-            char *conditionLabel = newLabel();
-            printf("%s:\n", conditionLabel);
-
-            // Generate the logical expression (condition) quadruple
-            SymbolTableEntry *condition = $5; // Assuming LOGICAL_EXP returns a SymbolTableEntry*
-
-            // Generate the label to exit the loop
-            char *exitLabel = newLabel();
-
-            // Add a quadruple to check the condition and branch to the exit label if false
-            addQuadruple("IF_FALSE", condition, NULL, exitLabel);
-        }
-        STMTS 
-        {
-            // Generate the increment statement quadruple (for the third part of the for loop)
-            addQuadruple($7->operat, $7->operand1, $7->operand2);
-
-            // Jump back to the condition check
-            addQuadruple("GOTO", NULL, NULL, conditionLabel);
-
-            // Print the exit label
-            char *exitLabel = newLabel();
-            printf("%s:\n", exitLabel);
-
-            // Exit the scope of the loop
-            exitScope();
-        }
-    ;
-
-
-
+// FOR_LOOP: FOR LPAREN ASSIGNMENT SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT RPAREN LBRACE STMTS RBRACE
+//     {
+//         for ($3; $5; $7) {
+//             printf("For loop\n");
+//             $10;  
+//         }
+//     }
+// ;
 // WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE STMTS RBRACE
 //     {
 //         while ($3) {
@@ -297,61 +266,47 @@ ASSIGNMENT : ID ASSIGN LOGICAL_EXP SEMICOLON
     { 
         // Assign the value of EXP to the variable ID
         // assign_var($1, $3); 
-        SymbolTableEntry *entry = lookupSymbol($1);
-        if (!entry) {
-            yyerror("Variable not declared in any scope");
-        } else {
-            SymbolTableEntry *temp = addQuadruple("ASSIGN", entry, $3);
-            updateSymbolValue($1, ($3)->value);
-            entry->isInitialized = 1;  // Mark the variable as initialized
-        }
-        $$ = $3;
+        updateSymbolValue($1, ($3).value);
     }            
 ;
 
-LOGICAL_EXP : REL_EXP OR LOGICAL_EXP   { $$ = addQuadruple("OR", $1, $3); }
-            | REL_EXP AND LOGICAL_EXP  { $$ = addQuadruple("AND", $1, $3); }
+LOGICAL_EXP : REL_EXP OR LOGICAL_EXP   //{ $$ = ($1).value || ($3).value; }
+            | REL_EXP AND LOGICAL_EXP  //{ $$ = ($1).value && ($3).value; }
             | REL_EXP                  { $$ = $1;  }
             ;
 
-REL_EXP : EXP EQ EXP         { $$ = addQuadruple("EQ", $1, $3); }
-        | EXP NE EXP         { $$ = addQuadruple("NE", $1, $3); }
-        | EXP LT EXP         { $$ = addQuadruple("LT", $1, $3); }
-        | EXP LE EXP         { $$ = addQuadruple("LE", $1, $3); }
-        | EXP GT EXP         { $$ = addQuadruple("GT", $1, $3); }
-        | EXP GE EXP         { $$ = addQuadruple("GE", $1, $3); }
+REL_EXP : EXP EQ EXP         //{ $$ = $1 == $3; }
+        | EXP NE EXP         //{ $$ = $1 != $3; }
+        | EXP LT EXP         //{ $$ = $1 < $3; printf("LT %f %f is %d\n", $1, $3, $$); }
+        | EXP LE EXP         //{ $$ = $1 <= $3; }
+        | EXP GT EXP         //{ $$ = $1 > $3; printf("GT %f %f is %d\n", $1, $3, $$); }
+        | EXP GE EXP         //{ $$ = $1 >= $3; }
         | EXP                { $$ = $1; }
         ;
 
 EXP : EXP ADD TERM           
     {
-        $$ = addQuadruple("ADD", $1, $3);
-        printf("Adding %s and %s\n", ($1)->name, ($3)->name);
+        printf("Adding %s and %s\n", ($1).name, ($3).name);
     }
-    | EXP SUB TERM
-    {
-        $$ = addQuadruple("SUB", $1, $3);
-        printf("Subtracting %s from %s\n", ($3)->name, ($1)->name);
-    }
+    | EXP SUB TERM           //{ $$ = $1 - $3; }
     | TERM                   { $$ = $1; }
     ;
 
-TERM : TERM MUL POWER   { $$ = addQuadruple("MUL", $1, $3); }
+TERM : TERM MUL POWER       //{ $$ = $1 * $3; }
      | TERM DIV POWER       
-     { 
-         if (strcmp(($3)->name, "0") == 0) { 
-            yyerror("Division by zero"); 
-            exit(1); 
-         } else {
-            $$ = addQuadruple("DIV", $1, $3);
-            printf("Dividing %s by %s\n", ($1)->name, ($3)->name);
-         }
-     }
+    //  { 
+    //      if ($3 == 0) { 
+    //          yyerror("Division by zero"); 
+    //          exit(1); 
+    //      } else {
+    //          $$ = $1 / $3; 
+    //      }
+    //  }
       
      | POWER                { $$ = $1; }
      ;
 
-POWER : FACTOR POW POWER    { $$ = addQuadruple("POW", $1, $3); }
+POWER : FACTOR POW POWER    //{ $$ = pow($1, $3); }
       | FACTOR              { $$ = $1; }
       ;
 
@@ -362,12 +317,12 @@ FACTOR : LPAREN LOGICAL_EXP RPAREN
         }
        | SUB FACTOR          
         { 
-            $$ = addQuadruple("NEG", $2, NULL);
+            // $$ = -$2; 
             printf("Negation applied: %f\n", $$); 
         }
        | NOT FACTOR          
         { 
-            $$ = addQuadruple("NOT", $2, NULL);
+            // $$ = !$2; 
             printf("Logical NOT applied: %d\n", $$); 
         }
        | INTEGER             
@@ -396,7 +351,7 @@ FACTOR : LPAREN LOGICAL_EXP RPAREN
                     yyerror("Variable used before initialization");
                 }
                 entry->isUsed = 1;  // Mark the variable as used
-                $$ = lookupSymbol($1);  // Retrieve its runtime value
+                $$ = *lookupSymbol($1);  // Retrieve its runtime value
                 printf("Variable '%s' of type '%s' used. Value: %f\n", $1, entry->type, $$);
             }
         }
@@ -419,7 +374,6 @@ int main(int argc, char **argv) {
     }
     if (yyparse() == 0) {
         printf("Parsing successful\n");
-        printQuadruples();
     } else {
         printf("Parsing failed\n");
     }
