@@ -95,23 +95,45 @@ void addQuadrupleLabel(SymbolTableEntry *condition , char * loopLabel , char* ex
     goto label1
     label2:
     */ 
-    printf("loop labels: %s %s\n", loopLabel, exitLabel);
     if (beforeSomeCode) { 
         char * conditionName = condition->name;
-        printf("ana get before some code\n");
-        
+       
         char command[256]; // Adjust the size as needed
         sprintf(command, "%s:\nif %s false goto %s", loopLabel,conditionName, exitLabel);
         writeCommandToFile(command);
     }else{
-        printf("ana get after some code\n");
+      
         char command[256]; // Adjust the size as needed
         sprintf(command, "goto %s\n%s:", loopLabel,exitLabel);
         writeCommandToFile(command);
     }
     quadIndex++;
 }
-    
+void unmatchedIfQuadruple(SymbolTableEntry *condition , char * loopLabel , char* exitLabel, bool beforeSomeCode){
+/*
+if (i>=6) {
+    some code
+}
+---->
+if i>=6 goto label1
+goto label2
+label1:
+some code
+label2:
+*/ 
+    if (beforeSomeCode) { 
+        char * conditionName = condition->name;
+        char command[256]; // Adjust the size as needed
+        sprintf(command, "if %s goto %s\n goto %s \n %s",conditionName, loopLabel,exitLabel,loopLabel);
+        writeCommandToFile(command);
+    }else{
+        char command[256]; // Adjust the size as needed
+        sprintf(command, "%s:", exitLabel);
+        writeCommandToFile(command);
+    }
+    quadIndex++;
+
+}
 
 // Function to print all generated quadruples 
 

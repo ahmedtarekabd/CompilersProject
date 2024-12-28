@@ -37,10 +37,9 @@
 %token <s> ID
 
 // %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS 
-%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP
-%type <symbolTableEntry> EXP TERM FACTOR POWER//FUNCTION_STMTS
+%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP UNMATCHED_IF 
+%type <symbolTableEntry> EXP TERM FACTOR POWER //FUNCTION_STMTS
 %type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION ASSIGNMENT_FORLOOP
-// %type <i> MATCHED_IF UNMATCHED_IF 
 // %type <symbolTableEntry> FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP SWITCH_CASE CASES CASE_BLOCK
 // %type <i> FUNCTION_DECL FUNCTION_BODY  PARAMS PARAM
 %type <Dtype> PARAM_TYPE //RETURN_TYPE
@@ -70,23 +69,22 @@ BLOCK : LBRACE {
 
 
 STMT: 
-// MATCHED_IF                    
-//     | UNMATCHED_IF  
+    //MATCHED_IF                    
+    UNMATCHED_IF  
 //     | 
     // SWITCH_CASE 
     // |       
-    // | REPEAT_UNTIL_LOOP   
     // | FUNCTION_DECL SEMICOLON
     // | FUNCTION_DECL FUNCTION_BODY
     // | 
-    BLOCK
+    | BLOCK
     | FOR_LOOP    
     | WHILE_LOOP
     | REPEAT_UNTIL_LOOP
     | DECLARATION 
     | CONST_DECLARATION 
     | ASSIGNMENT           
-    | LOGICAL_EXP SEMICOLON         //{ printf("logical %d\n", $1); }
+    | LOGICAL_EXP SEMICOLON         
     ;
 
 DECLARATION: PARAM_TYPE ID SEMICOLON {
@@ -287,54 +285,72 @@ STMTS RBRACE
  RPAREN SEMICOLON
     
 ;
+/*
+if (i>=6) {
+    some code
+} else {
+    some code
+} 
 
-// MATCHED_IF: 
-//     IF LPAREN LOGICAL_EXP RPAREN LBRACE MATCHED_IF RBRACE ELSE LBRACE MATCHED_IF RBRACE
-//     {
+---->
+if i>=6 goto label1
+some code
+goto label2
+label1:
+some code
+label2:
 
-//         printf("matched 1");
-//         if ($3) {
-//             $$ = $6;  // Execute the first `if` branch
-//         } else {
-//             $$ = $10;  // Execute the second `else` branch
-//         }
-//     }
-//   | IF LPAREN LOGICAL_EXP RPAREN LBRACE STMT RBRACE ELSE LBRACE STMT RBRACE
-//     {
-//         printf("matched 2");
-//         if ($3) { 
-//             $$ = $6;  // Execute the `if` branch
-//         } else {
-//             $$ = $10;  // Execute the `else` branch
-//         }
-//     }
-// ;
+*/
+/* MATCHED_IF: 
+    IF LPAREN LOGICAL_EXP RPAREN LBRACE MATCHED_IF RBRACE ELSE LBRACE MATCHED_IF RBRACE
+    {
+
+      
+    }
+  | IF LPAREN LOGICAL_EXP RPAREN LBRACE STMT RBRACE ELSE LBRACE STMT RBRACE
+    {
+       
+    }
+; */
 
 
-// UNMATCHED_IF:
-//     IF LPAREN LOGICAL_EXP RPAREN LBRACE STMT RBRACE
-//     {
-//         printf("unmatched 1 %d\n", $3);
-//         if ($3 != 0) {
-//             $$ = $6;  // Execute the `if` branch
-//             printf("If statement executed\n");
-//         }
-//     }
+/*
+if (i>=6) {
+    some code
+}
+---->
+if i>=6 goto label1
+goto label2
+label1:
+some code
+label2:
+*/
+UNMATCHED_IF:
+    IF LPAREN LOGICAL_EXP RPAREN LBRACE
+    {
+        // Start a new scope for the if block
+        enterScope();
+        SymbolTableEntry *condition = $3; // Assuming LOGICAL_EXP returns a SymbolTableEntry*
+        Labels *labels = (Labels *)malloc(sizeof(Labels));
+        labels->loopLabel = newLabel();
+        labels->exitLabel = newLabel();
+        unmatchedIfQuadruple(condition, labels->loopLabel, labels->exitLabel, true);
+        pushLabelStack(&labelStack, labels);  // Push labels onto the stack
+
+    } STMT RBRACE
+    {
+        Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
+        unmatchedIfQuadruple(NULL, labels->loopLabel, labels->exitLabel, false);
+        free(labels);
+        exitScope();
+    }
+    
 //   | IF LPAREN LOGICAL_EXP RPAREN LBRACE {enterScope()} 
 //     MATCHED_IF RBRACE {exitScope()}
 //     ELSE LBRACE {enterScope()}
 //     UNMATCHED_IF RBRACE {exitScope()}
-//     {
-//         printf("unmatched 2");
-//         if ($3) {
-//             $$ = $6;  // Execute the nested `if`
-//         }
-//         else
-//         {
-//             $$ = $10;
-//         }
-//     }
-// ;
+    
+;
 
 ASSIGNMENT : ID ASSIGN LOGICAL_EXP SEMICOLON
     { 

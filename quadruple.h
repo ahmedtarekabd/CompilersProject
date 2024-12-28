@@ -27,6 +27,7 @@ char *newTemp();
 SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, SymbolTableEntry *operand2);
 void printQuadruples();
 void addQuadrupleLabel(SymbolTableEntry *condition , char * loopLabel , char* exitLabel, bool beforeSomeCode);
+void unmatchedIfQuadruple(SymbolTableEntry *condition , char * loopLabel , char* exitLabel, bool beforeSomeCode);
 void writeQuadrupleToFile(int i) ;
 void writeCommandToFile(char *command) ;
 #endif // QUADRUPLE_H

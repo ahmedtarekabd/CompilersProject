@@ -1,12 +1,7 @@
 { int x;
-    int i;
-    int j;
-    int x;
-    
-  repeat {
-    i=i+1;
-    repeat{
-        j=j+1;
-    } until(x<5);
-  } until (i<2);
+    x=5;
+    if(x>1)
+    {
+        x=x+1;
+    }
 }
