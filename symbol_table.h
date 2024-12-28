@@ -3,15 +3,15 @@
 
 #include <stdbool.h>
 
-typedef enum {
-    TYPE_INT,
-    TYPE_FLOAT,
-    TYPE_CHAR,
-    TYPE_CONST_INT,
-    TYPE_CONST_FLOAT,
-    TYPE_CONST_CHAR,
-    TYPE_UNKNOWN
-} DataType;
+// typedef enum {
+//     TYPE_INT,
+//     TYPE_FLOAT,
+//     TYPE_CHAR,
+//     TYPE_CONST_INT,
+//     TYPE_CONST_FLOAT,
+//     TYPE_CONST_CHAR,
+//     TYPE_UNKNOWN
+// } DataType;
 
 typedef struct SymbolTable {
     char *name;               // Variable or function name
@@ -32,7 +32,8 @@ extern Scope *currentScope;  // Pointer to the current (innermost) scope
 
 void enterScope();
 void exitScope();
-void addSymbol(char *name, char *type, bool isConst);
+char *newTemp();
+SymbolTableEntry addSymbol(char *name, char *type, bool isConst);
 SymbolTableEntry *lookupSymbol(char *name);
 int updateSymbolValue(char *name, float value);
 bool isSymbolDeclaredInCurrentScope(char *name);

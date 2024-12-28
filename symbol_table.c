@@ -5,6 +5,14 @@
 #include "symbol_table.h"
 
 Scope *currentScope = NULL;  // Pointer to the current (innermost) scope
+int tempCounter = 0;
+
+char *newTemp() {
+    static char tempName[16]   ;    
+    snprintf(tempName, sizeof(tempName), "t%d", tempCounter++);
+    printf("Creating new temp: %s\n", tempName);
+    return tempName;
+}
 
 void enterScope() {
     Scope *newScope = (Scope *)malloc(sizeof(Scope));
@@ -20,7 +28,7 @@ void exitScope() {
 }
 
 
-void addSymbol(char *name, char *type, bool isConst) {
+SymbolTableEntry addSymbol(char *name, char *type, bool isConst) {
     SymbolTableEntry *entry = (SymbolTableEntry *)malloc(sizeof(SymbolTableEntry));
     entry->name = strdup(name);
     entry->type = strdup(type);
@@ -30,7 +38,9 @@ void addSymbol(char *name, char *type, bool isConst) {
     entry->value = 0.0;  // Initialize value to 0
     entry->next = currentScope->symbols;
     currentScope->symbols = entry;
+
     printf("Added symbol '%s' with type: %s\n", name, type);
+    return *entry;
 }
 
 SymbolTableEntry *lookupSymbol(char *name) {

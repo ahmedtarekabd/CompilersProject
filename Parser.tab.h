@@ -98,11 +98,13 @@ typedef union YYSTYPE
     char c;
     float f;
     char *s;  
+    char *Dtype;
+    SymbolTableEntry symbolTableEntry;
 
 
 
 /* Line 1676 of yacc.c  */
-#line 106 "Parser.tab.h"
+#line 108 "Parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

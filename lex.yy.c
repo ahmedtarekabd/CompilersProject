@@ -432,9 +432,9 @@ char *yytext;
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>  // Include this header for strdup
+    #include "symbol_table.h"
     #include "Parser.tab.h"
     
-    #include "symbol_table.h"
 
 #line 440 "lex.yy.c"
 
@@ -755,12 +755,12 @@ YY_RULE_SETUP
 case 17:
 YY_RULE_SETUP
 #line 32 ".\\Lexer.l"
-{ yylval.f = atof(yytext); printf("Float: %f\n", yylval.f); return FLOAT; }
+{ yylval.s = yytext; printf("Float: %f\n", yylval.f); return FLOAT; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
 #line 33 ".\\Lexer.l"
-{ yylval.i = atoi(yytext); return INTEGER; }
+{ yylval.s = yytext; return INTEGER; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP

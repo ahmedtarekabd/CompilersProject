@@ -15,6 +15,8 @@
     char c;
     float f;
     char *s;  
+    char *Dtype;
+    SymbolTableEntry symbolTableEntry;
 }
 
 %token POW NOT OR AND EQ NE LT LE GT GE ASSIGN LPAREN RPAREN LBRACE RBRACE SEMICOLON COLON
@@ -26,18 +28,19 @@
 %token ERROR
 
 
-%token <i> INTEGER
-%token <f> FLOAT
-%token <c> CHAR
+%token <s> INTEGER
+%token <s> FLOAT
+%token <s> CHAR
 %token <s> ID
 
 // %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS 
-%type <i> LOGICAL_EXP REL_EXP
-%type <f> EXP TERM FACTOR POWER//FUNCTION_STMTS
-%type <i> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION
-%type <i> MATCHED_IF UNMATCHED_IF FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP SWITCH_CASE CASES CASE_BLOCK
+%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK
+%type <symbolTableEntry> EXP TERM FACTOR POWER//FUNCTION_STMTS
+%type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION
+// %type <i> MATCHED_IF UNMATCHED_IF 
+// %type <symbolTableEntry> FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP SWITCH_CASE CASES CASE_BLOCK
 // %type <i> FUNCTION_DECL FUNCTION_BODY  PARAMS PARAM
-%type <s> PARAM_TYPE //RETURN_TYPE
+%type <Dtype> PARAM_TYPE //RETURN_TYPE
 
 
 
@@ -63,19 +66,22 @@ BLOCK : LBRACE {
        ;
 
 
-STMT: MATCHED_IF                    
-    | UNMATCHED_IF  
-    | SWITCH_CASE 
-    | FOR_LOOP    
-    | WHILE_LOOP        
-    | REPEAT_UNTIL_LOOP   
+STMT: 
+// MATCHED_IF                    
+//     | UNMATCHED_IF  
+//     | 
+    // SWITCH_CASE 
+    // | FOR_LOOP    
+    // | WHILE_LOOP        
+    // | REPEAT_UNTIL_LOOP   
     // | FUNCTION_DECL SEMICOLON
     // | FUNCTION_DECL FUNCTION_BODY
-    | BLOCK
+    // | 
+    BLOCK
     | DECLARATION 
     | CONST_DECLARATION 
     | ASSIGNMENT           
-    | LOGICAL_EXP SEMICOLON         { printf("%d\n", $1); }
+    | LOGICAL_EXP SEMICOLON         //{ printf("logical %d\n", $1); }
     ;
 
 DECLARATION: PARAM_TYPE ID SEMICOLON {
@@ -143,160 +149,165 @@ PARAM_TYPE: INT_TYPE        { $$ = "int"; }
 //            | PARAM_TYPE     
 //            ;
 
-SWITCH_CASE: SWITCH LPAREN ID RPAREN LBRACE CASES CASE_DEFAULT RBRACE
-    {
-        printf("Switch case\n");
-        printf("Switch value: %f\n", $3);
-        // switch ($3) {
-        //     $6;
-        //     default:
-        //         $9;
-        //         break;
-        // }
-    }
-;
-CASE_DEFAULT: DEFAULT COLON STMTS BREAK SEMICOLON
-    {
-        printf("Default case\n");
-        // default:
-        //     $4;
-        //     break;
-    }
-    | 
-    ;
-CASES: CASES CASE_BLOCK
-     | CASE_BLOCK
-;
+// SWITCH_CASE: SWITCH LPAREN ID RPAREN LBRACE CASES CASE_DEFAULT RBRACE
+//     {
+//         printf("Switch case\n");
+//         printf("Switch value: %f\n", $3);
+//         // switch ($3) {
+//         //     $6;
+//         //     default:
+//         //         $9;
+//         //         break;
+//         // }
+//     }
+// ;
+// CASE_DEFAULT: DEFAULT COLON STMTS BREAK SEMICOLON
+//     {
+//         printf("Default case\n");
+//         // default:
+//         //     $4;
+//         //     break;
+//     }
+//     | 
+//     ;
+// CASES: CASES CASE_BLOCK
+//      | CASE_BLOCK
+// ;
 
-CASE_BLOCK: CASE INTEGER COLON CASE_STMTS BREAK SEMICOLON
-    {
-        printf("Case %d\n", $2);
-        // case $2:
-        //     $4;
-        //     break;
-    }
+// CASE_BLOCK: CASE INTEGER COLON CASE_STMTS BREAK SEMICOLON
+//     {
+//         printf("Case %d\n", $2);
+//         // case $2:
+//         //     $4;
+//         //     break;
+//     }
 
-;
-CASE_STMTS: STMTS
-          | 
-          ;
-
-
-FOR_LOOP: FOR LPAREN ASSIGNMENT SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT RPAREN LBRACE STMTS RBRACE
-    {
-        for ($3; $5; $7) {
-            printf("For loop\n");
-            $10;  
-        }
-    }
-;
-WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE STMTS RBRACE
-    {
-        while ($3) {
-            printf("While loop\n");
-            $6;  
-        }
-    }
-
-;
-REPEAT_UNTIL_LOOP: REPEAT LBRACE STMTS RBRACE UNTIL LPAREN LOGICAL_EXP RPAREN SEMICOLON
-    {
-        do {
-            printf("Repeat until loop\n");
-            $3;  
-        } while (!$7);
-    }
-;
-MATCHED_IF: 
-    IF LPAREN LOGICAL_EXP RPAREN LBRACE MATCHED_IF RBRACE ELSE LBRACE MATCHED_IF RBRACE
-    {
-
-        printf("matched 1");
-        if ($3) {
-            $$ = $6;  // Execute the first `if` branch
-        } else {
-            $$ = $10;  // Execute the second `else` branch
-        }
-    }
-  | IF LPAREN LOGICAL_EXP RPAREN LBRACE STMT RBRACE ELSE LBRACE STMT RBRACE
-    {
-        printf("matched 2");
-        if ($3) { 
-            $$ = $6;  // Execute the `if` branch
-        } else {
-            $$ = $10;  // Execute the `else` branch
-        }
-    }
-;
+// ;
+// CASE_STMTS: STMTS
+//           | 
+//           ;
 
 
-UNMATCHED_IF:
-    IF LPAREN LOGICAL_EXP RPAREN LBRACE STMT RBRACE
-    {
-        printf("unmatched 1 %d\n", $3);
-        if ($3 != 0) {
-            $$ = $6;  // Execute the `if` branch
-            printf("If statement executed\n");
-        }
-    }
-  | IF LPAREN LOGICAL_EXP RPAREN LBRACE {enterScope()} 
-    MATCHED_IF RBRACE {exitScope()}
-    ELSE LBRACE {enterScope()}
-    UNMATCHED_IF RBRACE {exitScope()}
-    {
-        printf("unmatched 2");
-        if ($3) {
-            $$ = $6;  // Execute the nested `if`
-        }
-        else
-        {
-            $$ = $10;
-        }
-    }
-;
+// FOR_LOOP: FOR LPAREN ASSIGNMENT SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT RPAREN LBRACE STMTS RBRACE
+//     {
+//         for ($3; $5; $7) {
+//             printf("For loop\n");
+//             $10;  
+//         }
+//     }
+// ;
+// WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE STMTS RBRACE
+//     {
+//         while ($3) {
+//             printf("While loop\n");
+//             $6;  
+//         }
+//     }
 
-ASSIGNMENT : ID ASSIGN EXP SEMICOLON
+// ;
+// REPEAT_UNTIL_LOOP: REPEAT LBRACE STMTS RBRACE UNTIL LPAREN LOGICAL_EXP RPAREN SEMICOLON
+//     {
+//         do {
+//             printf("Repeat until loop\n");
+//             $3;  
+//         } while (!$7);
+//     }
+// ;
+
+// MATCHED_IF: 
+//     IF LPAREN LOGICAL_EXP RPAREN LBRACE MATCHED_IF RBRACE ELSE LBRACE MATCHED_IF RBRACE
+//     {
+
+//         printf("matched 1");
+//         if ($3) {
+//             $$ = $6;  // Execute the first `if` branch
+//         } else {
+//             $$ = $10;  // Execute the second `else` branch
+//         }
+//     }
+//   | IF LPAREN LOGICAL_EXP RPAREN LBRACE STMT RBRACE ELSE LBRACE STMT RBRACE
+//     {
+//         printf("matched 2");
+//         if ($3) { 
+//             $$ = $6;  // Execute the `if` branch
+//         } else {
+//             $$ = $10;  // Execute the `else` branch
+//         }
+//     }
+// ;
+
+
+// UNMATCHED_IF:
+//     IF LPAREN LOGICAL_EXP RPAREN LBRACE STMT RBRACE
+//     {
+//         printf("unmatched 1 %d\n", $3);
+//         if ($3 != 0) {
+//             $$ = $6;  // Execute the `if` branch
+//             printf("If statement executed\n");
+//         }
+//     }
+//   | IF LPAREN LOGICAL_EXP RPAREN LBRACE {enterScope()} 
+//     MATCHED_IF RBRACE {exitScope()}
+//     ELSE LBRACE {enterScope()}
+//     UNMATCHED_IF RBRACE {exitScope()}
+//     {
+//         printf("unmatched 2");
+//         if ($3) {
+//             $$ = $6;  // Execute the nested `if`
+//         }
+//         else
+//         {
+//             $$ = $10;
+//         }
+//     }
+// ;
+
+ASSIGNMENT : ID ASSIGN LOGICAL_EXP SEMICOLON
     { 
         // Assign the value of EXP to the variable ID
 
         // assign_var($1, $3); 
-        updateSymbolValue($1, $3);
+        updateSymbolValue($1, ($3).value);
     }            
 ;
 
-LOGICAL_EXP : REL_EXP OR LOGICAL_EXP   { $$ = $1 || $3; }
-            | REL_EXP AND LOGICAL_EXP  { $$ = $1 && $3; }
+LOGICAL_EXP : REL_EXP OR LOGICAL_EXP   //{ $$ = ($1).value || ($3).value; }
+            | REL_EXP AND LOGICAL_EXP  //{ $$ = ($1).value && ($3).value; }
             | REL_EXP                  { $$ = $1;  }
             ;
 
-REL_EXP : EXP EQ EXP         { $$ = $1 == $3; }
-        | EXP NE EXP         { $$ = $1 != $3; }
-        | EXP LT EXP         { $$ = $1 < $3; printf("LT %f %f is %d\n", $1, $3, $$); }
-        | EXP LE EXP         { $$ = $1 <= $3; }
-        | EXP GT EXP         { $$ = $1 > $3; printf("GT %f %f is %d\n", $1, $3, $$); }
-        | EXP GE EXP         { $$ = $1 >= $3; }
+REL_EXP : EXP EQ EXP         //{ $$ = $1 == $3; }
+        | EXP NE EXP         //{ $$ = $1 != $3; }
+        | EXP LT EXP         //{ $$ = $1 < $3; printf("LT %f %f is %d\n", $1, $3, $$); }
+        | EXP LE EXP         //{ $$ = $1 <= $3; }
+        | EXP GT EXP         //{ $$ = $1 > $3; printf("GT %f %f is %d\n", $1, $3, $$); }
+        | EXP GE EXP         //{ $$ = $1 >= $3; }
         | EXP                { $$ = $1; }
         ;
 
-EXP : EXP ADD TERM           { $$ = $1 + $3; printf("ADD %f %f\n", $1, $3); }
-    | EXP SUB TERM           { $$ = $1 - $3; }
+EXP : EXP ADD TERM           
+    {
+        printf("Adding %s and %s\n", ($1).name, ($3).name);
+    }
+    | EXP SUB TERM           //{ $$ = $1 - $3; }
     | TERM                   { $$ = $1; }
     ;
 
-TERM : TERM MUL POWER       { $$ = $1 * $3; }
-     | TERM DIV POWER       { 
-         if ($3 == 0) { 
-             yyerror("Division by zero"); 
-             exit(1); 
-         } else {
-             $$ = $1 / $3; 
-         }
-     }
+TERM : TERM MUL POWER       //{ $$ = $1 * $3; }
+     | TERM DIV POWER       
+    //  { 
+    //      if ($3 == 0) { 
+    //          yyerror("Division by zero"); 
+    //          exit(1); 
+    //      } else {
+    //          $$ = $1 / $3; 
+    //      }
+    //  }
       
      | POWER                { $$ = $1; }
      ;
 
-POWER : FACTOR POW POWER    { $$ = pow($1, $3); }
+POWER : FACTOR POW POWER    //{ $$ = pow($1, $3); }
       | FACTOR              { $$ = $1; }
       ;
 
@@ -307,28 +318,28 @@ FACTOR : LPAREN LOGICAL_EXP RPAREN
         }
        | SUB FACTOR          
         { 
-            $$ = -$2; 
+            // $$ = -$2; 
             printf("Negation applied: %f\n", $$); 
         }
        | NOT FACTOR          
         { 
-            $$ = !$2; 
+            // $$ = !$2; 
             printf("Logical NOT applied: %d\n", $$); 
         }
        | INTEGER             
         { 
-            $$ = $1; 
-            printf("Integer constant: %d\n", $1); 
+            $$ = addSymbol($1, "int", false);
+            printf("Integer constant: %s\n", $1); 
         }
        | FLOAT               
         { 
-            $$ = $1; 
-            printf("Float constant: %f\n", $1); 
+            $$ = addSymbol($1, "float", false);
+            printf("Float constant: %s\n", $1);
         }
        | CHAR                
         { 
-            $$ = $1; 
-            printf("Character constant: '%c'\n", $1); 
+            $$ = addSymbol($1, "char", false);
+            printf("Character constant: %s\n", $1);
         }
        | ID                  
         { 
@@ -341,7 +352,7 @@ FACTOR : LPAREN LOGICAL_EXP RPAREN
                     yyerror("Variable used before initialization");
                 }
                 entry->isUsed = 1;  // Mark the variable as used
-                $$ = lookupSymbol($1)->value;  // Retrieve its runtime value
+                $$ = *lookupSymbol($1);  // Retrieve its runtime value
                 printf("Variable '%s' of type '%s' used. Value: %f\n", $1, entry->type, $$);
             }
         }
