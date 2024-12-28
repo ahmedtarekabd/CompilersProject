@@ -4,10 +4,12 @@
     #include <string.h>
     #include <math.h>
     #include "symbol_table.h"  // Include the symbol table header
+    #include "quadruple.h"  // Include the quadruple header
 
     void yyerror(const char *s);
     int yylex(void);
     extern FILE *yyin;
+    
 %}
 
 %union {
@@ -15,6 +17,7 @@
     char c;
     float f;
     char *s;  
+    int type;  // Add a new member for data type
 }
 
 %token POW NOT OR AND EQ NE LT LE GT GE ASSIGN LPAREN RPAREN LBRACE RBRACE SEMICOLON COLON
@@ -26,18 +29,18 @@
 %token ERROR
 
 
-%token <i> INTEGER
-%token <f> FLOAT
-%token <c> CHAR
+%token <i> INTEGER_VALUE
+%token <f> FLOAT_VALUE
+%token <c> CHAR_VALUE
 %token <s> ID
 
-// %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS 
-%type <i> LOGICAL_EXP REL_EXP
-%type <f> EXP TERM FACTOR POWER//FUNCTION_STMTS
-%type <i> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION
-%type <i> MATCHED_IF UNMATCHED_IF FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP SWITCH_CASE CASES CASE_BLOCK
+%type <s> LOGICAL_EXP REL_EXP
+%type <s> EXP TERM FACTOR POWER//FUNCTION_STMTS
+%type <s> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION
+// %type <i> MATCHED_IF UNMATCHED_IF 
+%type <i> FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP SWITCH_CASE CASES CASE_BLOCK
 // %type <i> FUNCTION_DECL FUNCTION_BODY  PARAMS PARAM
-%type <s> PARAM_TYPE //RETURN_TYPE
+%type <type> PARAM_TYPE //RETURN_TYPE
 
 
 
@@ -63,9 +66,11 @@ BLOCK : LBRACE {
        ;
 
 
-STMT: MATCHED_IF                    
-    | UNMATCHED_IF  
-    | SWITCH_CASE 
+STMT: 
+    // MATCHED_IF                    
+    // | UNMATCHED_IF  
+    // | 
+    SWITCH_CASE 
     | FOR_LOOP    
     | WHILE_LOOP        
     | REPEAT_UNTIL_LOOP   
@@ -82,7 +87,8 @@ DECLARATION: PARAM_TYPE ID SEMICOLON {
                 if (lookupSymbol($2) && isSymbolDeclaredInCurrentScope($2)) {
                     yyerror("Variable already declared in this scope");
                 } else {
-                    addSymbol($2, $1, false);  // Add variable to current scope
+                    Value value;
+                    addSymbol($2, $1, false, value);  // Add variable to current scope
                 }
             }
             ;
@@ -91,7 +97,8 @@ CONST_DECLARATION: CONST PARAM_TYPE ID SEMICOLON {
                 if (lookupSymbol($3) && isSymbolDeclaredInCurrentScope($3)) {
                     yyerror("Variable already declared in this scope");
                 } else {
-                    addSymbol($3, $2, true);  // Add variable to current scope
+                    Value value;
+                    addSymbol($3, $2, true, value);  // Add variable to current scope
                 }
             }
             ;
@@ -134,9 +141,9 @@ CONST_DECLARATION: CONST PARAM_TYPE ID SEMICOLON {
 //         ;
 
 
-PARAM_TYPE: INT_TYPE        { $$ = "int"; }
-          | FLOAT_TYPE      { $$ = "float"; }
-          | CHAR_TYPE       { $$ = "char"; }
+PARAM_TYPE: INT_TYPE        { $$ = INTEGER; }
+          | FLOAT_TYPE      { $$ = FLOAT; }
+          | CHAR_TYPE       { $$ = CHAR; }
           ;
 
 // RETURN_TYPE: VOID_TYPE      
@@ -168,7 +175,7 @@ CASES: CASES CASE_BLOCK
      | CASE_BLOCK
 ;
 
-CASE_BLOCK: CASE INTEGER COLON CASE_STMTS BREAK SEMICOLON
+CASE_BLOCK: CASE INTEGER_VALUE COLON CASE_STMTS BREAK SEMICOLON
     {
         printf("Case %d\n", $2);
         // case $2:
@@ -207,130 +214,221 @@ REPEAT_UNTIL_LOOP: REPEAT LBRACE STMTS RBRACE UNTIL LPAREN LOGICAL_EXP RPAREN SE
         } while (!$7);
     }
 ;
-MATCHED_IF: 
-    IF LPAREN LOGICAL_EXP RPAREN LBRACE MATCHED_IF RBRACE ELSE LBRACE MATCHED_IF RBRACE
-    {
+// MATCHED_IF: 
+//     IF LPAREN LOGICAL_EXP RPAREN LBRACE MATCHED_IF RBRACE ELSE LBRACE MATCHED_IF RBRACE
+//     {
 
-        printf("matched 1");
-        if ($3) {
-            $$ = $6;  // Execute the first `if` branch
-        } else {
-            $$ = $10;  // Execute the second `else` branch
-        }
-    }
-  | IF LPAREN LOGICAL_EXP RPAREN LBRACE STMT RBRACE ELSE LBRACE STMT RBRACE
-    {
-        printf("matched 2");
-        if ($3) { 
-            $$ = $6;  // Execute the `if` branch
-        } else {
-            $$ = $10;  // Execute the `else` branch
-        }
-    }
-;
+//         printf("matched 1");
+//         if ($3) {
+//             $$ = $6;  // Execute the first `if` branch
+//         } else {
+//             $$ = $10;  // Execute the second `else` branch
+//         }
+//     }
+//   | IF LPAREN LOGICAL_EXP RPAREN LBRACE STMT RBRACE ELSE LBRACE STMT RBRACE
+//     {
+//         printf("matched 2");
+//         if ($3) { 
+//             $$ = $6;  // Execute the `if` branch
+//         } else {
+//             $$ = $10;  // Execute the `else` branch
+//         }
+//     }
+// ;
 
 
-UNMATCHED_IF:
-    IF LPAREN LOGICAL_EXP RPAREN LBRACE STMT RBRACE
-    {
-        printf("unmatched 1 %d\n", $3);
-        if ($3 != 0) {
-            $$ = $6;  // Execute the `if` branch
-            printf("If statement executed\n");
-        }
-    }
-  | IF LPAREN LOGICAL_EXP RPAREN LBRACE {enterScope()} 
-    MATCHED_IF RBRACE {exitScope()}
-    ELSE LBRACE {enterScope()}
-    UNMATCHED_IF RBRACE {exitScope()}
-    {
-        printf("unmatched 2");
-        if ($3) {
-            $$ = $6;  // Execute the nested `if`
-        }
-        else
-        {
-            $$ = $10;
-        }
-    }
-;
+// UNMATCHED_IF:
+//     IF LPAREN LOGICAL_EXP RPAREN LBRACE STMT RBRACE
+//     {
+//         printf("unmatched 1 %d\n", $3);
+//         if ($3 != 0) {
+//             $$ = $6;  // Execute the `if` branch
+//             printf("If statement executed\n");
+//         }
+//     }
+//   | IF LPAREN LOGICAL_EXP RPAREN LBRACE {enterScope()} 
+//     MATCHED_IF RBRACE {exitScope()}
+//     ELSE LBRACE {enterScope()}
+//     UNMATCHED_IF RBRACE {exitScope()}
+//     {
+//         printf("unmatched 2");
+//         if ($3) {
+//             $$ = $6;  // Execute the nested `if`
+//         }
+//         else
+//         {
+//             $$ = $10;
+//         }
+//     }
+// ;
 
 ASSIGNMENT : ID ASSIGN EXP SEMICOLON
     { 
-        // Assign the value of EXP to the variable ID
-
-        // assign_var($1, $3); 
-        updateSymbolValue($1, $3);
+        char* id = strdup($1);
+        addQuadruple("=", $3, NULL, id);
+        Value value;
+        updateSymbolValue($1, value);
     }            
 ;
 
-LOGICAL_EXP : REL_EXP OR LOGICAL_EXP   { $$ = $1 || $3; }
-            | REL_EXP AND LOGICAL_EXP  { $$ = $1 && $3; }
-            | REL_EXP                  { $$ = $1;  }
+LOGICAL_EXP : REL_EXP OR LOGICAL_EXP { 
+                char *temp = newTemp();
+                addQuadruple("OR", $1, $3, temp);
+                $$ = temp; 
+            }
+            | REL_EXP AND LOGICAL_EXP { 
+                char *temp = newTemp();
+                addQuadruple("AND", $1, $3, temp);
+                $$ = temp; 
+            }
+            | REL_EXP { $$ = $1; }
             ;
 
-REL_EXP : EXP EQ EXP         { $$ = $1 == $3; }
-        | EXP NE EXP         { $$ = $1 != $3; }
-        | EXP LT EXP         { $$ = $1 < $3; printf("LT %f %f is %d\n", $1, $3, $$); }
-        | EXP LE EXP         { $$ = $1 <= $3; }
-        | EXP GT EXP         { $$ = $1 > $3; printf("GT %f %f is %d\n", $1, $3, $$); }
-        | EXP GE EXP         { $$ = $1 >= $3; }
-        | EXP                { $$ = $1; }
+REL_EXP : EXP EQ EXP { 
+            char *temp = newTemp();
+            addQuadruple("EQ", $1, $3, temp);
+            $$ = temp; 
+        }
+        | EXP NE EXP { 
+            char *temp = newTemp();
+            addQuadruple("NE", $1, $3, temp);
+            $$ = temp; 
+        }
+        | EXP LT EXP { 
+            char *temp = newTemp();
+            addQuadruple("LT", $1, $3, temp);
+            $$ = temp; 
+        }
+        | EXP LE EXP { 
+            char *temp = newTemp();
+            addQuadruple("LE", $1, $3, temp);
+            $$ = temp; 
+        }
+        | EXP GT EXP { 
+            char *temp = newTemp();
+            addQuadruple("GT", $1, $3, temp);
+            $$ = temp; 
+        }
+        | EXP GE EXP { 
+            char *temp = newTemp();
+            addQuadruple("GE", $1, $3, temp);
+            $$ = temp; 
+        }
+        | EXP { $$ = $1; }
         ;
 
-EXP : EXP ADD TERM           { $$ = $1 + $3; printf("ADD %f %f\n", $1, $3); }
-    | EXP SUB TERM           { $$ = $1 - $3; }
-    | TERM                   { $$ = $1; }
+EXP : EXP ADD TERM { 
+            printf("Adding %s + %s\n", $1, $3);  // Debugging to check the operands
+            char *temp1 = $1;  // Left operand (could be a temp)
+            char *temp2 = $3;  // Right operand (could be another temp)
+            char *resultTemp = newTemp();  // Create new temp for result
+            addQuadruple("ADD", temp1, temp2, resultTemp);  // Use the correct operands
+            $$ = resultTemp;  // Assign result to $$ (final result)
+        }       
+
+    | EXP SUB TERM { 
+            char *temp = newTemp();
+            addQuadruple("SUB", $1, $3, temp);
+            $$ = temp; 
+        }
+    | TERM { $$ = $1; 
+    printf("Term: %s\n", $$);
+    }
     ;
 
-TERM : TERM MUL POWER       { $$ = $1 * $3; }
-     | TERM DIV POWER       { 
-         if ($3 == 0) { 
-             yyerror("Division by zero"); 
-             exit(1); 
-         } else {
-             $$ = $1 / $3; 
-         }
+TERM : TERM MUL POWER { 
+            char *temp = newTemp();
+            addQuadruple("MUL", $1, $3, temp);
+            $$ = temp; 
+        }
+     | TERM DIV POWER { 
+            if ($3 == 0) { 
+                yyerror("Division by zero"); 
+                exit(1); 
+            } else {
+                char *temp = newTemp();
+                addQuadruple("DIV", $1, $3, temp);
+                $$ = temp; 
+            }
+        }
+     | POWER { $$ = $1; 
+     
+     printf("Power: %s\n", $$);
      }
-      
-     | POWER                { $$ = $1; }
      ;
 
-POWER : FACTOR POW POWER    { $$ = pow($1, $3); }
-      | FACTOR              { $$ = $1; }
+POWER : FACTOR POW POWER { 
+            char *temp = newTemp();
+            addQuadruple("POW", $1, $3, temp);
+            $$ = temp; 
+        }
+      | FACTOR { $$ = $1; 
+      printf("Factor: %s\n", $$);
+      }
       ;
+
 
 FACTOR : LPAREN LOGICAL_EXP RPAREN 
         { 
-            $$ = $2; 
-            printf("Logical expression evaluated.\n"); 
+            char *tempVar = newTemp();  // Generate a new temporary variable
+            $$ = tempVar;  // The result of the logical expression will be stored in this temporary variable
+            printf("Logical expression evaluated: %f\n", $$);
+            // Add the quadruple for this logical expression
+            addQuadruple("LPAREN", "Logical Expression", "", tempVar);
         }
-       | SUB FACTOR          
+      | SUB FACTOR          
         { 
-            $$ = -$2; 
-            printf("Negation applied: %f\n", $$); 
+            char *tempVar = newTemp();  // Generate a new temporary variable
+            $$ = tempVar;  // Store the result in a temporary variable
+            printf("Negation applied: %f\n", $$);
+            // Add the quadruple for negation
+            addQuadruple("SUB", "0", "$2", tempVar);
         }
-       | NOT FACTOR          
+      | NOT FACTOR          
         { 
-            $$ = !$2; 
-            printf("Logical NOT applied: %d\n", $$); 
+            char *tempVar = newTemp();  // Generate a new temporary variable
+            $$ = tempVar;  // Store the result in a temporary variable
+            printf("Logical NOT applied: %d\n", $$);
+            // Add the quadruple for logical NOT
+            addQuadruple("NOT", "$2", "", tempVar);
         }
-       | INTEGER             
+      | INTEGER_VALUE             
         { 
-            $$ = $1; 
-            printf("Integer constant: %d\n", $1); 
+            char *tempVar = newTemp();  // Generate a new temporary variable
+            $$ = tempVar;  // The result of the constant will be stored in this temporary variable
+            printf("Integer constant: %d\n", $1);
+            // Add the quadruple for integer constant
+            addQuadruple("CONST", "", "", tempVar);
+            // Add the constant to the symbol table
+            Value value;
+            value.intValue = $1;
+            addSymbol($$, INTEGER, true, value);  // Add to symbol table with constant value
         }
-       | FLOAT               
+      | FLOAT_VALUE               
         { 
-            $$ = $1; 
-            printf("Float constant: %f\n", $1); 
+            char *tempVar = newTemp();  // Generate a new temporary variable
+            $$ = tempVar;  // The result of the constant will be stored in this temporary variable
+            printf("Float constant: %f\n", $1);
+            // Add the quadruple for float constant
+            addQuadruple("CONST", "", "", tempVar);
+            // Add the constant to the symbol table
+            Value value;
+            value.floatValue = $1;
+            addSymbol($$, FLOAT, true, value);  // Add to symbol table with constant value
         }
-       | CHAR                
+      | CHAR_VALUE
         { 
-            $$ = $1; 
-            printf("Character constant: '%c'\n", $1); 
+            char *tempVar = newTemp();  // Generate a new temporary variable
+            $$ = tempVar;  // The result of the constant will be stored in this temporary variable
+            printf("Character constant: '%c'\n", $1);
+            // Add the quadruple for character constant
+            addQuadruple("CONST", "", "", tempVar);
+            // Add the constant to the symbol table
+            Value value;
+            value.charValue = $1;
+            addSymbol($$, CHAR, true, value);  // Add to symbol table with constant value
         }
-       | ID                  
+      | ID                   
         { 
             // Look up the variable in the symbol table
             SymbolTableEntry *entry = lookupSymbol($1);
@@ -341,11 +439,16 @@ FACTOR : LPAREN LOGICAL_EXP RPAREN
                     yyerror("Variable used before initialization");
                 }
                 entry->isUsed = 1;  // Mark the variable as used
-                $$ = lookupSymbol($1)->value;  // Retrieve its runtime value
-                printf("Variable '%s' of type '%s' used. Value: %f\n", $1, entry->type, $$);
+                $$ = entry->name;  // Use the variable's name for now, may need its value later
+                printf("Variable '%s' of type '%s' used. Value: %f\n", $1, entry->type, entry->value);
+                // Add the quadruple for the variable
+                addQuadruple("ID", $1, "", "tempVar");
             }
         }
-       ;
+      ;
+
+
+
 
 
 %% 
@@ -364,6 +467,7 @@ int main(int argc, char **argv) {
     }
     if (yyparse() == 0) {
         printf("Parsing successful\n");
+        printQuadruples();
     } else {
         printf("Parsing failed\n");
     }

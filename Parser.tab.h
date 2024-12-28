@@ -78,9 +78,9 @@
      RETURN = 294,
      COMMA = 295,
      ERROR = 296,
-     INTEGER = 297,
-     FLOAT = 298,
-     CHAR = 299,
+     INTEGER_VALUE = 297,
+     FLOAT_VALUE = 298,
+     CHAR_VALUE = 299,
      ID = 300
    };
 #endif
@@ -92,17 +92,18 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 13 "Parser.y"
+#line 15 "Parser.y"
 
     int i;
     char c;
     float f;
     char *s;  
+    int type;  // Add a new member for data type
 
 
 
 /* Line 1676 of yacc.c  */
-#line 106 "Parser.tab.h"
+#line 107 "Parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

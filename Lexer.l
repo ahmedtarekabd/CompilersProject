@@ -29,8 +29,9 @@
 "const"     { return CONST; }
 
 
-[0-9]+\.[0-9]+  { yylval.f = atof(yytext); printf("Float: %f\n", yylval.f); return FLOAT; }
-[0-9]+      { yylval.i = atoi(yytext); return INTEGER; }
+[0-9]+\.[0-9]+  { yylval.f = atof(yytext); printf("Float: %f\n", yylval.f); return FLOAT_VALUE; }
+[0-9]+      { yylval.i = atoi(yytext); return INTEGER_VALUE; }
+\b'[a-zA-Z_]'\b     { yylval.c = yytext[1]; return CHAR_VALUE; }
 [ \t\n]     { /* Ignore whitespace */ }
 [a-zA-Z_][a-zA-Z0-9_]* { yylval.s = strdup(yytext); return ID; }  // Adjusted identifier rule
 
