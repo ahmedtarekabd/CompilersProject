@@ -33,7 +33,7 @@ extern Scope *currentScope;  // Pointer to the current (innermost) scope
 void enterScope();
 void exitScope();
 char *newTemp();
-SymbolTableEntry addSymbol(char *name, char *type, bool isConst);
+SymbolTableEntry *addSymbol(char *name, char *type, bool isConst);
 SymbolTableEntry *lookupSymbol(char *name);
 int updateSymbolValue(char *name, float value);
 bool isSymbolDeclaredInCurrentScope(char *name);

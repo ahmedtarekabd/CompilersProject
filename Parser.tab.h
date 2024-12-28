@@ -92,14 +92,14 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 13 "Parser.y"
+#line 14 "Parser.y"
 
     int i;
     char c;
     float f;
     char *s;  
     char *Dtype;
-    SymbolTableEntry symbolTableEntry;
+    SymbolTableEntry *symbolTableEntry;
 
 
 

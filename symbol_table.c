@@ -28,7 +28,7 @@ void exitScope() {
 }
 
 
-SymbolTableEntry addSymbol(char *name, char *type, bool isConst) {
+SymbolTableEntry *addSymbol(char *name, char *type, bool isConst) {
     SymbolTableEntry *entry = (SymbolTableEntry *)malloc(sizeof(SymbolTableEntry));
     entry->name = strdup(name);
     entry->type = strdup(type);
@@ -39,8 +39,8 @@ SymbolTableEntry addSymbol(char *name, char *type, bool isConst) {
     entry->next = currentScope->symbols;
     currentScope->symbols = entry;
 
-    printf("Added symbol '%s' with type: %s\n", name, type);
-    return *entry;
+    printf("Added symbol '%s' with type: %s isConst = %i\n", name, type, isConst);
+    return entry;
 }
 
 SymbolTableEntry *lookupSymbol(char *name) {
@@ -72,6 +72,7 @@ int updateSymbolValue(char *name, float value) {
         printf("Error: Symbol '%s' not found.\n", name);
         return 0;  // Symbol not found
     }
+    printf("/////// is init %d\n", entry->isInitialized);
     if (entry->isConst && entry->isInitialized) {
         printf("Error: Cannot update value of constant symbol '%s'.\n", name);
         return 0;  // Cannot update value of constant symbol
