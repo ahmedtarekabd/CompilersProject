@@ -184,20 +184,25 @@ void addQuadrupleFunction(FunctionDef *functionDef , bool beforeSomeCode) {
     }
     char command[256]; // Adjust the size as needed
     if (beforeSomeCode){
-    sprintf(command, "----------------------------\nFunction: %s\n", functionDef->name);
-    writeCommandToFile(command);
-    for (int i = 0; i < functionDef->paramCount; i++) {
-        sprintf(command, "Param: %s, Type: %s", functionDef->paramNames[i], functionDef->paramTypes[i]);
-        writeCommandToFile(command);
-    } 
+    sprintf(command, "\n%s proc %s ",functionDef->returnType ,functionDef->name);
+
+for (int i = 0; i < functionDef->paramCount; i++) {
+    char param[100]; // Adjust the size as needed
+    sprintf(param, "%s %s", functionDef->paramTypes[i],functionDef->paramNames[i]);
+    strcat(command, param);
+    if (i < functionDef->paramCount - 1) {
+        strcat(command, ", ");
+    }
+}
+writeCommandToFile(command);
     }
     else
     {
     if(strncmp(functionDef->returnType,"void",4) != 0){
-    sprintf(command, "Return Type: %s , Return Var :%s\n----------------------------\n", functionDef->returnType, functionDef->returnVar);
+    sprintf(command, "return %s\n", functionDef->returnVar);
     }
     else{
-    sprintf(command, "Return");
+    sprintf(command, "return\n");
     }
     writeCommandToFile(command);
     }
