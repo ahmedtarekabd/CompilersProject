@@ -1,0 +1,12 @@
+Symbol: t3, Type: char, Initialized: 0, Value: 0.000000
+Symbol: t2, Type: int, Initialized: 0, Value: 0.000000
+Symbol: t1, Type: int, Initialized: 0, Value: 0.000000
+Symbol: 1, Type: int, Initialized: 0, Value: 0.000000
+Symbol: z, Type: char, Initialized: 0, Value: 0.000000
+Symbol: y, Type: int, Initialized: 0, Value: 0.000000
+Symbol: x, Type: int, Initialized: 1, Value: 0.000000
+Symbol: print, Type: void, Initialized: 0, Value: 0.000000
+Symbol: sum, Type: int, Initialized: 0, Value: 0.000000
+Symbol: t0, Type: int, Initialized: 0, Value: 0.000000
+Symbol: 0, Type: int, Initialized: 0, Value: 0.000000
+Symbol: i, Type: int, Initialized: 1, Value: 0.000000

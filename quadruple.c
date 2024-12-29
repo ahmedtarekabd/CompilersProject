@@ -7,6 +7,7 @@ int quadIndex = 0;
 // Function to add a quadruple to the array
 SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, SymbolTableEntry *operand2) {
     // Generate a new temporary variable for the result
+    printf("adding quadruple\n");
     char *result = newTemp();
 
     printf("Adding quadruple: (%s, %s, %s, %s)\n", operat, operand1->name, operand2->name, result);
@@ -175,7 +176,33 @@ void switchcaseQuadruple(SymbolTableEntry *condition , char * nextLabel ,char* e
     }
     quadIndex++;
 }
-
+void addQuadrupleFunction(FunctionDef *functionDef , bool beforeSomeCode) {
+    // Store quadruple using copied values
+    if (quadIndex >= MAX_QUADRUPLES) {
+        fprintf(stderr, "Quadruple storage overflow!\n");
+        exit(1);
+    }
+    char command[256]; // Adjust the size as needed
+    if (beforeSomeCode){
+    sprintf(command, "----------------------------\nFunction: %s\n", functionDef->name);
+    writeCommandToFile(command);
+    for (int i = 0; i < functionDef->paramCount; i++) {
+        sprintf(command, "Param: %s, Type: %s", functionDef->paramNames[i], functionDef->paramTypes[i]);
+        writeCommandToFile(command);
+    } 
+    }
+    else
+    {
+    if(strncmp(functionDef->returnType,"void",4) != 0){
+    sprintf(command, "Return Type: %s , Return Var :%s\n----------------------------\n", functionDef->returnType, functionDef->returnVar);
+    }
+    else{
+    sprintf(command, "Return");
+    }
+    writeCommandToFile(command);
+    }
+    quadIndex++;
+}
 // Function to print all generated quadruples 
 
 void printQuadruples() {

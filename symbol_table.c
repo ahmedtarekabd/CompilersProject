@@ -31,11 +31,7 @@ void enterScope() {
     currentScope = newScope;
 }
 
-void exitScope() {
-    Scope *oldScope = currentScope;
-    currentScope = currentScope->parent;
-    free(oldScope);
-}
+
 
 
 SymbolTableEntry *addSymbol(char *name, char *type, bool isConst) {
@@ -77,6 +73,7 @@ bool isSymbolDeclaredInCurrentScope(char *name) {
 }
 
 int updateSymbolValue(char *name, float value) {
+    
     SymbolTableEntry *entry = lookupSymbol(name);
     if (entry == NULL) {
         printf("Error: Symbol '%s' not found.\n", name);
@@ -101,3 +98,59 @@ void displayScope() {
         entry = entry->next;
     }
 }
+//write symbol table to file 
+// void displaySymbolTable() {
+//     Scope *scope = currentScope;
+//     while (scope) {
+//         SymbolTableEntry *entry = scope->symbols;
+//         while (entry) {
+//             printf("Symbol: %s, Type: %s, Initialized: %d, Value: %f\n", 
+//                    entry->name, entry->type, entry->isInitialized, entry->value);
+//             entry = entry->next;
+//         }
+//         scope = scope->parent;
+//     }
+// }
+void writeSymbolTableOfCurrentScopeToFile()
+{
+    FILE *file = fopen("symbol_table.txt", "a");
+    if (!file) {
+        fprintf(stderr, "Error: Could not open file for writing.\n");
+        return;
+    }
+    SymbolTableEntry *entry = currentScope->symbols;
+    while (entry) {
+        fprintf(file, "Symbol: %s, Type: %s, Initialized: %d, Value: %f\n", 
+               entry->name, entry->type, entry->isInitialized, entry->value);
+        entry = entry->next;
+    }
+    fclose(file);
+}
+
+void exitScope() {
+    Scope *oldScope = currentScope;
+    writeSymbolTableOfCurrentScopeToFile();
+    currentScope = currentScope->parent;
+    free(oldScope);
+}
+
+// void writeSymbolTableToFile(){
+//     FILE *file = fopen("symbol_table.txt", "w");
+//     if (!file) {
+//         fprintf(stderr, "Error: Could not open file for writing.\n");
+//         return;
+//     }
+//     Scope *scope = currentScope;
+//     int scopeNumber = 0;
+//     while (scope) {
+//         SymbolTableEntry *entry = scope->symbols;
+//         fprintf(file, "Scope %d\n", scopeNumber);
+//         while (entry) {
+//             fprintf(file, "Symbol: %s, Type: %s, Initialized: %d, Value: %f\n", 
+//                    entry->name, entry->type, entry->isInitialized, entry->value);
+//             entry = entry->next;
+//         }
+//         scope = scope->parent;
+//         scopeNumber++;
+//     }
+// }

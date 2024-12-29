@@ -14,7 +14,33 @@
     char *currentSwitchVar;
     char* nextLabel;
     char* endLabel; 
-
+    FunctionDef *currentFunction;
+     // Function to free the current function definition
+    void freeCurrentFunction() {
+        if (currentFunction) {
+            free(currentFunction->name);
+            for (int i = 0; i < currentFunction->paramCount; i++) {
+                free(currentFunction->paramNames[i]);
+                free(currentFunction->paramTypes[i]);
+            }
+            free(currentFunction->paramNames);
+            free(currentFunction->paramTypes);
+            free(currentFunction->returnType);
+            free(currentFunction);
+            currentFunction = NULL;
+        }
+    }
+   void initializeCurrentFunction(const char *name, const char *returnType) {
+    if (currentFunction) {
+        freeCurrentFunction();
+    }
+    currentFunction = (FunctionDef *)malloc(sizeof(FunctionDef));
+    currentFunction->name = strdup(name);
+    currentFunction->returnType = strdup(returnType);
+    currentFunction->paramNames = NULL;
+    currentFunction->paramTypes = NULL;
+    currentFunction->paramCount = 0;
+}
 %}
 
 %union {
@@ -30,7 +56,7 @@
 %token FOR WHILE REPEAT UNTIL
 %token IF ELSE SWITCH CASE BREAK DEFAULT
 %token SUB ADD DIV MUL
-%token INT_TYPE FLOAT_TYPE CHAR_TYPE VOID_TYPE CONST
+%token INT_TYPE FLOAT_TYPE CHAR_TYPE VOID_TYPE CONST STRING_TYPE
 %token RETURN COMMA 
 %token ERROR
 
@@ -39,13 +65,15 @@
 %token <s> FLOAT
 %token <s> CHAR
 %token <s> ID
+%token <s> STRING
 
 // %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS 
 %type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP MATCHED_IF UNMATCHED_IF 
 %type <symbolTableEntry> EXP TERM FACTOR POWER //FUNCTION_STMTS
-%type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION ASSIGNMENT_FORLOOP //IF_STMT
+%type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION ASSIGNMENT_FORLOOP 
+%type <symbolTableEntry> FUNCTION_DEFINITION   PARAMS PARAM FUNCTION_BODY FUNCTION_PARAMS FUNCTION_PARAM FUNCTION_START VOID_FUNCTION_BODY
 // %type <symbolTableEntry> FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP SWITCH_CASE CASES CASE_BLOCK
-// %type <i> FUNCTION_DECL FUNCTION_BODY  PARAMS PARAM
+// %type <i> FUNCTION_DECL FUNCTION_BODY 
 %type <Dtype> PARAM_TYPE //RETURN_TYPE
 
 
@@ -73,7 +101,7 @@ BLOCK : LBRACE {
 
 
 STMT: 
-     MATCHED_IF                    
+      MATCHED_IF                    
     | UNMATCHED_IF  
 //     |   
     // | FUNCTION_DECL SEMICOLON
@@ -87,14 +115,18 @@ STMT:
     | DECLARATION 
     | CONST_DECLARATION 
     | ASSIGNMENT           
-    | LOGICAL_EXP SEMICOLON         
+    | LOGICAL_EXP SEMICOLON
+    | FUNCTION_DEFINITION
+    | RETURN SEMICOLON
+    | RETURN LOGICAL_EXP SEMICOLON
+   // | FUNCTION_CALL
     ;
 
 DECLARATION: PARAM_TYPE ID SEMICOLON {
                 if (lookupSymbol($2) && isSymbolDeclaredInCurrentScope($2)) {
                     yyerror("Variable already declared in this scope");
                 } else {
-                    addSymbol($2, $1, false);  // Add variable to current scope
+                    $$ = addSymbol($2, $1, false);  // Add variable to current scope
                 }
             }
             ;
@@ -107,50 +139,108 @@ CONST_DECLARATION: CONST PARAM_TYPE ID SEMICOLON {
                 }
             }
             ;
+FUNCTION_DEFINITION: FUNCTION_START 
+    LPAREN FUNCTION_PARAMS RPAREN FUNCTION_BODY
+    {
+        printf("Function definition\n");
+    }
+    |
+    VOID_TYPE ID
+    {
+        if (lookupSymbol($2) && isSymbolDeclaredInCurrentScope($2)) {
+            yyerror("Function already declared in this scope");
+        } else {
+            addSymbol($2, "void", false);  // Add function to current scope 
+            initializeCurrentFunction($2, "void");
+        }
+    }
+    LPAREN FUNCTION_PARAMS RPAREN VOID_FUNCTION_BODY 
+    
+    ; 
+    FUNCTION_BODY:
+    LBRACE  { 
+          enterScope();
+            for (int i = 0; i < currentFunction->paramCount; i++) {
+                addSymbol(currentFunction->paramNames[i], currentFunction->paramTypes[i], false);
+            }
+        addQuadrupleFunction(currentFunction,true);
+        
+         }
+    STMTS
+    RETURN 
+    LOGICAL_EXP SEMICOLON   
+    RBRACE  {
+        currentFunction->returnVar = ($5)->name;
+        addQuadrupleFunction(currentFunction,false);
+        freeCurrentFunction();
+        exitScope();
+        }
+    ;
 
-// FUNCTION_DECL: DECLARATION LPAREN PARAMS RPAREN
-//     {
-//         printf("Function declaration\n");
-//         // Declare a function with the given return type, name, and parameters
-//         // declare_function($1, $2, $4);
-//     }
-// ;
+VOID_FUNCTION_BODY:
+    LBRACE  { 
+          enterScope();
+            for (int i = 0; i < currentFunction->paramCount; i++) {
+                addSymbol(currentFunction->paramNames[i], currentFunction->paramTypes[i], false);
+            }
+        addQuadrupleFunction(currentFunction,true);
+         }
+    STMTS 
+    // RETURN SEMICOLON   
+    RBRACE  {
+        addQuadrupleFunction(currentFunction,false);
+        freeCurrentFunction();
+        exitScope();
+        }
+    ;
+    
+FUNCTION_PARAMS: FUNCTION_PARAMS COMMA FUNCTION_PARAM
+    | FUNCTION_PARAM
+    ;
 
-// FUNCTION_BODY: LBRACE FUNCTION_STMTS RBRACE
-//     {
-//         printf("Function body parsed\n");
-//     }
-//     ;
+    
+FUNCTION_PARAM: PARAM_TYPE ID {
+    
+    currentFunction->paramCount++;
+    currentFunction->paramNames = (char **)realloc(currentFunction->paramNames, currentFunction->paramCount * sizeof(char *));
+    currentFunction->paramTypes = (char **)realloc(currentFunction->paramTypes, currentFunction->paramCount * sizeof(char *));
+    currentFunction->paramNames[currentFunction->paramCount - 1] = strdup($2);
+    currentFunction->paramTypes[currentFunction->paramCount - 1] = strdup($1); 
+    //TODO : ADD PARAMETERS TO SYMBOL TABLE IN THE FUNCTION SCOPE 
+    printf("Parameter %s of type %s\n", $2, $1);
+        }
+        |
+        ;
 
-// FUNCTION_STMTS: STMTS RETURN EXP SEMICOLON  
-//               | RETURN EXP SEMICOLON
-//               | RETURN SEMICOLON
-//               ;
-
-
-// PARAMS: PARAMS COMMA PARAM
-//       | PARAM
-//       | { $$ = 0; }
-//       ;
-
-// PARAM : PARAM_TYPE ID {
-//             printf("Parameter %s of type %s\n", $2, $1);
-//             if (lookupSymbol($2)) {
-//                 yyerror("Variable already declared in this scope");
-//             } else {
-//                 printf("Parameter %s of type %s\n", $2, $1);
-//                 addSymbol($2, $1);  // Add variable to current scope
-//             }
-//             // $$ = $2;
-//         }
-//         ;
-
-
+PARAMS: PARAMS COMMA PARAM
+      | PARAM
+      ;
+PARAM : PARAM_TYPE ID {
+            printf("Parameter %s of type %s\n", $2, $1);
+            SymbolTableEntry *entry = lookupSymbol($2);
+            if (entry) {
+                yyerror("Variable already declared in this scope");
+            } else {
+                printf("Parameter %s of type %s\n", $2, $1);
+                $$ = addSymbol($2, $1, false);  // Add variable to current scope
+            }
+            $$ = entry;
+            
+        }
+        ;
 PARAM_TYPE: INT_TYPE        { $$ = "int"; }
           | FLOAT_TYPE      { $$ = "float"; }
           | CHAR_TYPE       { $$ = "char"; }
+          | STRING_TYPE     { $$ = "string"; }
           ;
-
+FUNCTION_START: PARAM_TYPE ID {
+    if (lookupSymbol($2) && isSymbolDeclaredInCurrentScope($2)) {
+        yyerror("Function already declared in this scope");
+    } else {
+        addSymbol($2, $1, false);  // Add function to current scope 
+        initializeCurrentFunction($2, $1);
+    }
+}
 // RETURN_TYPE: VOID_TYPE      
 //            | PARAM_TYPE     
 //            ;
@@ -329,7 +419,6 @@ STMTS RBRACE
     addQuadrupleLabel(condition, labels->loopLabel, NULL, false);
     free(labels);
     exitScope();
-
 }
  RPAREN SEMICOLON
     
@@ -438,7 +527,6 @@ UNMATCHED_IF:
 ; 
 ASSIGNMENT : ID ASSIGN LOGICAL_EXP SEMICOLON
     { 
-        
         SymbolTableEntry *entry = lookupSymbol($1);
         if (!entry) {
             yyerror("Variable not declared in any scope");
@@ -532,18 +620,41 @@ FACTOR : LPAREN LOGICAL_EXP RPAREN
         }
        | INTEGER             
         { 
-            $$ = addSymbol($1, "int", false);
+            SymbolTableEntry *entry = lookupSymbol($1);
+            if (!entry) {
+                $$ = addSymbol($1, "int", false);
+            }
+            else
+            $$ = entry;
             printf("Integer constant: %s\n", $1); 
         }
        | FLOAT               
         { 
-            $$ = addSymbol($1, "float", false);
+            SymbolTableEntry *entry = lookupSymbol($1);
+            if (!entry) {
+                $$ = addSymbol($1, "float", false);
+            } else
+            $$ = entry;
             printf("Float constant: %s\n", $1);
         }
        | CHAR                
         { 
-            $$ = addSymbol($1, "char", false);
+            SymbolTableEntry *entry = lookupSymbol($1);
+            if (!entry) {
+                $$ = addSymbol($1, "char", false);
+            } else
+            $$ = entry;
             printf("Character constant: %s\n", $1);
+        }
+        | STRING
+        {
+            printf("String constant: %s\n", $1);
+            SymbolTableEntry *entry = lookupSymbol($1);
+            if (!entry) {
+                $$ = addSymbol($1, "string", false);
+            } else
+            $$ = entry;
+            printf("String constant: %s\n", $1);
         }
        | ID                  
         { 
@@ -561,16 +672,12 @@ FACTOR : LPAREN LOGICAL_EXP RPAREN
             }
         }
        ;
-
-
 %% 
-
 void yyerror(const char *s) {
     fprintf(stderr, "%s\n", s);
 }
 
 int main(int argc, char **argv) {
-
      // Clear the contents of quadruples.txt
     FILE *quadFile = fopen("quadruples.txt", "w");
     if (quadFile == NULL) {
@@ -578,7 +685,13 @@ int main(int argc, char **argv) {
         return 1;
     }
     fclose(quadFile);
-    
+    // Clear the contents of symbol_table.txt 
+    FILE *symFile = fopen("symbol_table.txt", "w");
+    if (symFile == NULL) {
+        fprintf(stderr, "Error opening symbol_table.txt for writing!\n");
+        return 1;
+    }
+    fclose(symFile);
     if (argc > 1) {
         yyin = fopen(argv[1], "r");
         if (!yyin) {
@@ -590,6 +703,8 @@ int main(int argc, char **argv) {
     if (yyparse() == 0) {
         printf("Parsing successful\n");
         printQuadruples();
+        // writeSymbolTableToFile();
+
     } else {
         printf("Parsing failed\n");
     }

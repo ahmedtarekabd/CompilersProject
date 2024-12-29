@@ -39,5 +39,7 @@ SymbolTableEntry *lookupSymbol(char *name);
 int updateSymbolValue(char *name, float value);
 bool isSymbolDeclaredInCurrentScope(char *name);
 void displayScope();
-
+void displayAllScopes();
+void writeSymbolTableToFile();
+void writeSymbolTableOfCurrentScopeToFile();
 #endif // SYMBOL_TABLE_H

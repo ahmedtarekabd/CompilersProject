@@ -26,14 +26,16 @@
 "int"       { return INT_TYPE; }
 "float"     { return FLOAT_TYPE; }
 "char"      { return CHAR_TYPE; }
+"string"    { return STRING_TYPE; }
 "const"     { return CONST; }
 
 
 [0-9]+\.[0-9]+  { yylval.s = yytext; printf("Float: %f\n", yylval.f); return FLOAT; }
 [0-9]+      { yylval.s = yytext; return INTEGER; }
 [ \t\n]     { /* Ignore whitespace */ }
-[a-zA-Z_][a-zA-Z0-9_]* { yylval.s = strdup(yytext); return ID; }  // Adjusted identifier rule
 
+\"[^"]*\" { yylval.s = strdup(yytext); return STRING; }
+[a-zA-Z_][a-zA-Z0-9_]* { yylval.s = strdup(yytext); return ID; }  // Adjusted identifier rule
 
 
 
