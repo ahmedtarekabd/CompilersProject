@@ -53,7 +53,7 @@ Grammar
 
    26 $@4: /* empty */
 
-   27 FUNCTION_BODY: LBRACE $@4 STMTS RETURN FINAL_EXP SEMICOLON RBRACE
+   27 FUNCTION_BODY: LBRACE $@4 STMTS RBRACE
 
    28 $@5: /* empty */
 
@@ -178,7 +178,7 @@ LPAREN (269) 23 25 39 44 55 57 60 64 87
 RPAREN (270) 23 25 39 44 55 57 60 64 87
 LBRACE (271) 6 27 29 44 55 57 60 62 64
 RBRACE (272) 6 27 29 44 55 57 60 62 64
-SEMICOLON (273) 17 19 20 21 22 27 52 53 55 60 65
+SEMICOLON (273) 17 19 20 21 22 52 53 55 60 65
 COLON (274) 52 53
 FOR (275) 55
 WHILE (276) 57
@@ -200,7 +200,7 @@ CHAR_TYPE (291) 36
 VOID_TYPE (292) 25
 CONST (293) 22
 STRING_TYPE (294) 37
-RETURN (295) 19 20 27
+RETURN (295) 19 20
 COMMA (296) 30 40
 ERROR (297) 3
 INTEGER (298) 52 90
@@ -295,7 +295,7 @@ ASSIGNMENT (87)
 ASSIGNMENT_FORLOOP (88)
     on left: 66, on right: 55
 FINAL_EXP (89)
-    on left: 67 68, on right: 17 20 27 40 41 55 57 60 64 65 66 87
+    on left: 67 68, on right: 17 20 40 41 55 57 60 64 65 66 87
 LOGICAL_EXP (90)
     on left: 69 70 71, on right: 67 69 70
 REL_EXP (91)
@@ -2061,7 +2061,7 @@ state 138
 
 state 139
 
-   27 FUNCTION_BODY: LBRACE . $@4 STMTS RETURN FINAL_EXP SEMICOLON RBRACE
+   27 FUNCTION_BODY: LBRACE . $@4 STMTS RBRACE
 
     $default  reduce using rule 26 ($@4)
 
@@ -2278,7 +2278,7 @@ state 148
 
 state 149
 
-   27 FUNCTION_BODY: LBRACE $@4 . STMTS RETURN FINAL_EXP SEMICOLON RBRACE
+   27 FUNCTION_BODY: LBRACE $@4 . STMTS RBRACE
 
     NOT          shift, and go to state 1
     LPAREN       shift, and go to state 2
@@ -2538,11 +2538,12 @@ state 162
 state 163
 
     1 STMTS: STMTS . STMT
-   27 FUNCTION_BODY: LBRACE $@4 STMTS . RETURN FINAL_EXP SEMICOLON RBRACE
+   27 FUNCTION_BODY: LBRACE $@4 STMTS . RBRACE
 
     NOT          shift, and go to state 1
     LPAREN       shift, and go to state 2
     LBRACE       shift, and go to state 3
+    RBRACE       shift, and go to state 174
     FOR          shift, and go to state 4
     WHILE        shift, and go to state 5
     REPEAT       shift, and go to state 6
@@ -2555,7 +2556,7 @@ state 163
     VOID_TYPE    shift, and go to state 13
     CONST        shift, and go to state 14
     STRING_TYPE  shift, and go to state 15
-    RETURN       shift, and go to state 174
+    RETURN       shift, and go to state 16
     INTEGER      shift, and go to state 18
     FLOAT        shift, and go to state 19
     CHAR         shift, and go to state 20
@@ -2750,28 +2751,9 @@ state 173
 
 state 174
 
-   19 STMT: RETURN . SEMICOLON
-   20     | RETURN . FINAL_EXP SEMICOLON
-   27 FUNCTION_BODY: LBRACE $@4 STMTS RETURN . FINAL_EXP SEMICOLON RBRACE
+   27 FUNCTION_BODY: LBRACE $@4 STMTS RBRACE .
 
-    NOT        shift, and go to state 1
-    LPAREN     shift, and go to state 2
-    SEMICOLON  shift, and go to state 59
-    SUB        shift, and go to state 9
-    INTEGER    shift, and go to state 18
-    FLOAT      shift, and go to state 19
-    CHAR       shift, and go to state 20
-    ID         shift, and go to state 48
-    STRING     shift, and go to state 22
-
-    FUNCTION_CALL  go to state 31
-    FINAL_EXP      go to state 180
-    LOGICAL_EXP    go to state 40
-    REL_EXP        go to state 41
-    EXP            go to state 42
-    TERM           go to state 43
-    POWER          go to state 44
-    FACTOR         go to state 45
+    $default  reduce using rule 27 (FUNCTION_BODY)
 
 
 state 175
@@ -2780,14 +2762,14 @@ state 175
 
     $default  reduce using rule 54 ($@9)
 
-    $@9  go to state 181
+    $@9  go to state 180
 
 
 state 176
 
    60 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@11 STMTS RBRACE UNTIL LPAREN FINAL_EXP $@12 . RPAREN SEMICOLON
 
-    RPAREN  shift, and go to state 182
+    RPAREN  shift, and go to state 181
 
 
 state 177
@@ -2796,7 +2778,7 @@ state 177
 
     $default  reduce using rule 50 ($@7)
 
-    $@7  go to state 183
+    $@7  go to state 182
 
 
 state 178
@@ -2812,7 +2794,7 @@ state 178
     REPEAT       shift, and go to state 6
     IF           shift, and go to state 7
     SWITCH       shift, and go to state 8
-    BREAK        shift, and go to state 184
+    BREAK        shift, and go to state 183
     SUB          shift, and go to state 9
     INT_TYPE     shift, and go to state 10
     FLOAT_TYPE   shift, and go to state 11
@@ -2859,7 +2841,7 @@ state 179
     NOT          shift, and go to state 1
     LPAREN       shift, and go to state 2
     LBRACE       shift, and go to state 3
-    RBRACE       shift, and go to state 185
+    RBRACE       shift, and go to state 184
     FOR          shift, and go to state 4
     WHILE        shift, and go to state 5
     REPEAT       shift, and go to state 6
@@ -2905,15 +2887,66 @@ state 179
 
 state 180
 
-   20 STMT: RETURN FINAL_EXP . SEMICOLON
-   27 FUNCTION_BODY: LBRACE $@4 STMTS RETURN FINAL_EXP . SEMICOLON RBRACE
+   55 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON FINAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@9 . STMTS RBRACE
 
-    SEMICOLON  shift, and go to state 186
+    NOT          shift, and go to state 1
+    LPAREN       shift, and go to state 2
+    LBRACE       shift, and go to state 3
+    FOR          shift, and go to state 4
+    WHILE        shift, and go to state 5
+    REPEAT       shift, and go to state 6
+    IF           shift, and go to state 7
+    SWITCH       shift, and go to state 8
+    SUB          shift, and go to state 9
+    INT_TYPE     shift, and go to state 10
+    FLOAT_TYPE   shift, and go to state 11
+    CHAR_TYPE    shift, and go to state 12
+    VOID_TYPE    shift, and go to state 13
+    CONST        shift, and go to state 14
+    STRING_TYPE  shift, and go to state 15
+    RETURN       shift, and go to state 16
+    ERROR        shift, and go to state 17
+    INTEGER      shift, and go to state 18
+    FLOAT        shift, and go to state 19
+    CHAR         shift, and go to state 20
+    ID           shift, and go to state 21
+    STRING       shift, and go to state 22
+
+    STMTS                go to state 185
+    BLOCK                go to state 24
+    STMT                 go to state 25
+    DECLARATION          go to state 26
+    CONST_DECLARATION    go to state 27
+    FUNCTION_DEFINITION  go to state 28
+    PARAM_TYPE           go to state 29
+    FUNCTION_START       go to state 30
+    FUNCTION_CALL        go to state 31
+    SWITCH_BLOCK         go to state 32
+    FOR_LOOP             go to state 33
+    WHILE_LOOP           go to state 34
+    REPEAT_UNTIL_LOOP    go to state 35
+    MATCHED_IF           go to state 36
+    UNMATCHED_IF         go to state 37
+    ASSIGNMENT           go to state 38
+    FINAL_EXP            go to state 39
+    LOGICAL_EXP          go to state 40
+    REL_EXP              go to state 41
+    EXP                  go to state 42
+    TERM                 go to state 43
+    POWER                go to state 44
+    FACTOR               go to state 45
 
 
 state 181
 
-   55 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON FINAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@9 . STMTS RBRACE
+   60 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@11 STMTS RBRACE UNTIL LPAREN FINAL_EXP $@12 RPAREN . SEMICOLON
+
+    SEMICOLON  shift, and go to state 186
+
+
+state 182
+
+   52 CASE_STMT: CASE INTEGER COLON $@7 . STMTS $@8 BREAK SEMICOLON
 
     NOT          shift, and go to state 1
     LPAREN       shift, and go to state 2
@@ -2963,90 +2996,21 @@ state 181
     FACTOR               go to state 45
 
 
-state 182
+state 183
 
-   60 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@11 STMTS RBRACE UNTIL LPAREN FINAL_EXP $@12 RPAREN . SEMICOLON
+   53 DEFAULT_STMT: DEFAULT COLON STMTS BREAK . SEMICOLON
 
     SEMICOLON  shift, and go to state 188
 
 
-state 183
-
-   52 CASE_STMT: CASE INTEGER COLON $@7 . STMTS $@8 BREAK SEMICOLON
-
-    NOT          shift, and go to state 1
-    LPAREN       shift, and go to state 2
-    LBRACE       shift, and go to state 3
-    FOR          shift, and go to state 4
-    WHILE        shift, and go to state 5
-    REPEAT       shift, and go to state 6
-    IF           shift, and go to state 7
-    SWITCH       shift, and go to state 8
-    SUB          shift, and go to state 9
-    INT_TYPE     shift, and go to state 10
-    FLOAT_TYPE   shift, and go to state 11
-    CHAR_TYPE    shift, and go to state 12
-    VOID_TYPE    shift, and go to state 13
-    CONST        shift, and go to state 14
-    STRING_TYPE  shift, and go to state 15
-    RETURN       shift, and go to state 16
-    ERROR        shift, and go to state 17
-    INTEGER      shift, and go to state 18
-    FLOAT        shift, and go to state 19
-    CHAR         shift, and go to state 20
-    ID           shift, and go to state 21
-    STRING       shift, and go to state 22
-
-    STMTS                go to state 189
-    BLOCK                go to state 24
-    STMT                 go to state 25
-    DECLARATION          go to state 26
-    CONST_DECLARATION    go to state 27
-    FUNCTION_DEFINITION  go to state 28
-    PARAM_TYPE           go to state 29
-    FUNCTION_START       go to state 30
-    FUNCTION_CALL        go to state 31
-    SWITCH_BLOCK         go to state 32
-    FOR_LOOP             go to state 33
-    WHILE_LOOP           go to state 34
-    REPEAT_UNTIL_LOOP    go to state 35
-    MATCHED_IF           go to state 36
-    UNMATCHED_IF         go to state 37
-    ASSIGNMENT           go to state 38
-    FINAL_EXP            go to state 39
-    LOGICAL_EXP          go to state 40
-    REL_EXP              go to state 41
-    EXP                  go to state 42
-    TERM                 go to state 43
-    POWER                go to state 44
-    FACTOR               go to state 45
-
-
 state 184
-
-   53 DEFAULT_STMT: DEFAULT COLON STMTS BREAK . SEMICOLON
-
-    SEMICOLON  shift, and go to state 190
-
-
-state 185
 
    29 VOID_FUNCTION_BODY: LBRACE $@5 STMTS RBRACE .
 
     $default  reduce using rule 29 (VOID_FUNCTION_BODY)
 
 
-state 186
-
-   20 STMT: RETURN FINAL_EXP SEMICOLON .
-   27 FUNCTION_BODY: LBRACE $@4 STMTS RETURN FINAL_EXP SEMICOLON . RBRACE
-
-    RBRACE  shift, and go to state 191
-
-    $default  reduce using rule 20 (STMT)
-
-
-state 187
+state 185
 
     1 STMTS: STMTS . STMT
    55 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON FINAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@9 STMTS . RBRACE
@@ -3054,7 +3018,7 @@ state 187
     NOT          shift, and go to state 1
     LPAREN       shift, and go to state 2
     LBRACE       shift, and go to state 3
-    RBRACE       shift, and go to state 192
+    RBRACE       shift, and go to state 189
     FOR          shift, and go to state 4
     WHILE        shift, and go to state 5
     REPEAT       shift, and go to state 6
@@ -3098,14 +3062,14 @@ state 187
     FACTOR               go to state 45
 
 
-state 188
+state 186
 
    60 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@11 STMTS RBRACE UNTIL LPAREN FINAL_EXP $@12 RPAREN SEMICOLON .
 
     $default  reduce using rule 60 (REPEAT_UNTIL_LOOP)
 
 
-state 189
+state 187
 
     1 STMTS: STMTS . STMT
    52 CASE_STMT: CASE INTEGER COLON $@7 STMTS . $@8 BREAK SEMICOLON
@@ -3143,7 +3107,7 @@ state 189
     FUNCTION_START       go to state 30
     FUNCTION_CALL        go to state 31
     SWITCH_BLOCK         go to state 32
-    $@8                  go to state 193
+    $@8                  go to state 190
     FOR_LOOP             go to state 33
     WHILE_LOOP           go to state 34
     REPEAT_UNTIL_LOOP    go to state 35
@@ -3159,42 +3123,35 @@ state 189
     FACTOR               go to state 45
 
 
-state 190
+state 188
 
    53 DEFAULT_STMT: DEFAULT COLON STMTS BREAK SEMICOLON .
 
     $default  reduce using rule 53 (DEFAULT_STMT)
 
 
-state 191
-
-   27 FUNCTION_BODY: LBRACE $@4 STMTS RETURN FINAL_EXP SEMICOLON RBRACE .
-
-    $default  reduce using rule 27 (FUNCTION_BODY)
-
-
-state 192
+state 189
 
    55 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON FINAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@9 STMTS RBRACE .
 
     $default  reduce using rule 55 (FOR_LOOP)
 
 
-state 193
+state 190
 
    52 CASE_STMT: CASE INTEGER COLON $@7 STMTS $@8 . BREAK SEMICOLON
 
-    BREAK  shift, and go to state 194
+    BREAK  shift, and go to state 191
 
 
-state 194
+state 191
 
    52 CASE_STMT: CASE INTEGER COLON $@7 STMTS $@8 BREAK . SEMICOLON
 
-    SEMICOLON  shift, and go to state 195
+    SEMICOLON  shift, and go to state 192
 
 
-state 195
+state 192
 
    52 CASE_STMT: CASE INTEGER COLON $@7 STMTS $@8 BREAK SEMICOLON .
 

@@ -151,10 +151,10 @@ FUNCTION_DEFINITION: FUNCTION_START
         
          }
     STMTS
-    RETURN 
-    FINAL_EXP SEMICOLON   
+    // RETURN 
+    // FINAL_EXP SEMICOLON   
     RBRACE  {
-        currentFunction->returnVar = ($5)->name;
+        // currentFunction->returnVar = ($5)->name;
         addQuadrupleFunction(currentFunction,false);
         printf("function name: %s\n", currentFunction->name);
         functionDefinitions[functionsCount] = currentFunction;
@@ -596,11 +596,18 @@ ASSIGNMENT_FORLOOP : ID ASSIGN FINAL_EXP
 
 
 FINAL_EXP : LOGICAL_EXP 
-            { $$ = $1; }
+            { $$ = $1; 
+            if(currentFunction){
+                currentFunction->returnVar = ($1)->name;
+            }
+            }
             |  FUNCTION_CALL 
             { 
                 
                 $$ = $1;
+                if(currentFunction){
+                    currentFunction->returnVar = ($1)->name;
+                }
 
             }
 
