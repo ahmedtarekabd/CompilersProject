@@ -16,3 +16,6 @@ Parser.output
 
 # Ignore quadruples.txt
 quadruples.txt
+
+# GUI
+env/

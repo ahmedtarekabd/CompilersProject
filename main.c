@@ -5,6 +5,7 @@
     int a;
     a = 0;
     int d;
+    int d;
     d = 0;
 
     float x;

@@ -9,6 +9,8 @@
     void yyerror(const char *s);
     int yylex(void);
     extern FILE *yyin;
+    extern int yylineno; // Declared in the scanner
+    extern char *yytext; // Declared in the scanner
 %}
 
 %union {
@@ -87,7 +89,7 @@ STMT:
     | IF_STMT
     ;
 
-DECLARATION: PARAM_TYPE ID SEMICOLON {
+DECLARATION: PARAM_TYPE SEMICOLON {
                 if (lookupSymbol($2) && isSymbolDeclaredInCurrentScope($2)) {
                     yyerror("Variable already declared in this scope");
                 } else {
@@ -430,9 +432,13 @@ FACTOR : LPAREN LOGICAL_EXP RPAREN
 
 %% 
 
-void yyerror(const char *s) {
+/* void yyerror(const char *s) {
     fprintf(stderr, "%s\n", s);
+} */
+void yyerror(const char *s) {
+    fprintf(stderr, "%s at line %d, near '%s'\n", s, yylineno, yytext);
 }
+
 
 int main(int argc, char **argv) {
     if (argc > 1) {

@@ -4,10 +4,10 @@
     #include <string.h>  // Include this header for strdup
     #include "symbol_table.h"
     #include "Parser.tab.h"
-    
 
 %}
 
+%option yylineno
 
 %%
 "for"       { return FOR; }
