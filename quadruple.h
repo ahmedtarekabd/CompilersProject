@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "symbol_table.h"
-
+#include <io.h>
+#include <unistd.h>
 // Define the quadruple structure
 typedef struct {
     char operat[10];  // The operation (e.g., "+", "-", "=", "if")
@@ -28,7 +29,10 @@ SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, S
 void printQuadruples();
 void addQuadrupleLabel(SymbolTableEntry *condition , char * loopLabel , char* exitLabel, bool beforeSomeCode);
 void unmatchedIfQuadruple(SymbolTableEntry *condition , char * loopLabel , char* exitLabel, bool beforeSomeCode);
+void matchedIfQuadruple(char* exitLabel, bool beforeSomeCode);
 void switchcaseQuadruple(SymbolTableEntry *condition , char * nextLabel ,char* endLabel, bool beforeSomeCode, bool isEnd);
 void writeQuadrupleToFile(int i) ;
 void writeCommandToFile(char *command) ;
+void insertCommandBeforeEnd(const char *command);
+void printFileContents(const char *filename);
 #endif // QUADRUPLE_H

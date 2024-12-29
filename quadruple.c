@@ -134,6 +134,20 @@ label2:
     quadIndex++;
 
 }
+void matchedIfQuadruple(char* exitLabel, bool beforeSomeCode) {
+    if (beforeSomeCode) {
+        char command[256]; // Adjust the size as needed
+        sprintf(command, "goto %s", exitLabel);
+        // Write the command in the line before the end of the file
+       insertCommandBeforeEnd(command); 
+      // writeCommandToFile(command);
+    } else {
+        char command[256]; // Adjust the size as needed
+        sprintf(command, "%s:", exitLabel);
+        writeCommandToFile(command);
+    }
+    quadIndex++;
+}
 
 void switchcaseQuadruple(SymbolTableEntry *condition , char * nextLabel ,char* endLabel, bool beforeSomeCode, bool isEnd){
     if (isEnd) { 
@@ -198,4 +212,20 @@ void writeCommandToFile(char *command) {
     }
 
     fprintf(file, "%s\n", command);
+}
+void insertCommandBeforeEnd(const char *command) {
+   printFileContents("quadruples.txt");
+}
+
+void printFileContents(const char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        fprintf(stderr, "Error opening file %s for reading!\n", filename);
+        exit(1);
+    }
+    char line[256];
+    while (fgets(line, sizeof(line), file)) {
+        printf("%s", line); // Print each line to the console
+    }
+    fclose(file);
 }
