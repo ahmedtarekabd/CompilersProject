@@ -9,6 +9,7 @@ lex.yy.c
 Parser.tab.c
 Parser.tab.h
 Parser.output
+compiler.exe
 
 # Ignore backup files
 *~

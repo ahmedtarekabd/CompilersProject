@@ -35,7 +35,7 @@
 %token <s> ID
 
 // %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS 
-%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP
+%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK// FOR_LOOP
 %type <symbolTableEntry> EXP TERM FACTOR POWER//FUNCTION_STMTS
 %type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION
 // %type <i> MATCHED_IF UNMATCHED_IF 
@@ -78,7 +78,7 @@ STMT:
     // | FUNCTION_DECL FUNCTION_BODY
     // | 
     BLOCK
-    | FOR_LOOP    
+    // | FOR_LOOP    
     | DECLARATION 
     | CONST_DECLARATION 
     | ASSIGNMENT           
@@ -189,7 +189,7 @@ PARAM_TYPE: INT_TYPE        { $$ = "int"; }
 //           ;
 
 
-FOR_LOOP:
+/* FOR_LOOP:
     FOR LPAREN ASSIGNMENT SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT RPAREN 
         {
             // Start a new scope for the loop
@@ -223,7 +223,7 @@ FOR_LOOP:
             // Exit the scope of the loop
             exitScope();
         }
-    ;
+    ; */
 
 
 
