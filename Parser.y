@@ -3,12 +3,18 @@
     #include <stdlib.h>
     #include <string.h>
     #include <math.h>
-    #include "symbol_table.h"  // Include the symbol table header
+    #include "symbol_table.h" 
     #include "quadruple.h"
+    #include "utils/label_stack.h" 
 
     void yyerror(const char *s);
     int yylex(void);
     extern FILE *yyin;
+    LabelStack *labelStack;
+    char *currentSwitchVar;
+    char* nextLabel;
+    char* endLabel; 
+
 %}
 
 %union {
@@ -35,10 +41,9 @@
 %token <s> ID
 
 // %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS 
-%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP
-%type <symbolTableEntry> EXP TERM FACTOR POWER//FUNCTION_STMTS
-%type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION
-// %type <i> MATCHED_IF UNMATCHED_IF 
+%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP MATCHED_IF UNMATCHED_IF 
+%type <symbolTableEntry> EXP TERM FACTOR POWER //FUNCTION_STMTS
+%type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION ASSIGNMENT_FORLOOP //IF_STMT
 // %type <symbolTableEntry> FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP SWITCH_CASE CASES CASE_BLOCK
 // %type <i> FUNCTION_DECL FUNCTION_BODY  PARAMS PARAM
 %type <Dtype> PARAM_TYPE //RETURN_TYPE
@@ -68,21 +73,21 @@ BLOCK : LBRACE {
 
 
 STMT: 
-// MATCHED_IF                    
-//     | UNMATCHED_IF  
-//     | 
-    // SWITCH_CASE 
-    // | WHILE_LOOP        
-    // | REPEAT_UNTIL_LOOP   
+     MATCHED_IF                    
+    | UNMATCHED_IF  
+//     |   
     // | FUNCTION_DECL SEMICOLON
     // | FUNCTION_DECL FUNCTION_BODY
-    // | 
-    BLOCK
+   
+    | SWITCH_BLOCK
+    | BLOCK
     | FOR_LOOP    
+    | WHILE_LOOP
+    | REPEAT_UNTIL_LOOP
     | DECLARATION 
     | CONST_DECLARATION 
     | ASSIGNMENT           
-    | LOGICAL_EXP SEMICOLON         //{ printf("logical %d\n", $1); }
+    | LOGICAL_EXP SEMICOLON         
     ;
 
 DECLARATION: PARAM_TYPE ID SEMICOLON {
@@ -150,150 +155,303 @@ PARAM_TYPE: INT_TYPE        { $$ = "int"; }
 //            | PARAM_TYPE     
 //            ;
 
-// SWITCH_CASE: SWITCH LPAREN ID RPAREN LBRACE CASES CASE_DEFAULT RBRACE
-//     {
-//         printf("Switch case\n");
-//         printf("Switch value: %f\n", $3);
-//         // switch ($3) {
-//         //     $6;
-//         //     default:
-//         //         $9;
-//         //         break;
-//         // }
-//     }
-// ;
-// CASE_DEFAULT: DEFAULT COLON STMTS BREAK SEMICOLON
-//     {
-//         printf("Default case\n");
-//         // default:
-//         //     $4;
-//         //     break;
-//     }
-//     | 
-//     ;
-// CASES: CASES CASE_BLOCK
-//      | CASE_BLOCK
-// ;
+SWITCH_BLOCK: SWITCH LPAREN ID RPAREN 
+            LBRACE { 
+                enterScope(); 
+                currentSwitchVar = $3;
+                addSymbol($3, "int", false);
+                endLabel = newLabel();
+            }
+            SWITCH_CASE RBRACE
+            {
+                exitScope();
+                currentSwitchVar = NULL;
+                endLabel = NULL;
 
-// CASE_BLOCK: CASE INTEGER COLON CASE_STMTS BREAK SEMICOLON
-//     {
-//         printf("Case %d\n", $2);
-//         // case $2:
-//         //     $4;
-//         //     break;
-//     }
+            }
+            ;
 
-// ;
-// CASE_STMTS: STMTS
-//           | 
-//           ;
+SWITCH_CASE: CASE_STMTS
+            | CASE_STMTS DEFAULT_STMT
+            | DEFAULT_STMT
+            ;
+
+CASE_STMTS: CASE_STMT
+          | CASE_STMTS CASE_STMT  
+          ;
+
+CASE_STMT: CASE INTEGER COLON 
+    {
+    // if i!=1 goto label2
+        SymbolTableEntry *switchVar = lookupSymbol(currentSwitchVar);
+        SymbolTableEntry *caseVar = addSymbol($2, "int", false);
+        SymbolTableEntry *condition = addQuadruple("EQ", switchVar, caseVar);
+        nextLabel = newLabel();
+        switchcaseQuadruple(condition , nextLabel ,endLabel, true,false);
+
+    }
+    STMTS 
+    {
+     // goto endLabel
+     // label2;
+        switchcaseQuadruple(NULL , nextLabel ,endLabel, false,false); 
+    }
+    BREAK SEMICOLON
+    ;
+    
+DEFAULT_STMT: DEFAULT COLON 
+    STMTS BREAK SEMICOLON
+    {
+        switchcaseQuadruple(NULL , endLabel ,endLabel, false,false); 
+    }
+    ;
+/*
+//switch case
+switch (i) {
+    case 1:
+        some code
+        break;
+    case 2:
+        some code
+        break;
+    default:
+        some code
+        break;
+}
+---->
+if i==1 goto label1
+if i==2 goto label2
+goto label3
+label1:
+if i!=1 goto label2
+some code
+goto label4
+label2:
+if i!=2 goto label3
+some code
+goto label4
+label3:
+some code
+label4:
+*/
 
 
-FOR_LOOP:
-    FOR LPAREN ASSIGNMENT SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT RPAREN 
+
+
+/*
+for loop
+if  i>=6 goto label2
+label1: 
+some code
+if (i<6) goto label1
+label2:
+*/
+FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN 
+    LBRACE
         {
             // Start a new scope for the loop
             enterScope();
-
-            // Generate the label for the condition check
-            char *conditionLabel = newLabel();
-            printf("%s:\n", conditionLabel);
-
-            // Generate the logical expression (condition) quadruple
             SymbolTableEntry *condition = $5; // Assuming LOGICAL_EXP returns a SymbolTableEntry*
-
-            // Generate the label to exit the loop
-            char *exitLabel = newLabel();
-
-            // Add a quadruple to check the condition and branch to the exit label if false
-            addQuadruple("IF_FALSE", condition, NULL, exitLabel);
+            Labels *labels = (Labels *)malloc(sizeof(Labels));
+            labels->loopLabel = newLabel();
+            labels->exitLabel = newLabel();
+            addQuadrupleLabel(condition, labels->loopLabel, labels->exitLabel, true);
+            pushLabelStack(&labelStack, labels);  // Push labels onto the stack
         }
         STMTS 
-        {
-            // Generate the increment statement quadruple (for the third part of the for loop)
-            addQuadruple($7->operat, $7->operand1, $7->operand2);
-
-            // Jump back to the condition check
-            addQuadruple("GOTO", NULL, NULL, conditionLabel);
-
-            // Print the exit label
-            char *exitLabel = newLabel();
-            printf("%s:\n", exitLabel);
-
-            // Exit the scope of the loop
+        RBRACE
+        {   
+            Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
+           
+            addQuadrupleLabel(NULL, labels->loopLabel, labels->exitLabel, false);
+            free(labels);
             exitScope();
         }
     ;
 
+/*
+while (i<6) {
+    some code
+}
+---->
+label1:
+if i>=6 goto label2
+some code
+goto label1
+label2:
+*/
 
+WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE
+   {
+            // Start a new scope for the loop
+            enterScope();
+            SymbolTableEntry *condition = $3; // Assuming LOGICAL_EXP returns a SymbolTableEntry*
+            Labels *labels = (Labels *)malloc(sizeof(Labels));
+            labels->loopLabel = newLabel();
+            labels->exitLabel = newLabel();
+            addQuadrupleLabel(condition, labels->loopLabel, labels->exitLabel, true);
+            pushLabelStack(&labelStack, labels);  // Push labels onto the stack
+        }
+ STMTS RBRACE
+     {   
+            Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
+           
+            addQuadrupleLabel(NULL, labels->loopLabel, labels->exitLabel, false);
+            free(labels);
+            exitScope();
+        }
+;
+/* 
+repeat {
+    some code
+} until (i<6)
+---->
+label1:
+some code
+if i<6 goto label1
 
-// WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE STMTS RBRACE
-//     {
-//         while ($3) {
-//             printf("While loop\n");
-//             $6;  
-//         }
-//     }
+*/
+REPEAT_UNTIL_LOOP: REPEAT LBRACE 
+{
+    enterScope();
+    Labels *labels = (Labels *)malloc(sizeof(Labels));
+    labels->loopLabel = newLabel();
+    
+    pushLabelStack(&labelStack, labels);  // Push labels onto the stack
+    addQuadrupleLabel(NULL, labels->loopLabel, NULL, true);
 
-// ;
-// REPEAT_UNTIL_LOOP: REPEAT LBRACE STMTS RBRACE UNTIL LPAREN LOGICAL_EXP RPAREN SEMICOLON
-//     {
-//         do {
-//             printf("Repeat until loop\n");
-//             $3;  
-//         } while (!$7);
-//     }
-// ;
+}
+STMTS RBRACE
+ UNTIL LPAREN LOGICAL_EXP 
+ {
+    SymbolTableEntry *condition = $8;
+    Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
+    addQuadrupleLabel(condition, labels->loopLabel, NULL, false);
+    free(labels);
+    exitScope();
 
+}
+ RPAREN SEMICOLON
+    
+;
+/*
+if (i>=6) {
+    some code
+} else {
+    some code
+} 
+---->
+if i>=6 goto label1
+some code
+goto label2
+label1:
+some code
+label2:
+*/
 // MATCHED_IF: 
 //     IF LPAREN LOGICAL_EXP RPAREN LBRACE MATCHED_IF RBRACE ELSE LBRACE MATCHED_IF RBRACE
 //     {
 
-//         printf("matched 1");
-//         if ($3) {
-//             $$ = $6;  // Execute the first `if` branch
-//         } else {
-//             $$ = $10;  // Execute the second `else` branch
-//         }
+      
 //     }
-//   | IF LPAREN LOGICAL_EXP RPAREN LBRACE STMT RBRACE ELSE LBRACE STMT RBRACE
+//   | STMTS
 //     {
-//         printf("matched 2");
-//         if ($3) { 
-//             $$ = $6;  // Execute the `if` branch
-//         } else {
-//             $$ = $10;  // Execute the `else` branch
-//         }
+       
 //     }
 // ;
 
+/*
+if (i>=6) {
+    some code1
+}
+else {
+    some code2
+}
+---->
 
-// UNMATCHED_IF:
-//     IF LPAREN LOGICAL_EXP RPAREN LBRACE STMT RBRACE
-//     {
-//         printf("unmatched 1 %d\n", $3);
-//         if ($3 != 0) {
-//             $$ = $6;  // Execute the `if` branch
-//             printf("If statement executed\n");
-//         }
-//     }
-//   | IF LPAREN LOGICAL_EXP RPAREN LBRACE {enterScope()} 
-//     MATCHED_IF RBRACE {exitScope()}
-//     ELSE LBRACE {enterScope()}
-//     UNMATCHED_IF RBRACE {exitScope()}
-//     {
-//         printf("unmatched 2");
-//         if ($3) {
-//             $$ = $6;  // Execute the nested `if`
-//         }
-//         else
-//         {
-//             $$ = $10;
-//         }
-//     }
-// ;
+if i>=6 goto label1
+some code2
+goto label2
+label1:
+some code1
+label2:
+*/
 
+MATCHED_IF : 
+UNMATCHED_IF
+ELSE LBRACE
+    {
+        enterScope();
+        //go to end
+        Labels *labels = (Labels *)malloc(sizeof(Labels));
+        labels->exitLabel = newLabel();
+        matchedIfQuadruple( labels->exitLabel, true);
+        pushLabelStack(&labelStack, labels);  
+    }
+    STMTS RBRACE   //stmts is somecode2
+    {
+        Labels *labels = popLabelStack(labelStack);  
+        matchedIfQuadruple( labels->exitLabel, false);
+        free(labels);
+        exitScope();
+    }
+    ; 
+/*
+unmatched if  
+if (i>=6) {
+    some code
+}
+---->
+if i>=6 goto label1
+goto label2
+label1:
+some code
+label2:
+*/
+/*
+if i>=6 goto label1
+some code2
+goto label2
+label1:
+some code1
+label2:
+*/
+UNMATCHED_IF:
+    IF LPAREN LOGICAL_EXP RPAREN LBRACE
+    {
+        // Start a new scope for the if block
+        enterScope();
+        SymbolTableEntry *condition = $3; // Assuming LOGICAL_EXP returns a SymbolTableEntry*
+        Labels *labels = (Labels *)malloc(sizeof(Labels));
+        labels->loopLabel = newLabel();
+        labels->exitLabel = newLabel();
+        unmatchedIfQuadruple(condition, labels->loopLabel, labels->exitLabel, true);
+        pushLabelStack(&labelStack, labels);  // Push labels onto the stack
+
+    } STMTS RBRACE
+    {
+        Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
+        unmatchedIfQuadruple(NULL, labels->loopLabel, labels->exitLabel, false);
+        free(labels);
+        exitScope();
+    }    
+; 
 ASSIGNMENT : ID ASSIGN LOGICAL_EXP SEMICOLON
+    { 
+        
+        SymbolTableEntry *entry = lookupSymbol($1);
+        if (!entry) {
+            yyerror("Variable not declared in any scope");
+        } else {
+            SymbolTableEntry *temp = addQuadruple("ASSIGN", entry, $3);
+            updateSymbolValue($1, ($3)->value);
+            entry->isInitialized = 1;  
+        }
+        $$ = $3;
+    }            
+;
+
+ASSIGNMENT_FORLOOP : ID ASSIGN LOGICAL_EXP 
     { 
         // Assign the value of EXP to the variable ID
         // assign_var($1, $3); 
@@ -308,6 +466,8 @@ ASSIGNMENT : ID ASSIGN LOGICAL_EXP SEMICOLON
         $$ = $3;
     }            
 ;
+
+
 
 LOGICAL_EXP : REL_EXP OR LOGICAL_EXP   { $$ = addQuadruple("OR", $1, $3); }
             | REL_EXP AND LOGICAL_EXP  { $$ = addQuadruple("AND", $1, $3); }
@@ -410,13 +570,23 @@ void yyerror(const char *s) {
 }
 
 int main(int argc, char **argv) {
+
+     // Clear the contents of quadruples.txt
+    FILE *quadFile = fopen("quadruples.txt", "w");
+    if (quadFile == NULL) {
+        fprintf(stderr, "Error opening quadruples.txt for writing!\n");
+        return 1;
+    }
+    fclose(quadFile);
+    
     if (argc > 1) {
         yyin = fopen(argv[1], "r");
         if (!yyin) {
             perror(argv[1]);
             return 1;
         }
-    }
+    } 
+  
     if (yyparse() == 0) {
         printf("Parsing successful\n");
         printQuadruples();

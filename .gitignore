@@ -8,7 +8,6 @@
 lex.yy.c
 Parser.tab.c
 Parser.tab.h
-Parser.output
 
 # Ignore backup files
 *~
@@ -16,7 +15,3 @@ Parser.output
 
 # Ignore quadruples.txt
 quadruples.txt
-
-# GUI
-env/
-
