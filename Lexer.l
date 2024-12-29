@@ -32,6 +32,7 @@
 [0-9]+\.[0-9]+  { yylval.s = yytext; printf("Float: %f\n", yylval.f); return FLOAT; }
 [0-9]+      { yylval.s = yytext; return INTEGER; }
 [ \t\n]     { /* Ignore whitespace */ }
+"//".*      { /* Ignore Comments printf("Comment: %s\n", yytext); */ }
 [a-zA-Z_][a-zA-Z0-9_]* { yylval.s = strdup(yytext); return ID; }  // Adjusted identifier rule
 
 

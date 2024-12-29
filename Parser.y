@@ -35,9 +35,10 @@
 %token <s> ID
 
 // %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS 
-%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP
+%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK // FOR_LOOP
 %type <symbolTableEntry> EXP TERM FACTOR POWER//FUNCTION_STMTS
 %type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION
+%type <symbolTableEntry> IF_STMT
 // %type <i> MATCHED_IF UNMATCHED_IF 
 // %type <symbolTableEntry> FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP SWITCH_CASE CASES CASE_BLOCK
 // %type <i> FUNCTION_DECL FUNCTION_BODY  PARAMS PARAM
@@ -78,11 +79,12 @@ STMT:
     // | FUNCTION_DECL FUNCTION_BODY
     // | 
     BLOCK
-    | FOR_LOOP    
+    // | FOR_LOOP    
     | DECLARATION 
     | CONST_DECLARATION 
     | ASSIGNMENT           
     | LOGICAL_EXP SEMICOLON         //{ printf("logical %d\n", $1); }
+    | IF_STMT
     ;
 
 DECLARATION: PARAM_TYPE ID SEMICOLON {
@@ -92,6 +94,7 @@ DECLARATION: PARAM_TYPE ID SEMICOLON {
                     addSymbol($2, $1, false);  // Add variable to current scope
                 }
             }
+            // TODO: Add support for declarations with initial values
             ;
 
 CONST_DECLARATION: CONST PARAM_TYPE ID SEMICOLON {
@@ -101,6 +104,7 @@ CONST_DECLARATION: CONST PARAM_TYPE ID SEMICOLON {
                     addSymbol($3, $2, true);  // Add variable to current scope
                 }
             }
+            // TODO: Add support for constant declarations with initial values
             ;
 
 // FUNCTION_DECL: DECLARATION LPAREN PARAMS RPAREN
@@ -189,7 +193,7 @@ PARAM_TYPE: INT_TYPE        { $$ = "int"; }
 //           ;
 
 
-FOR_LOOP:
+/* FOR_LOOP:
     FOR LPAREN ASSIGNMENT SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT RPAREN 
         {
             // Start a new scope for the loop
@@ -223,7 +227,7 @@ FOR_LOOP:
             // Exit the scope of the loop
             exitScope();
         }
-    ;
+    ; */
 
 
 
@@ -293,6 +297,24 @@ FOR_LOOP:
 //     }
 // ;
 
+IF_STMT : IF LPAREN LOGICAL_EXP RPAREN LBRACE STMTS RBRACE
+    {
+        printf("\n\nNo else If statement: logic_exp: %s - stmt: %s\n\n", ($3)->name, ($6->name));
+        if ($3) {
+            $$ = $6;  // Execute the `if` block
+        }
+    }
+    | IF LPAREN LOGICAL_EXP RPAREN LBRACE STMTS RBRACE ELSE LBRACE STMTS RBRACE
+    {
+        printf("\n\nIf statement: logic_exp: %s - if: %s - else: %s\n\n", ($3)->name, $6->name, $10->name);
+        if ($3) {
+            $$ = $6;  // Execute the `if` block
+        } else {
+            $$ = $10;  // Execute the `else` block
+        }
+    }
+    ;
+
 ASSIGNMENT : ID ASSIGN LOGICAL_EXP SEMICOLON
     { 
         // Assign the value of EXP to the variable ID
@@ -301,6 +323,7 @@ ASSIGNMENT : ID ASSIGN LOGICAL_EXP SEMICOLON
         if (!entry) {
             yyerror("Variable not declared in any scope");
         } else {
+            printf("Assignment statement: %s = %s\n", $1, ($3)->name);
             SymbolTableEntry *temp = addQuadruple("ASSIGN", entry, $3);
             updateSymbolValue($1, ($3)->value);
             entry->isInitialized = 1;  // Mark the variable as initialized
@@ -309,6 +332,7 @@ ASSIGNMENT : ID ASSIGN LOGICAL_EXP SEMICOLON
     }            
 ;
 
+/* ! LOGICAL_EXP : LOGICAL_EXP OR REL_EXP (Left recursion/associativity) */
 LOGICAL_EXP : REL_EXP OR LOGICAL_EXP   { $$ = addQuadruple("OR", $1, $3); }
             | REL_EXP AND LOGICAL_EXP  { $$ = addQuadruple("AND", $1, $3); }
             | REL_EXP                  { $$ = $1;  }
@@ -387,6 +411,7 @@ FACTOR : LPAREN LOGICAL_EXP RPAREN
         }
        | ID                  
         { 
+            printf("Variable '%s' used.\n", $1);
             // Look up the variable in the symbol table
             SymbolTableEntry *entry = lookupSymbol($1);
             if (!entry) {

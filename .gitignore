@@ -1,0 +1,18 @@
+.vscode/
+
+# Ignore build artifacts
+*.o
+*.exe
+
+# Ignore generated files
+lex.yy.c
+Parser.tab.c
+Parser.tab.h
+Parser.output
+
+# Ignore backup files
+*~
+*.bak
+
+# Ignore quadruples.txt
+quadruples.txt
