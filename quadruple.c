@@ -199,10 +199,10 @@ writeCommandToFile(command);
     else
     {
     if(strncmp(functionDef->returnType,"void",4) != 0){
-    sprintf(command, "return %s\n", functionDef->returnVar);
+    sprintf(command, "return %s", functionDef->returnVar);
     }
     else{
-    sprintf(command, "return\n");
+    sprintf(command, "return");
     }
     writeCommandToFile(command);
     }
