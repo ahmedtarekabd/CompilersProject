@@ -20,24 +20,7 @@
     int functionsCount = 0;
     SymbolTableEntry * currentFunctionParams[100];
     int currentFunctionParamsCount = 0;
-
-    
-     // Function to free the current function definition
-    // void freeCurrentFunction() {
-    //     if (currentFunction) {
-    //         free(currentFunction->name);
-    //         for (int i = 0; i < currentFunction->paramCount; i++) {
-    //             free(currentFunction->paramNames[i]);
-    //             free(currentFunction->paramTypes[i]);
-    //         }
-    //         free(currentFunction->paramNames);
-    //         free(currentFunction->paramTypes);
-    //         free(currentFunction->returnType);
-    //         free(currentFunction);
-    //         currentFunction = NULL;
-    //     }
-    // }
-   void initializeCurrentFunction(const char *name, const char *returnType) {
+    void initializeCurrentFunction(const char *name, const char *returnType) {
     if (currentFunction) {
         currentFunction = NULL;
     }
@@ -49,7 +32,6 @@
     currentFunction->paramCount = 0;
 }
 %}
-
 %union {
     int i;
     char c;
@@ -122,7 +104,6 @@ STMT:
     | FUNCTION_DEFINITION
     | RETURN SEMICOLON
     | RETURN FINAL_EXP SEMICOLON
-    // | FUNCTION_CALL
     ;
 
 DECLARATION: PARAM_TYPE ID SEMICOLON {
@@ -261,13 +242,8 @@ FUNCTION_CALL:  ID LPAREN FUNCTION_CALL_PARAMS RPAREN
             printf("functionsCount: %d\n", functionsCount);
             // for loop on the functionDefinitions array to find the function with the same name 
             for (int i = 0; i < functionsCount; i++) {
-                printf("ana gowa"); 
-                
-                
-                printf("functionDefinitions[i].name: %s\n", functionDefinitions[i]->name);
+
                 if (strcmp(functionDefinitions[i]->name, $1) == 0) {
-                    printf("paramCount: %d\n", functionDefinitions[i]->paramCount);
-                    printf("currentFunctionParamsCount: %d\n", currentFunctionParamsCount);
                     if (functionDefinitions[i]->paramCount != currentFunctionParamsCount) {
                         yyerror("Function called with incorrect number of parameters");
                     } else {
@@ -278,10 +254,12 @@ FUNCTION_CALL:  ID LPAREN FUNCTION_CALL_PARAMS RPAREN
                         }
                     }
                     entry->type = functionDefinitions[i]->returnType;
+
                 }
             }
         }
         $$ = entry;
+        addQuadrupleFunctionCall($1,currentFunctionParams, currentFunctionParamsCount);
         currentFunctionParamsCount = 0;
 
     }

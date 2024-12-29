@@ -184,8 +184,7 @@ void addQuadrupleFunction(FunctionDef *functionDef , bool beforeSomeCode) {
     }
     char command[256]; // Adjust the size as needed
     if (beforeSomeCode){
-    sprintf(command, "\n%s proc %s ",functionDef->returnType ,functionDef->name);
-
+    sprintf(command, "%s proc %s",functionDef->returnType ,functionDef->name);
 for (int i = 0; i < functionDef->paramCount; i++) {
     char param[100]; // Adjust the size as needed
     sprintf(param, "%s %s", functionDef->paramTypes[i],functionDef->paramNames[i]);
@@ -199,7 +198,7 @@ writeCommandToFile(command);
     else
     {
     if(strncmp(functionDef->returnType,"void",4) != 0){
-    sprintf(command, "return %s", functionDef->returnVar);
+    sprintf(command, "return %s\n", functionDef->returnVar);
     }
     else{
     sprintf(command, "return");
@@ -208,7 +207,25 @@ writeCommandToFile(command);
     }
     quadIndex++;
 }
-// Function to print all generated quadruples 
+void addQuadrupleFunctionCall(char * function_name,SymbolTableEntry **currentFunctionParams, int currentFunctionParamsCount){
+    // Store quadruple using copied values
+    if (quadIndex >= MAX_QUADRUPLES) {
+        fprintf(stderr, "Quadruple storage overflow!\n");
+        exit(1);
+    }
+    char command[256]; // Adjust the size as needed
+    sprintf(command, "call %s",function_name);
+    for (int i = 0; i < currentFunctionParamsCount; i++) {
+        char param[100]; // Adjust the size as needed
+        sprintf(param, " %s", currentFunctionParams[i]->name);
+        strcat(command, param);
+        if (i < currentFunctionParamsCount - 1) {
+            strcat(command, ",");
+        }
+    }
+    writeCommandToFile(command);
+    quadIndex++;
+}
 
 void printQuadruples() {
     printf("Generated Quadruples:\n");
