@@ -3,7 +3,7 @@
     #include <stdlib.h>
     #include <string.h>
     #include <math.h>
-    #include "symbol_table.h"  // Include the symbol table header
+    #include "symbol_table.h" 
     #include "quadruple.h"
     #include "utils/label_stack.h"
 
@@ -11,6 +11,9 @@
     int yylex(void);
     extern FILE *yyin;
     LabelStack *labelStack;
+    char *currentSwitchVar;
+    char* nextLabel;
+    char* endLabel;
 %}
 
 %union {
@@ -37,7 +40,7 @@
 %token <s> ID
 
 // %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS 
-%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP UNMATCHED_IF 
+%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP UNMATCHED_IF //SWITCH_BLOCK CASE_STMTS DEFAULT_STMT
 %type <symbolTableEntry> EXP TERM FACTOR POWER //FUNCTION_STMTS
 %type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION ASSIGNMENT_FORLOOP
 // %type <symbolTableEntry> FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP SWITCH_CASE CASES CASE_BLOCK
@@ -71,12 +74,11 @@ BLOCK : LBRACE {
 STMT: 
     //MATCHED_IF                    
     UNMATCHED_IF  
-//     | 
-    // SWITCH_CASE 
-    // |       
+//     |   
     // | FUNCTION_DECL SEMICOLON
     // | FUNCTION_DECL FUNCTION_BODY
     // | 
+    | SWITCH_BLOCK
     | BLOCK
     | FOR_LOOP    
     | WHILE_LOOP
@@ -152,45 +154,91 @@ PARAM_TYPE: INT_TYPE        { $$ = "int"; }
 //            | PARAM_TYPE     
 //            ;
 
-// SWITCH_CASE: SWITCH LPAREN ID RPAREN LBRACE CASES CASE_DEFAULT RBRACE
-//     {
-//         printf("Switch case\n");
-//         printf("Switch value: %f\n", $3);
-//         // switch ($3) {
-//         //     $6;
-//         //     default:
-//         //         $9;
-//         //         break;
-//         // }
-//     }
-// ;
-// CASE_DEFAULT: DEFAULT COLON STMTS BREAK SEMICOLON
-//     {
-//         printf("Default case\n");
-//         // default:
-//         //     $4;
-//         //     break;
-//     }
-//     | 
-//     ;
-// CASES: CASES CASE_BLOCK
-//      | CASE_BLOCK
-// ;
+SWITCH_BLOCK: SWITCH LPAREN ID RPAREN 
+            LBRACE { 
+                enterScope(); 
+                currentSwitchVar = $3;
+                addSymbol($3, "int", false);
+                endLabel = newLabel();
+            }
+            SWITCH_CASE RBRACE
+            {
+                exitScope();
+                currentSwitchVar = NULL;
+                endLabel = NULL;
 
-// CASE_BLOCK: CASE INTEGER COLON CASE_STMTS BREAK SEMICOLON
-//     {
-//         printf("Case %d\n", $2);
-//         // case $2:
-//         //     $4;
-//         //     break;
-//     }
+            }
+            ;
 
-// ;
-// CASE_STMTS: STMTS
-//           | 
-//           ;
+SWITCH_CASE: CASE_STMTS
+            | CASE_STMTS DEFAULT_STMT
+            | DEFAULT_STMT
+            ;
+
+CASE_STMTS: CASE_STMT
+          | CASE_STMTS CASE_STMT  
+          ;
+
+CASE_STMT: CASE INTEGER COLON 
+    {
+    // if i!=1 goto label2
+        SymbolTableEntry *switchVar = lookupSymbol(currentSwitchVar);
+        SymbolTableEntry *caseVar = addSymbol($2, "int", false);
+        SymbolTableEntry *condition = addQuadruple("EQ", switchVar, caseVar);
+        nextLabel = newLabel();
+        switchcaseQuadruple(condition , nextLabel ,endLabel, true,false);
+
+    }
+    STMTS 
+    {
+     // goto endLabel
+     // label2;
+        switchcaseQuadruple(NULL , nextLabel ,endLabel, false,false); 
+    }
+    BREAK SEMICOLON
+    ;
+    
+DEFAULT_STMT: DEFAULT COLON 
+    STMTS BREAK SEMICOLON
+    {
+        switchcaseQuadruple(NULL , endLabel ,endLabel, false,false); 
+    }
+    ;
+/*
+//switch case
+switch (i) {
+    case 1:
+        some code
+        break;
+    case 2:
+        some code
+        break;
+    default:
+        some code
+        break;
+}
+---->
+if i==1 goto label1
+if i==2 goto label2
+goto label3
+label1:
+if i!=1 goto label2
+some code
+goto label4
+label2:
+if i!=2 goto label3
+some code
+goto label4
+label3:
+some code
+label4:
+*/
+
+
+
 
 /*
+//for loop
 if  i>=6 goto label2
 label1: 
 some code

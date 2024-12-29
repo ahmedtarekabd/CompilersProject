@@ -1,11 +1,6 @@
 Terminals unused in grammar
 
-   COLON
    ELSE
-   SWITCH
-   CASE
-   BREAK
-   DEFAULT
    VOID_TYPE
    RETURN
    COMMA
@@ -26,124 +21,146 @@ Grammar
     6 BLOCK: LBRACE $@1 STMTS RBRACE $@2
 
     7 STMT: UNMATCHED_IF
-    8     | BLOCK
-    9     | FOR_LOOP
-   10     | WHILE_LOOP
-   11     | REPEAT_UNTIL_LOOP
-   12     | DECLARATION
-   13     | CONST_DECLARATION
-   14     | ASSIGNMENT
-   15     | LOGICAL_EXP SEMICOLON
+    8     | SWITCH_BLOCK
+    9     | BLOCK
+   10     | FOR_LOOP
+   11     | WHILE_LOOP
+   12     | REPEAT_UNTIL_LOOP
+   13     | DECLARATION
+   14     | CONST_DECLARATION
+   15     | ASSIGNMENT
+   16     | LOGICAL_EXP SEMICOLON
 
-   16 DECLARATION: PARAM_TYPE ID SEMICOLON
+   17 DECLARATION: PARAM_TYPE ID SEMICOLON
 
-   17 CONST_DECLARATION: CONST PARAM_TYPE ID SEMICOLON
+   18 CONST_DECLARATION: CONST PARAM_TYPE ID SEMICOLON
 
-   18 PARAM_TYPE: INT_TYPE
-   19           | FLOAT_TYPE
-   20           | CHAR_TYPE
+   19 PARAM_TYPE: INT_TYPE
+   20           | FLOAT_TYPE
+   21           | CHAR_TYPE
 
-   21 $@3: /* empty */
+   22 $@3: /* empty */
 
-   22 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@3 STMTS RBRACE
+   23 SWITCH_BLOCK: SWITCH LPAREN ID RPAREN LBRACE $@3 SWITCH_CASE RBRACE
 
-   23 $@4: /* empty */
+   24 SWITCH_CASE: CASE_STMTS
+   25            | CASE_STMTS DEFAULT_STMT
+   26            | DEFAULT_STMT
 
-   24 WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE $@4 STMTS RBRACE
+   27 CASE_STMTS: CASE_STMT
+   28           | CASE_STMTS CASE_STMT
 
-   25 $@5: /* empty */
+   29 $@4: /* empty */
 
-   26 $@6: /* empty */
+   30 $@5: /* empty */
 
-   27 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@5 STMTS RBRACE UNTIL LPAREN LOGICAL_EXP $@6 RPAREN SEMICOLON
+   31 CASE_STMT: CASE INTEGER COLON $@4 STMTS $@5 BREAK SEMICOLON
 
-   28 $@7: /* empty */
+   32 $@6: /* empty */
 
-   29 UNMATCHED_IF: IF LPAREN LOGICAL_EXP RPAREN LBRACE $@7 STMT RBRACE
+   33 DEFAULT_STMT: DEFAULT COLON $@6 STMTS BREAK SEMICOLON
 
-   30 ASSIGNMENT: ID ASSIGN LOGICAL_EXP SEMICOLON
+   34 $@7: /* empty */
 
-   31 ASSIGNMENT_FORLOOP: ID ASSIGN LOGICAL_EXP
+   35 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@7 STMTS RBRACE
 
-   32 LOGICAL_EXP: REL_EXP OR LOGICAL_EXP
-   33            | REL_EXP AND LOGICAL_EXP
-   34            | REL_EXP
+   36 $@8: /* empty */
 
-   35 REL_EXP: EXP EQ EXP
-   36        | EXP NE EXP
-   37        | EXP LT EXP
-   38        | EXP LE EXP
-   39        | EXP GT EXP
-   40        | EXP GE EXP
-   41        | EXP
+   37 WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE $@8 STMTS RBRACE
 
-   42 EXP: EXP ADD TERM
-   43    | EXP SUB TERM
-   44    | TERM
+   38 $@9: /* empty */
 
-   45 TERM: TERM MUL POWER
-   46     | TERM DIV POWER
-   47     | POWER
+   39 $@10: /* empty */
 
-   48 POWER: FACTOR POW POWER
-   49      | FACTOR
+   40 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@9 STMTS RBRACE UNTIL LPAREN LOGICAL_EXP $@10 RPAREN SEMICOLON
 
-   50 FACTOR: LPAREN LOGICAL_EXP RPAREN
-   51       | SUB FACTOR
-   52       | NOT FACTOR
-   53       | INTEGER
-   54       | FLOAT
-   55       | CHAR
-   56       | ID
+   41 $@11: /* empty */
+
+   42 UNMATCHED_IF: IF LPAREN LOGICAL_EXP RPAREN LBRACE $@11 STMT RBRACE
+
+   43 ASSIGNMENT: ID ASSIGN LOGICAL_EXP SEMICOLON
+
+   44 ASSIGNMENT_FORLOOP: ID ASSIGN LOGICAL_EXP
+
+   45 LOGICAL_EXP: REL_EXP OR LOGICAL_EXP
+   46            | REL_EXP AND LOGICAL_EXP
+   47            | REL_EXP
+
+   48 REL_EXP: EXP EQ EXP
+   49        | EXP NE EXP
+   50        | EXP LT EXP
+   51        | EXP LE EXP
+   52        | EXP GT EXP
+   53        | EXP GE EXP
+   54        | EXP
+
+   55 EXP: EXP ADD TERM
+   56    | EXP SUB TERM
+   57    | TERM
+
+   58 TERM: TERM MUL POWER
+   59     | TERM DIV POWER
+   60     | POWER
+
+   61 POWER: FACTOR POW POWER
+   62      | FACTOR
+
+   63 FACTOR: LPAREN LOGICAL_EXP RPAREN
+   64       | SUB FACTOR
+   65       | NOT FACTOR
+   66       | INTEGER
+   67       | FLOAT
+   68       | CHAR
+   69       | ID
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
 error (256)
-POW (258) 48
-NOT (259) 52
-OR (260) 32
-AND (261) 33
-EQ (262) 35
-NE (263) 36
-LT (264) 37
-LE (265) 38
-GT (266) 39
-GE (267) 40
-ASSIGN (268) 30 31
-LPAREN (269) 22 24 27 29 50
-RPAREN (270) 22 24 27 29 50
-LBRACE (271) 6 22 24 27 29
-RBRACE (272) 6 22 24 27 29
-SEMICOLON (273) 15 16 17 22 27 30
-COLON (274)
-FOR (275) 22
-WHILE (276) 24
-REPEAT (277) 27
-UNTIL (278) 27
-IF (279) 29
+POW (258) 61
+NOT (259) 65
+OR (260) 45
+AND (261) 46
+EQ (262) 48
+NE (263) 49
+LT (264) 50
+LE (265) 51
+GT (266) 52
+GE (267) 53
+ASSIGN (268) 43 44
+LPAREN (269) 23 35 37 40 42 63
+RPAREN (270) 23 35 37 40 42 63
+LBRACE (271) 6 23 35 37 40 42
+RBRACE (272) 6 23 35 37 40 42
+SEMICOLON (273) 16 17 18 31 33 35 40 43
+COLON (274) 31 33
+FOR (275) 35
+WHILE (276) 37
+REPEAT (277) 40
+UNTIL (278) 40
+IF (279) 42
 ELSE (280)
-SWITCH (281)
-CASE (282)
-BREAK (283)
-DEFAULT (284)
-SUB (285) 43 51
-ADD (286) 42
-DIV (287) 46
-MUL (288) 45
-INT_TYPE (289) 18
-FLOAT_TYPE (290) 19
-CHAR_TYPE (291) 20
+SWITCH (281) 23
+CASE (282) 31
+BREAK (283) 31 33
+DEFAULT (284) 33
+SUB (285) 56 64
+ADD (286) 55
+DIV (287) 59
+MUL (288) 58
+INT_TYPE (289) 19
+FLOAT_TYPE (290) 20
+CHAR_TYPE (291) 21
 VOID_TYPE (292)
-CONST (293) 17
+CONST (293) 18
 RETURN (294)
 COMMA (295)
 ERROR (296) 3
-INTEGER (297) 53
-FLOAT (298) 54
-CHAR (299) 55
-ID (300) 16 17 30 31 56
+INTEGER (297) 31 66
+FLOAT (298) 67
+CHAR (299) 68
+ID (300) 17 18 23 43 44 69
 
 
 Nonterminals, with rules where they appear
@@ -151,55 +168,73 @@ Nonterminals, with rules where they appear
 $accept (46)
     on left: 0
 STMTS (47)
-    on left: 1 2 3, on right: 0 1 6 22 24 27
+    on left: 1 2 3, on right: 0 1 6 31 33 35 37 40
 BLOCK (48)
-    on left: 6, on right: 8
+    on left: 6, on right: 9
 $@1 (49)
     on left: 4, on right: 6
 $@2 (50)
     on left: 5, on right: 6
 STMT (51)
-    on left: 7 8 9 10 11 12 13 14 15, on right: 1 2 29
+    on left: 7 8 9 10 11 12 13 14 15 16, on right: 1 2 42
 DECLARATION (52)
-    on left: 16, on right: 12
-CONST_DECLARATION (53)
     on left: 17, on right: 13
+CONST_DECLARATION (53)
+    on left: 18, on right: 14
 PARAM_TYPE (54)
-    on left: 18 19 20, on right: 16 17
-FOR_LOOP (55)
-    on left: 22, on right: 9
+    on left: 19 20 21, on right: 17 18
+SWITCH_BLOCK (55)
+    on left: 23, on right: 8
 $@3 (56)
-    on left: 21, on right: 22
-WHILE_LOOP (57)
-    on left: 24, on right: 10
-$@4 (58)
-    on left: 23, on right: 24
-REPEAT_UNTIL_LOOP (59)
-    on left: 27, on right: 11
-$@5 (60)
-    on left: 25, on right: 27
-$@6 (61)
-    on left: 26, on right: 27
-UNMATCHED_IF (62)
-    on left: 29, on right: 7
-$@7 (63)
-    on left: 28, on right: 29
-ASSIGNMENT (64)
-    on left: 30, on right: 14
-ASSIGNMENT_FORLOOP (65)
-    on left: 31, on right: 22
-LOGICAL_EXP (66)
-    on left: 32 33 34, on right: 15 22 24 27 29 30 31 32 33 50
-REL_EXP (67)
-    on left: 35 36 37 38 39 40 41, on right: 32 33 34
-EXP (68)
-    on left: 42 43 44, on right: 35 36 37 38 39 40 41 42 43
-TERM (69)
-    on left: 45 46 47, on right: 42 43 44 45 46
-POWER (70)
-    on left: 48 49, on right: 45 46 47 48
-FACTOR (71)
-    on left: 50 51 52 53 54 55 56, on right: 48 49 51 52
+    on left: 22, on right: 23
+SWITCH_CASE (57)
+    on left: 24 25 26, on right: 23
+CASE_STMTS (58)
+    on left: 27 28, on right: 24 25 28
+CASE_STMT (59)
+    on left: 31, on right: 27 28
+$@4 (60)
+    on left: 29, on right: 31
+$@5 (61)
+    on left: 30, on right: 31
+DEFAULT_STMT (62)
+    on left: 33, on right: 25 26
+$@6 (63)
+    on left: 32, on right: 33
+FOR_LOOP (64)
+    on left: 35, on right: 10
+$@7 (65)
+    on left: 34, on right: 35
+WHILE_LOOP (66)
+    on left: 37, on right: 11
+$@8 (67)
+    on left: 36, on right: 37
+REPEAT_UNTIL_LOOP (68)
+    on left: 40, on right: 12
+$@9 (69)
+    on left: 38, on right: 40
+$@10 (70)
+    on left: 39, on right: 40
+UNMATCHED_IF (71)
+    on left: 42, on right: 7
+$@11 (72)
+    on left: 41, on right: 42
+ASSIGNMENT (73)
+    on left: 43, on right: 15
+ASSIGNMENT_FORLOOP (74)
+    on left: 44, on right: 35
+LOGICAL_EXP (75)
+    on left: 45 46 47, on right: 16 35 37 40 42 43 44 45 46 63
+REL_EXP (76)
+    on left: 48 49 50 51 52 53 54, on right: 45 46 47
+EXP (77)
+    on left: 55 56 57, on right: 48 49 50 51 52 53 54 55 56
+TERM (78)
+    on left: 58 59 60, on right: 55 56 57 58 59
+POWER (79)
+    on left: 61 62, on right: 58 59 60 61
+FACTOR (80)
+    on left: 63 64 65 66 67 68 69, on right: 61 62 64 65
 
 
 state 0
@@ -213,69 +248,71 @@ state 0
     WHILE       shift, and go to state 5
     REPEAT      shift, and go to state 6
     IF          shift, and go to state 7
-    SUB         shift, and go to state 8
-    INT_TYPE    shift, and go to state 9
-    FLOAT_TYPE  shift, and go to state 10
-    CHAR_TYPE   shift, and go to state 11
-    CONST       shift, and go to state 12
-    ERROR       shift, and go to state 13
-    INTEGER     shift, and go to state 14
-    FLOAT       shift, and go to state 15
-    CHAR        shift, and go to state 16
-    ID          shift, and go to state 17
+    SWITCH      shift, and go to state 8
+    SUB         shift, and go to state 9
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+    CONST       shift, and go to state 13
+    ERROR       shift, and go to state 14
+    INTEGER     shift, and go to state 15
+    FLOAT       shift, and go to state 16
+    CHAR        shift, and go to state 17
+    ID          shift, and go to state 18
 
-    STMTS              go to state 18
-    BLOCK              go to state 19
-    STMT               go to state 20
-    DECLARATION        go to state 21
-    CONST_DECLARATION  go to state 22
-    PARAM_TYPE         go to state 23
-    FOR_LOOP           go to state 24
-    WHILE_LOOP         go to state 25
-    REPEAT_UNTIL_LOOP  go to state 26
-    UNMATCHED_IF       go to state 27
-    ASSIGNMENT         go to state 28
-    LOGICAL_EXP        go to state 29
-    REL_EXP            go to state 30
-    EXP                go to state 31
-    TERM               go to state 32
-    POWER              go to state 33
-    FACTOR             go to state 34
+    STMTS              go to state 19
+    BLOCK              go to state 20
+    STMT               go to state 21
+    DECLARATION        go to state 22
+    CONST_DECLARATION  go to state 23
+    PARAM_TYPE         go to state 24
+    SWITCH_BLOCK       go to state 25
+    FOR_LOOP           go to state 26
+    WHILE_LOOP         go to state 27
+    REPEAT_UNTIL_LOOP  go to state 28
+    UNMATCHED_IF       go to state 29
+    ASSIGNMENT         go to state 30
+    LOGICAL_EXP        go to state 31
+    REL_EXP            go to state 32
+    EXP                go to state 33
+    TERM               go to state 34
+    POWER              go to state 35
+    FACTOR             go to state 36
 
 
 state 1
 
-   52 FACTOR: NOT . FACTOR
+   65 FACTOR: NOT . FACTOR
 
     NOT      shift, and go to state 1
     LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
 
-    FACTOR  go to state 36
+    FACTOR  go to state 38
 
 
 state 2
 
-   50 FACTOR: LPAREN . LOGICAL_EXP RPAREN
+   63 FACTOR: LPAREN . LOGICAL_EXP RPAREN
 
     NOT      shift, and go to state 1
     LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
 
-    LOGICAL_EXP  go to state 37
-    REL_EXP      go to state 30
-    EXP          go to state 31
-    TERM         go to state 32
-    POWER        go to state 33
-    FACTOR       go to state 34
+    LOGICAL_EXP  go to state 39
+    REL_EXP      go to state 32
+    EXP          go to state 33
+    TERM         go to state 34
+    POWER        go to state 35
+    FACTOR       go to state 36
 
 
 state 3
@@ -284,128 +321,135 @@ state 3
 
     $default  reduce using rule 4 ($@1)
 
-    $@1  go to state 38
+    $@1  go to state 40
 
 
 state 4
 
-   22 FOR_LOOP: FOR . LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@3 STMTS RBRACE
+   35 FOR_LOOP: FOR . LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@7 STMTS RBRACE
 
-    LPAREN  shift, and go to state 39
+    LPAREN  shift, and go to state 41
 
 
 state 5
 
-   24 WHILE_LOOP: WHILE . LPAREN LOGICAL_EXP RPAREN LBRACE $@4 STMTS RBRACE
-
-    LPAREN  shift, and go to state 40
-
-
-state 6
-
-   27 REPEAT_UNTIL_LOOP: REPEAT . LBRACE $@5 STMTS RBRACE UNTIL LPAREN LOGICAL_EXP $@6 RPAREN SEMICOLON
-
-    LBRACE  shift, and go to state 41
-
-
-state 7
-
-   29 UNMATCHED_IF: IF . LPAREN LOGICAL_EXP RPAREN LBRACE $@7 STMT RBRACE
+   37 WHILE_LOOP: WHILE . LPAREN LOGICAL_EXP RPAREN LBRACE $@8 STMTS RBRACE
 
     LPAREN  shift, and go to state 42
 
 
+state 6
+
+   40 REPEAT_UNTIL_LOOP: REPEAT . LBRACE $@9 STMTS RBRACE UNTIL LPAREN LOGICAL_EXP $@10 RPAREN SEMICOLON
+
+    LBRACE  shift, and go to state 43
+
+
+state 7
+
+   42 UNMATCHED_IF: IF . LPAREN LOGICAL_EXP RPAREN LBRACE $@11 STMT RBRACE
+
+    LPAREN  shift, and go to state 44
+
+
 state 8
 
-   51 FACTOR: SUB . FACTOR
+   23 SWITCH_BLOCK: SWITCH . LPAREN ID RPAREN LBRACE $@3 SWITCH_CASE RBRACE
 
-    NOT      shift, and go to state 1
-    LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
-
-    FACTOR  go to state 43
+    LPAREN  shift, and go to state 45
 
 
 state 9
 
-   18 PARAM_TYPE: INT_TYPE .
+   64 FACTOR: SUB . FACTOR
 
-    $default  reduce using rule 18 (PARAM_TYPE)
+    NOT      shift, and go to state 1
+    LPAREN   shift, and go to state 2
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
+
+    FACTOR  go to state 46
 
 
 state 10
 
-   19 PARAM_TYPE: FLOAT_TYPE .
+   19 PARAM_TYPE: INT_TYPE .
 
     $default  reduce using rule 19 (PARAM_TYPE)
 
 
 state 11
 
-   20 PARAM_TYPE: CHAR_TYPE .
+   20 PARAM_TYPE: FLOAT_TYPE .
 
     $default  reduce using rule 20 (PARAM_TYPE)
 
 
 state 12
 
-   17 CONST_DECLARATION: CONST . PARAM_TYPE ID SEMICOLON
+   21 PARAM_TYPE: CHAR_TYPE .
 
-    INT_TYPE    shift, and go to state 9
-    FLOAT_TYPE  shift, and go to state 10
-    CHAR_TYPE   shift, and go to state 11
-
-    PARAM_TYPE  go to state 44
+    $default  reduce using rule 21 (PARAM_TYPE)
 
 
 state 13
+
+   18 CONST_DECLARATION: CONST . PARAM_TYPE ID SEMICOLON
+
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+
+    PARAM_TYPE  go to state 47
+
+
+state 14
 
     3 STMTS: ERROR .
 
     $default  reduce using rule 3 (STMTS)
 
 
-state 14
-
-   53 FACTOR: INTEGER .
-
-    $default  reduce using rule 53 (FACTOR)
-
-
 state 15
 
-   54 FACTOR: FLOAT .
+   66 FACTOR: INTEGER .
 
-    $default  reduce using rule 54 (FACTOR)
+    $default  reduce using rule 66 (FACTOR)
 
 
 state 16
 
-   55 FACTOR: CHAR .
+   67 FACTOR: FLOAT .
 
-    $default  reduce using rule 55 (FACTOR)
+    $default  reduce using rule 67 (FACTOR)
 
 
 state 17
 
-   30 ASSIGNMENT: ID . ASSIGN LOGICAL_EXP SEMICOLON
-   56 FACTOR: ID .
+   68 FACTOR: CHAR .
 
-    ASSIGN  shift, and go to state 45
-
-    $default  reduce using rule 56 (FACTOR)
+    $default  reduce using rule 68 (FACTOR)
 
 
 state 18
 
+   43 ASSIGNMENT: ID . ASSIGN LOGICAL_EXP SEMICOLON
+   69 FACTOR: ID .
+
+    ASSIGN  shift, and go to state 48
+
+    $default  reduce using rule 69 (FACTOR)
+
+
+state 19
+
     0 $accept: STMTS . $end
     1 STMTS: STMTS . STMT
 
-    $end        shift, and go to state 46
+    $end        shift, and go to state 49
     NOT         shift, and go to state 1
     LPAREN      shift, and go to state 2
     LBRACE      shift, and go to state 3
@@ -413,198 +457,207 @@ state 18
     WHILE       shift, and go to state 5
     REPEAT      shift, and go to state 6
     IF          shift, and go to state 7
-    SUB         shift, and go to state 8
-    INT_TYPE    shift, and go to state 9
-    FLOAT_TYPE  shift, and go to state 10
-    CHAR_TYPE   shift, and go to state 11
-    CONST       shift, and go to state 12
-    INTEGER     shift, and go to state 14
-    FLOAT       shift, and go to state 15
-    CHAR        shift, and go to state 16
-    ID          shift, and go to state 17
+    SWITCH      shift, and go to state 8
+    SUB         shift, and go to state 9
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+    CONST       shift, and go to state 13
+    INTEGER     shift, and go to state 15
+    FLOAT       shift, and go to state 16
+    CHAR        shift, and go to state 17
+    ID          shift, and go to state 18
 
-    BLOCK              go to state 19
-    STMT               go to state 47
-    DECLARATION        go to state 21
-    CONST_DECLARATION  go to state 22
-    PARAM_TYPE         go to state 23
-    FOR_LOOP           go to state 24
-    WHILE_LOOP         go to state 25
-    REPEAT_UNTIL_LOOP  go to state 26
-    UNMATCHED_IF       go to state 27
-    ASSIGNMENT         go to state 28
-    LOGICAL_EXP        go to state 29
-    REL_EXP            go to state 30
-    EXP                go to state 31
-    TERM               go to state 32
-    POWER              go to state 33
-    FACTOR             go to state 34
-
-
-state 19
-
-    8 STMT: BLOCK .
-
-    $default  reduce using rule 8 (STMT)
+    BLOCK              go to state 20
+    STMT               go to state 50
+    DECLARATION        go to state 22
+    CONST_DECLARATION  go to state 23
+    PARAM_TYPE         go to state 24
+    SWITCH_BLOCK       go to state 25
+    FOR_LOOP           go to state 26
+    WHILE_LOOP         go to state 27
+    REPEAT_UNTIL_LOOP  go to state 28
+    UNMATCHED_IF       go to state 29
+    ASSIGNMENT         go to state 30
+    LOGICAL_EXP        go to state 31
+    REL_EXP            go to state 32
+    EXP                go to state 33
+    TERM               go to state 34
+    POWER              go to state 35
+    FACTOR             go to state 36
 
 
 state 20
+
+    9 STMT: BLOCK .
+
+    $default  reduce using rule 9 (STMT)
+
+
+state 21
 
     2 STMTS: STMT .
 
     $default  reduce using rule 2 (STMTS)
 
 
-state 21
-
-   12 STMT: DECLARATION .
-
-    $default  reduce using rule 12 (STMT)
-
-
 state 22
 
-   13 STMT: CONST_DECLARATION .
+   13 STMT: DECLARATION .
 
     $default  reduce using rule 13 (STMT)
 
 
 state 23
 
-   16 DECLARATION: PARAM_TYPE . ID SEMICOLON
+   14 STMT: CONST_DECLARATION .
 
-    ID  shift, and go to state 48
+    $default  reduce using rule 14 (STMT)
 
 
 state 24
 
-    9 STMT: FOR_LOOP .
+   17 DECLARATION: PARAM_TYPE . ID SEMICOLON
 
-    $default  reduce using rule 9 (STMT)
+    ID  shift, and go to state 51
 
 
 state 25
 
-   10 STMT: WHILE_LOOP .
+    8 STMT: SWITCH_BLOCK .
 
-    $default  reduce using rule 10 (STMT)
+    $default  reduce using rule 8 (STMT)
 
 
 state 26
 
-   11 STMT: REPEAT_UNTIL_LOOP .
+   10 STMT: FOR_LOOP .
+
+    $default  reduce using rule 10 (STMT)
+
+
+state 27
+
+   11 STMT: WHILE_LOOP .
 
     $default  reduce using rule 11 (STMT)
 
 
-state 27
+state 28
+
+   12 STMT: REPEAT_UNTIL_LOOP .
+
+    $default  reduce using rule 12 (STMT)
+
+
+state 29
 
     7 STMT: UNMATCHED_IF .
 
     $default  reduce using rule 7 (STMT)
 
 
-state 28
-
-   14 STMT: ASSIGNMENT .
-
-    $default  reduce using rule 14 (STMT)
-
-
-state 29
-
-   15 STMT: LOGICAL_EXP . SEMICOLON
-
-    SEMICOLON  shift, and go to state 49
-
-
 state 30
 
-   32 LOGICAL_EXP: REL_EXP . OR LOGICAL_EXP
-   33            | REL_EXP . AND LOGICAL_EXP
-   34            | REL_EXP .
+   15 STMT: ASSIGNMENT .
 
-    OR   shift, and go to state 50
-    AND  shift, and go to state 51
-
-    $default  reduce using rule 34 (LOGICAL_EXP)
+    $default  reduce using rule 15 (STMT)
 
 
 state 31
 
-   35 REL_EXP: EXP . EQ EXP
-   36        | EXP . NE EXP
-   37        | EXP . LT EXP
-   38        | EXP . LE EXP
-   39        | EXP . GT EXP
-   40        | EXP . GE EXP
-   41        | EXP .
-   42 EXP: EXP . ADD TERM
-   43    | EXP . SUB TERM
+   16 STMT: LOGICAL_EXP . SEMICOLON
 
-    EQ   shift, and go to state 52
-    NE   shift, and go to state 53
-    LT   shift, and go to state 54
-    LE   shift, and go to state 55
-    GT   shift, and go to state 56
-    GE   shift, and go to state 57
-    SUB  shift, and go to state 58
-    ADD  shift, and go to state 59
-
-    $default  reduce using rule 41 (REL_EXP)
+    SEMICOLON  shift, and go to state 52
 
 
 state 32
 
-   44 EXP: TERM .
-   45 TERM: TERM . MUL POWER
-   46     | TERM . DIV POWER
+   45 LOGICAL_EXP: REL_EXP . OR LOGICAL_EXP
+   46            | REL_EXP . AND LOGICAL_EXP
+   47            | REL_EXP .
 
-    DIV  shift, and go to state 60
-    MUL  shift, and go to state 61
+    OR   shift, and go to state 53
+    AND  shift, and go to state 54
 
-    $default  reduce using rule 44 (EXP)
+    $default  reduce using rule 47 (LOGICAL_EXP)
 
 
 state 33
 
-   47 TERM: POWER .
+   48 REL_EXP: EXP . EQ EXP
+   49        | EXP . NE EXP
+   50        | EXP . LT EXP
+   51        | EXP . LE EXP
+   52        | EXP . GT EXP
+   53        | EXP . GE EXP
+   54        | EXP .
+   55 EXP: EXP . ADD TERM
+   56    | EXP . SUB TERM
 
-    $default  reduce using rule 47 (TERM)
+    EQ   shift, and go to state 55
+    NE   shift, and go to state 56
+    LT   shift, and go to state 57
+    LE   shift, and go to state 58
+    GT   shift, and go to state 59
+    GE   shift, and go to state 60
+    SUB  shift, and go to state 61
+    ADD  shift, and go to state 62
+
+    $default  reduce using rule 54 (REL_EXP)
 
 
 state 34
 
-   48 POWER: FACTOR . POW POWER
-   49      | FACTOR .
+   57 EXP: TERM .
+   58 TERM: TERM . MUL POWER
+   59     | TERM . DIV POWER
 
-    POW  shift, and go to state 62
+    DIV  shift, and go to state 63
+    MUL  shift, and go to state 64
 
-    $default  reduce using rule 49 (POWER)
+    $default  reduce using rule 57 (EXP)
 
 
 state 35
 
-   56 FACTOR: ID .
+   60 TERM: POWER .
 
-    $default  reduce using rule 56 (FACTOR)
+    $default  reduce using rule 60 (TERM)
 
 
 state 36
 
-   52 FACTOR: NOT FACTOR .
+   61 POWER: FACTOR . POW POWER
+   62      | FACTOR .
 
-    $default  reduce using rule 52 (FACTOR)
+    POW  shift, and go to state 65
+
+    $default  reduce using rule 62 (POWER)
 
 
 state 37
 
-   50 FACTOR: LPAREN LOGICAL_EXP . RPAREN
+   69 FACTOR: ID .
 
-    RPAREN  shift, and go to state 63
+    $default  reduce using rule 69 (FACTOR)
 
 
 state 38
+
+   65 FACTOR: NOT FACTOR .
+
+    $default  reduce using rule 65 (FACTOR)
+
+
+state 39
+
+   63 FACTOR: LPAREN LOGICAL_EXP . RPAREN
+
+    RPAREN  shift, and go to state 66
+
+
+state 40
 
     6 BLOCK: LBRACE $@1 . STMTS RBRACE $@2
 
@@ -615,394 +668,403 @@ state 38
     WHILE       shift, and go to state 5
     REPEAT      shift, and go to state 6
     IF          shift, and go to state 7
-    SUB         shift, and go to state 8
-    INT_TYPE    shift, and go to state 9
-    FLOAT_TYPE  shift, and go to state 10
-    CHAR_TYPE   shift, and go to state 11
-    CONST       shift, and go to state 12
-    ERROR       shift, and go to state 13
-    INTEGER     shift, and go to state 14
-    FLOAT       shift, and go to state 15
-    CHAR        shift, and go to state 16
-    ID          shift, and go to state 17
+    SWITCH      shift, and go to state 8
+    SUB         shift, and go to state 9
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+    CONST       shift, and go to state 13
+    ERROR       shift, and go to state 14
+    INTEGER     shift, and go to state 15
+    FLOAT       shift, and go to state 16
+    CHAR        shift, and go to state 17
+    ID          shift, and go to state 18
 
-    STMTS              go to state 64
-    BLOCK              go to state 19
-    STMT               go to state 20
-    DECLARATION        go to state 21
-    CONST_DECLARATION  go to state 22
-    PARAM_TYPE         go to state 23
-    FOR_LOOP           go to state 24
-    WHILE_LOOP         go to state 25
-    REPEAT_UNTIL_LOOP  go to state 26
-    UNMATCHED_IF       go to state 27
-    ASSIGNMENT         go to state 28
-    LOGICAL_EXP        go to state 29
-    REL_EXP            go to state 30
-    EXP                go to state 31
-    TERM               go to state 32
-    POWER              go to state 33
-    FACTOR             go to state 34
-
-
-state 39
-
-   22 FOR_LOOP: FOR LPAREN . ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@3 STMTS RBRACE
-
-    ID  shift, and go to state 65
-
-    ASSIGNMENT_FORLOOP  go to state 66
-
-
-state 40
-
-   24 WHILE_LOOP: WHILE LPAREN . LOGICAL_EXP RPAREN LBRACE $@4 STMTS RBRACE
-
-    NOT      shift, and go to state 1
-    LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
-
-    LOGICAL_EXP  go to state 67
-    REL_EXP      go to state 30
-    EXP          go to state 31
-    TERM         go to state 32
-    POWER        go to state 33
-    FACTOR       go to state 34
+    STMTS              go to state 67
+    BLOCK              go to state 20
+    STMT               go to state 21
+    DECLARATION        go to state 22
+    CONST_DECLARATION  go to state 23
+    PARAM_TYPE         go to state 24
+    SWITCH_BLOCK       go to state 25
+    FOR_LOOP           go to state 26
+    WHILE_LOOP         go to state 27
+    REPEAT_UNTIL_LOOP  go to state 28
+    UNMATCHED_IF       go to state 29
+    ASSIGNMENT         go to state 30
+    LOGICAL_EXP        go to state 31
+    REL_EXP            go to state 32
+    EXP                go to state 33
+    TERM               go to state 34
+    POWER              go to state 35
+    FACTOR             go to state 36
 
 
 state 41
 
-   27 REPEAT_UNTIL_LOOP: REPEAT LBRACE . $@5 STMTS RBRACE UNTIL LPAREN LOGICAL_EXP $@6 RPAREN SEMICOLON
+   35 FOR_LOOP: FOR LPAREN . ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@7 STMTS RBRACE
 
-    $default  reduce using rule 25 ($@5)
+    ID  shift, and go to state 68
 
-    $@5  go to state 68
+    ASSIGNMENT_FORLOOP  go to state 69
 
 
 state 42
 
-   29 UNMATCHED_IF: IF LPAREN . LOGICAL_EXP RPAREN LBRACE $@7 STMT RBRACE
+   37 WHILE_LOOP: WHILE LPAREN . LOGICAL_EXP RPAREN LBRACE $@8 STMTS RBRACE
 
     NOT      shift, and go to state 1
     LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
 
-    LOGICAL_EXP  go to state 69
-    REL_EXP      go to state 30
-    EXP          go to state 31
-    TERM         go to state 32
-    POWER        go to state 33
-    FACTOR       go to state 34
+    LOGICAL_EXP  go to state 70
+    REL_EXP      go to state 32
+    EXP          go to state 33
+    TERM         go to state 34
+    POWER        go to state 35
+    FACTOR       go to state 36
 
 
 state 43
 
-   51 FACTOR: SUB FACTOR .
+   40 REPEAT_UNTIL_LOOP: REPEAT LBRACE . $@9 STMTS RBRACE UNTIL LPAREN LOGICAL_EXP $@10 RPAREN SEMICOLON
 
-    $default  reduce using rule 51 (FACTOR)
+    $default  reduce using rule 38 ($@9)
+
+    $@9  go to state 71
 
 
 state 44
 
-   17 CONST_DECLARATION: CONST PARAM_TYPE . ID SEMICOLON
+   42 UNMATCHED_IF: IF LPAREN . LOGICAL_EXP RPAREN LBRACE $@11 STMT RBRACE
 
-    ID  shift, and go to state 70
+    NOT      shift, and go to state 1
+    LPAREN   shift, and go to state 2
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
+
+    LOGICAL_EXP  go to state 72
+    REL_EXP      go to state 32
+    EXP          go to state 33
+    TERM         go to state 34
+    POWER        go to state 35
+    FACTOR       go to state 36
 
 
 state 45
 
-   30 ASSIGNMENT: ID ASSIGN . LOGICAL_EXP SEMICOLON
+   23 SWITCH_BLOCK: SWITCH LPAREN . ID RPAREN LBRACE $@3 SWITCH_CASE RBRACE
 
-    NOT      shift, and go to state 1
-    LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
-
-    LOGICAL_EXP  go to state 71
-    REL_EXP      go to state 30
-    EXP          go to state 31
-    TERM         go to state 32
-    POWER        go to state 33
-    FACTOR       go to state 34
+    ID  shift, and go to state 73
 
 
 state 46
+
+   64 FACTOR: SUB FACTOR .
+
+    $default  reduce using rule 64 (FACTOR)
+
+
+state 47
+
+   18 CONST_DECLARATION: CONST PARAM_TYPE . ID SEMICOLON
+
+    ID  shift, and go to state 74
+
+
+state 48
+
+   43 ASSIGNMENT: ID ASSIGN . LOGICAL_EXP SEMICOLON
+
+    NOT      shift, and go to state 1
+    LPAREN   shift, and go to state 2
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
+
+    LOGICAL_EXP  go to state 75
+    REL_EXP      go to state 32
+    EXP          go to state 33
+    TERM         go to state 34
+    POWER        go to state 35
+    FACTOR       go to state 36
+
+
+state 49
 
     0 $accept: STMTS $end .
 
     $default  accept
 
 
-state 47
+state 50
 
     1 STMTS: STMTS STMT .
 
     $default  reduce using rule 1 (STMTS)
 
 
-state 48
-
-   16 DECLARATION: PARAM_TYPE ID . SEMICOLON
-
-    SEMICOLON  shift, and go to state 72
-
-
-state 49
-
-   15 STMT: LOGICAL_EXP SEMICOLON .
-
-    $default  reduce using rule 15 (STMT)
-
-
-state 50
-
-   32 LOGICAL_EXP: REL_EXP OR . LOGICAL_EXP
-
-    NOT      shift, and go to state 1
-    LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
-
-    LOGICAL_EXP  go to state 73
-    REL_EXP      go to state 30
-    EXP          go to state 31
-    TERM         go to state 32
-    POWER        go to state 33
-    FACTOR       go to state 34
-
-
 state 51
 
-   33 LOGICAL_EXP: REL_EXP AND . LOGICAL_EXP
+   17 DECLARATION: PARAM_TYPE ID . SEMICOLON
 
-    NOT      shift, and go to state 1
-    LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
-
-    LOGICAL_EXP  go to state 74
-    REL_EXP      go to state 30
-    EXP          go to state 31
-    TERM         go to state 32
-    POWER        go to state 33
-    FACTOR       go to state 34
+    SEMICOLON  shift, and go to state 76
 
 
 state 52
 
-   35 REL_EXP: EXP EQ . EXP
+   16 STMT: LOGICAL_EXP SEMICOLON .
 
-    NOT      shift, and go to state 1
-    LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
-
-    EXP     go to state 75
-    TERM    go to state 32
-    POWER   go to state 33
-    FACTOR  go to state 34
+    $default  reduce using rule 16 (STMT)
 
 
 state 53
 
-   36 REL_EXP: EXP NE . EXP
+   45 LOGICAL_EXP: REL_EXP OR . LOGICAL_EXP
 
     NOT      shift, and go to state 1
     LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
 
-    EXP     go to state 76
-    TERM    go to state 32
-    POWER   go to state 33
-    FACTOR  go to state 34
+    LOGICAL_EXP  go to state 77
+    REL_EXP      go to state 32
+    EXP          go to state 33
+    TERM         go to state 34
+    POWER        go to state 35
+    FACTOR       go to state 36
 
 
 state 54
 
-   37 REL_EXP: EXP LT . EXP
+   46 LOGICAL_EXP: REL_EXP AND . LOGICAL_EXP
 
     NOT      shift, and go to state 1
     LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
 
-    EXP     go to state 77
-    TERM    go to state 32
-    POWER   go to state 33
-    FACTOR  go to state 34
+    LOGICAL_EXP  go to state 78
+    REL_EXP      go to state 32
+    EXP          go to state 33
+    TERM         go to state 34
+    POWER        go to state 35
+    FACTOR       go to state 36
 
 
 state 55
 
-   38 REL_EXP: EXP LE . EXP
+   48 REL_EXP: EXP EQ . EXP
 
     NOT      shift, and go to state 1
     LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
 
-    EXP     go to state 78
-    TERM    go to state 32
-    POWER   go to state 33
-    FACTOR  go to state 34
+    EXP     go to state 79
+    TERM    go to state 34
+    POWER   go to state 35
+    FACTOR  go to state 36
 
 
 state 56
 
-   39 REL_EXP: EXP GT . EXP
+   49 REL_EXP: EXP NE . EXP
 
     NOT      shift, and go to state 1
     LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
 
-    EXP     go to state 79
-    TERM    go to state 32
-    POWER   go to state 33
-    FACTOR  go to state 34
+    EXP     go to state 80
+    TERM    go to state 34
+    POWER   go to state 35
+    FACTOR  go to state 36
 
 
 state 57
 
-   40 REL_EXP: EXP GE . EXP
+   50 REL_EXP: EXP LT . EXP
 
     NOT      shift, and go to state 1
     LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
 
-    EXP     go to state 80
-    TERM    go to state 32
-    POWER   go to state 33
-    FACTOR  go to state 34
+    EXP     go to state 81
+    TERM    go to state 34
+    POWER   go to state 35
+    FACTOR  go to state 36
 
 
 state 58
 
-   43 EXP: EXP SUB . TERM
+   51 REL_EXP: EXP LE . EXP
 
     NOT      shift, and go to state 1
     LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
 
-    TERM    go to state 81
-    POWER   go to state 33
-    FACTOR  go to state 34
+    EXP     go to state 82
+    TERM    go to state 34
+    POWER   go to state 35
+    FACTOR  go to state 36
 
 
 state 59
 
-   42 EXP: EXP ADD . TERM
+   52 REL_EXP: EXP GT . EXP
 
     NOT      shift, and go to state 1
     LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
 
-    TERM    go to state 82
-    POWER   go to state 33
-    FACTOR  go to state 34
+    EXP     go to state 83
+    TERM    go to state 34
+    POWER   go to state 35
+    FACTOR  go to state 36
 
 
 state 60
 
-   46 TERM: TERM DIV . POWER
+   53 REL_EXP: EXP GE . EXP
 
     NOT      shift, and go to state 1
     LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
 
-    POWER   go to state 83
-    FACTOR  go to state 34
+    EXP     go to state 84
+    TERM    go to state 34
+    POWER   go to state 35
+    FACTOR  go to state 36
 
 
 state 61
 
-   45 TERM: TERM MUL . POWER
+   56 EXP: EXP SUB . TERM
 
     NOT      shift, and go to state 1
     LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
 
-    POWER   go to state 84
-    FACTOR  go to state 34
+    TERM    go to state 85
+    POWER   go to state 35
+    FACTOR  go to state 36
 
 
 state 62
 
-   48 POWER: FACTOR POW . POWER
+   55 EXP: EXP ADD . TERM
 
     NOT      shift, and go to state 1
     LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
 
-    POWER   go to state 85
-    FACTOR  go to state 34
+    TERM    go to state 86
+    POWER   go to state 35
+    FACTOR  go to state 36
 
 
 state 63
 
-   50 FACTOR: LPAREN LOGICAL_EXP RPAREN .
+   59 TERM: TERM DIV . POWER
 
-    $default  reduce using rule 50 (FACTOR)
+    NOT      shift, and go to state 1
+    LPAREN   shift, and go to state 2
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
+
+    POWER   go to state 87
+    FACTOR  go to state 36
 
 
 state 64
+
+   58 TERM: TERM MUL . POWER
+
+    NOT      shift, and go to state 1
+    LPAREN   shift, and go to state 2
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
+
+    POWER   go to state 88
+    FACTOR  go to state 36
+
+
+state 65
+
+   61 POWER: FACTOR POW . POWER
+
+    NOT      shift, and go to state 1
+    LPAREN   shift, and go to state 2
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
+
+    POWER   go to state 89
+    FACTOR  go to state 36
+
+
+state 66
+
+   63 FACTOR: LPAREN LOGICAL_EXP RPAREN .
+
+    $default  reduce using rule 63 (FACTOR)
+
+
+state 67
 
     1 STMTS: STMTS . STMT
     6 BLOCK: LBRACE $@1 STMTS . RBRACE $@2
@@ -1010,63 +1072,65 @@ state 64
     NOT         shift, and go to state 1
     LPAREN      shift, and go to state 2
     LBRACE      shift, and go to state 3
-    RBRACE      shift, and go to state 86
+    RBRACE      shift, and go to state 90
     FOR         shift, and go to state 4
     WHILE       shift, and go to state 5
     REPEAT      shift, and go to state 6
     IF          shift, and go to state 7
-    SUB         shift, and go to state 8
-    INT_TYPE    shift, and go to state 9
-    FLOAT_TYPE  shift, and go to state 10
-    CHAR_TYPE   shift, and go to state 11
-    CONST       shift, and go to state 12
-    INTEGER     shift, and go to state 14
-    FLOAT       shift, and go to state 15
-    CHAR        shift, and go to state 16
-    ID          shift, and go to state 17
+    SWITCH      shift, and go to state 8
+    SUB         shift, and go to state 9
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+    CONST       shift, and go to state 13
+    INTEGER     shift, and go to state 15
+    FLOAT       shift, and go to state 16
+    CHAR        shift, and go to state 17
+    ID          shift, and go to state 18
 
-    BLOCK              go to state 19
-    STMT               go to state 47
-    DECLARATION        go to state 21
-    CONST_DECLARATION  go to state 22
-    PARAM_TYPE         go to state 23
-    FOR_LOOP           go to state 24
-    WHILE_LOOP         go to state 25
-    REPEAT_UNTIL_LOOP  go to state 26
-    UNMATCHED_IF       go to state 27
-    ASSIGNMENT         go to state 28
-    LOGICAL_EXP        go to state 29
-    REL_EXP            go to state 30
-    EXP                go to state 31
-    TERM               go to state 32
-    POWER              go to state 33
-    FACTOR             go to state 34
-
-
-state 65
-
-   31 ASSIGNMENT_FORLOOP: ID . ASSIGN LOGICAL_EXP
-
-    ASSIGN  shift, and go to state 87
-
-
-state 66
-
-   22 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP . SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@3 STMTS RBRACE
-
-    SEMICOLON  shift, and go to state 88
-
-
-state 67
-
-   24 WHILE_LOOP: WHILE LPAREN LOGICAL_EXP . RPAREN LBRACE $@4 STMTS RBRACE
-
-    RPAREN  shift, and go to state 89
+    BLOCK              go to state 20
+    STMT               go to state 50
+    DECLARATION        go to state 22
+    CONST_DECLARATION  go to state 23
+    PARAM_TYPE         go to state 24
+    SWITCH_BLOCK       go to state 25
+    FOR_LOOP           go to state 26
+    WHILE_LOOP         go to state 27
+    REPEAT_UNTIL_LOOP  go to state 28
+    UNMATCHED_IF       go to state 29
+    ASSIGNMENT         go to state 30
+    LOGICAL_EXP        go to state 31
+    REL_EXP            go to state 32
+    EXP                go to state 33
+    TERM               go to state 34
+    POWER              go to state 35
+    FACTOR             go to state 36
 
 
 state 68
 
-   27 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@5 . STMTS RBRACE UNTIL LPAREN LOGICAL_EXP $@6 RPAREN SEMICOLON
+   44 ASSIGNMENT_FORLOOP: ID . ASSIGN LOGICAL_EXP
+
+    ASSIGN  shift, and go to state 91
+
+
+state 69
+
+   35 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP . SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@7 STMTS RBRACE
+
+    SEMICOLON  shift, and go to state 92
+
+
+state 70
+
+   37 WHILE_LOOP: WHILE LPAREN LOGICAL_EXP . RPAREN LBRACE $@8 STMTS RBRACE
+
+    RPAREN  shift, and go to state 93
+
+
+state 71
+
+   40 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@9 . STMTS RBRACE UNTIL LPAREN LOGICAL_EXP $@10 RPAREN SEMICOLON
 
     NOT         shift, and go to state 1
     LPAREN      shift, and go to state 2
@@ -1075,674 +1139,1029 @@ state 68
     WHILE       shift, and go to state 5
     REPEAT      shift, and go to state 6
     IF          shift, and go to state 7
-    SUB         shift, and go to state 8
-    INT_TYPE    shift, and go to state 9
-    FLOAT_TYPE  shift, and go to state 10
-    CHAR_TYPE   shift, and go to state 11
-    CONST       shift, and go to state 12
-    ERROR       shift, and go to state 13
-    INTEGER     shift, and go to state 14
-    FLOAT       shift, and go to state 15
-    CHAR        shift, and go to state 16
-    ID          shift, and go to state 17
+    SWITCH      shift, and go to state 8
+    SUB         shift, and go to state 9
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+    CONST       shift, and go to state 13
+    ERROR       shift, and go to state 14
+    INTEGER     shift, and go to state 15
+    FLOAT       shift, and go to state 16
+    CHAR        shift, and go to state 17
+    ID          shift, and go to state 18
 
-    STMTS              go to state 90
-    BLOCK              go to state 19
-    STMT               go to state 20
-    DECLARATION        go to state 21
-    CONST_DECLARATION  go to state 22
-    PARAM_TYPE         go to state 23
-    FOR_LOOP           go to state 24
-    WHILE_LOOP         go to state 25
-    REPEAT_UNTIL_LOOP  go to state 26
-    UNMATCHED_IF       go to state 27
-    ASSIGNMENT         go to state 28
-    LOGICAL_EXP        go to state 29
-    REL_EXP            go to state 30
-    EXP                go to state 31
-    TERM               go to state 32
-    POWER              go to state 33
-    FACTOR             go to state 34
-
-
-state 69
-
-   29 UNMATCHED_IF: IF LPAREN LOGICAL_EXP . RPAREN LBRACE $@7 STMT RBRACE
-
-    RPAREN  shift, and go to state 91
-
-
-state 70
-
-   17 CONST_DECLARATION: CONST PARAM_TYPE ID . SEMICOLON
-
-    SEMICOLON  shift, and go to state 92
-
-
-state 71
-
-   30 ASSIGNMENT: ID ASSIGN LOGICAL_EXP . SEMICOLON
-
-    SEMICOLON  shift, and go to state 93
+    STMTS              go to state 94
+    BLOCK              go to state 20
+    STMT               go to state 21
+    DECLARATION        go to state 22
+    CONST_DECLARATION  go to state 23
+    PARAM_TYPE         go to state 24
+    SWITCH_BLOCK       go to state 25
+    FOR_LOOP           go to state 26
+    WHILE_LOOP         go to state 27
+    REPEAT_UNTIL_LOOP  go to state 28
+    UNMATCHED_IF       go to state 29
+    ASSIGNMENT         go to state 30
+    LOGICAL_EXP        go to state 31
+    REL_EXP            go to state 32
+    EXP                go to state 33
+    TERM               go to state 34
+    POWER              go to state 35
+    FACTOR             go to state 36
 
 
 state 72
 
-   16 DECLARATION: PARAM_TYPE ID SEMICOLON .
+   42 UNMATCHED_IF: IF LPAREN LOGICAL_EXP . RPAREN LBRACE $@11 STMT RBRACE
 
-    $default  reduce using rule 16 (DECLARATION)
+    RPAREN  shift, and go to state 95
 
 
 state 73
 
-   32 LOGICAL_EXP: REL_EXP OR LOGICAL_EXP .
+   23 SWITCH_BLOCK: SWITCH LPAREN ID . RPAREN LBRACE $@3 SWITCH_CASE RBRACE
 
-    $default  reduce using rule 32 (LOGICAL_EXP)
+    RPAREN  shift, and go to state 96
 
 
 state 74
 
-   33 LOGICAL_EXP: REL_EXP AND LOGICAL_EXP .
+   18 CONST_DECLARATION: CONST PARAM_TYPE ID . SEMICOLON
 
-    $default  reduce using rule 33 (LOGICAL_EXP)
+    SEMICOLON  shift, and go to state 97
 
 
 state 75
 
-   35 REL_EXP: EXP EQ EXP .
-   42 EXP: EXP . ADD TERM
-   43    | EXP . SUB TERM
+   43 ASSIGNMENT: ID ASSIGN LOGICAL_EXP . SEMICOLON
 
-    SUB  shift, and go to state 58
-    ADD  shift, and go to state 59
-
-    $default  reduce using rule 35 (REL_EXP)
+    SEMICOLON  shift, and go to state 98
 
 
 state 76
 
-   36 REL_EXP: EXP NE EXP .
-   42 EXP: EXP . ADD TERM
-   43    | EXP . SUB TERM
+   17 DECLARATION: PARAM_TYPE ID SEMICOLON .
 
-    SUB  shift, and go to state 58
-    ADD  shift, and go to state 59
-
-    $default  reduce using rule 36 (REL_EXP)
+    $default  reduce using rule 17 (DECLARATION)
 
 
 state 77
 
-   37 REL_EXP: EXP LT EXP .
-   42 EXP: EXP . ADD TERM
-   43    | EXP . SUB TERM
+   45 LOGICAL_EXP: REL_EXP OR LOGICAL_EXP .
 
-    SUB  shift, and go to state 58
-    ADD  shift, and go to state 59
-
-    $default  reduce using rule 37 (REL_EXP)
+    $default  reduce using rule 45 (LOGICAL_EXP)
 
 
 state 78
 
-   38 REL_EXP: EXP LE EXP .
-   42 EXP: EXP . ADD TERM
-   43    | EXP . SUB TERM
+   46 LOGICAL_EXP: REL_EXP AND LOGICAL_EXP .
 
-    SUB  shift, and go to state 58
-    ADD  shift, and go to state 59
-
-    $default  reduce using rule 38 (REL_EXP)
+    $default  reduce using rule 46 (LOGICAL_EXP)
 
 
 state 79
 
-   39 REL_EXP: EXP GT EXP .
-   42 EXP: EXP . ADD TERM
-   43    | EXP . SUB TERM
+   48 REL_EXP: EXP EQ EXP .
+   55 EXP: EXP . ADD TERM
+   56    | EXP . SUB TERM
 
-    SUB  shift, and go to state 58
-    ADD  shift, and go to state 59
+    SUB  shift, and go to state 61
+    ADD  shift, and go to state 62
 
-    $default  reduce using rule 39 (REL_EXP)
+    $default  reduce using rule 48 (REL_EXP)
 
 
 state 80
 
-   40 REL_EXP: EXP GE EXP .
-   42 EXP: EXP . ADD TERM
-   43    | EXP . SUB TERM
+   49 REL_EXP: EXP NE EXP .
+   55 EXP: EXP . ADD TERM
+   56    | EXP . SUB TERM
 
-    SUB  shift, and go to state 58
-    ADD  shift, and go to state 59
+    SUB  shift, and go to state 61
+    ADD  shift, and go to state 62
 
-    $default  reduce using rule 40 (REL_EXP)
+    $default  reduce using rule 49 (REL_EXP)
 
 
 state 81
 
-   43 EXP: EXP SUB TERM .
-   45 TERM: TERM . MUL POWER
-   46     | TERM . DIV POWER
+   50 REL_EXP: EXP LT EXP .
+   55 EXP: EXP . ADD TERM
+   56    | EXP . SUB TERM
 
-    DIV  shift, and go to state 60
-    MUL  shift, and go to state 61
+    SUB  shift, and go to state 61
+    ADD  shift, and go to state 62
 
-    $default  reduce using rule 43 (EXP)
+    $default  reduce using rule 50 (REL_EXP)
 
 
 state 82
 
-   42 EXP: EXP ADD TERM .
-   45 TERM: TERM . MUL POWER
-   46     | TERM . DIV POWER
+   51 REL_EXP: EXP LE EXP .
+   55 EXP: EXP . ADD TERM
+   56    | EXP . SUB TERM
 
-    DIV  shift, and go to state 60
-    MUL  shift, and go to state 61
+    SUB  shift, and go to state 61
+    ADD  shift, and go to state 62
 
-    $default  reduce using rule 42 (EXP)
+    $default  reduce using rule 51 (REL_EXP)
 
 
 state 83
 
-   46 TERM: TERM DIV POWER .
+   52 REL_EXP: EXP GT EXP .
+   55 EXP: EXP . ADD TERM
+   56    | EXP . SUB TERM
 
-    $default  reduce using rule 46 (TERM)
+    SUB  shift, and go to state 61
+    ADD  shift, and go to state 62
+
+    $default  reduce using rule 52 (REL_EXP)
 
 
 state 84
 
-   45 TERM: TERM MUL POWER .
+   53 REL_EXP: EXP GE EXP .
+   55 EXP: EXP . ADD TERM
+   56    | EXP . SUB TERM
 
-    $default  reduce using rule 45 (TERM)
+    SUB  shift, and go to state 61
+    ADD  shift, and go to state 62
+
+    $default  reduce using rule 53 (REL_EXP)
 
 
 state 85
 
-   48 POWER: FACTOR POW POWER .
+   56 EXP: EXP SUB TERM .
+   58 TERM: TERM . MUL POWER
+   59     | TERM . DIV POWER
 
-    $default  reduce using rule 48 (POWER)
+    DIV  shift, and go to state 63
+    MUL  shift, and go to state 64
+
+    $default  reduce using rule 56 (EXP)
 
 
 state 86
+
+   55 EXP: EXP ADD TERM .
+   58 TERM: TERM . MUL POWER
+   59     | TERM . DIV POWER
+
+    DIV  shift, and go to state 63
+    MUL  shift, and go to state 64
+
+    $default  reduce using rule 55 (EXP)
+
+
+state 87
+
+   59 TERM: TERM DIV POWER .
+
+    $default  reduce using rule 59 (TERM)
+
+
+state 88
+
+   58 TERM: TERM MUL POWER .
+
+    $default  reduce using rule 58 (TERM)
+
+
+state 89
+
+   61 POWER: FACTOR POW POWER .
+
+    $default  reduce using rule 61 (POWER)
+
+
+state 90
 
     6 BLOCK: LBRACE $@1 STMTS RBRACE . $@2
 
     $default  reduce using rule 5 ($@2)
 
-    $@2  go to state 94
-
-
-state 87
-
-   31 ASSIGNMENT_FORLOOP: ID ASSIGN . LOGICAL_EXP
-
-    NOT      shift, and go to state 1
-    LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
-
-    LOGICAL_EXP  go to state 95
-    REL_EXP      go to state 30
-    EXP          go to state 31
-    TERM         go to state 32
-    POWER        go to state 33
-    FACTOR       go to state 34
-
-
-state 88
-
-   22 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON . LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@3 STMTS RBRACE
-
-    NOT      shift, and go to state 1
-    LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
-
-    LOGICAL_EXP  go to state 96
-    REL_EXP      go to state 30
-    EXP          go to state 31
-    TERM         go to state 32
-    POWER        go to state 33
-    FACTOR       go to state 34
-
-
-state 89
-
-   24 WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN . LBRACE $@4 STMTS RBRACE
-
-    LBRACE  shift, and go to state 97
-
-
-state 90
-
-    1 STMTS: STMTS . STMT
-   27 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@5 STMTS . RBRACE UNTIL LPAREN LOGICAL_EXP $@6 RPAREN SEMICOLON
-
-    NOT         shift, and go to state 1
-    LPAREN      shift, and go to state 2
-    LBRACE      shift, and go to state 3
-    RBRACE      shift, and go to state 98
-    FOR         shift, and go to state 4
-    WHILE       shift, and go to state 5
-    REPEAT      shift, and go to state 6
-    IF          shift, and go to state 7
-    SUB         shift, and go to state 8
-    INT_TYPE    shift, and go to state 9
-    FLOAT_TYPE  shift, and go to state 10
-    CHAR_TYPE   shift, and go to state 11
-    CONST       shift, and go to state 12
-    INTEGER     shift, and go to state 14
-    FLOAT       shift, and go to state 15
-    CHAR        shift, and go to state 16
-    ID          shift, and go to state 17
-
-    BLOCK              go to state 19
-    STMT               go to state 47
-    DECLARATION        go to state 21
-    CONST_DECLARATION  go to state 22
-    PARAM_TYPE         go to state 23
-    FOR_LOOP           go to state 24
-    WHILE_LOOP         go to state 25
-    REPEAT_UNTIL_LOOP  go to state 26
-    UNMATCHED_IF       go to state 27
-    ASSIGNMENT         go to state 28
-    LOGICAL_EXP        go to state 29
-    REL_EXP            go to state 30
-    EXP                go to state 31
-    TERM               go to state 32
-    POWER              go to state 33
-    FACTOR             go to state 34
+    $@2  go to state 99
 
 
 state 91
 
-   29 UNMATCHED_IF: IF LPAREN LOGICAL_EXP RPAREN . LBRACE $@7 STMT RBRACE
+   44 ASSIGNMENT_FORLOOP: ID ASSIGN . LOGICAL_EXP
 
-    LBRACE  shift, and go to state 99
+    NOT      shift, and go to state 1
+    LPAREN   shift, and go to state 2
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
+
+    LOGICAL_EXP  go to state 100
+    REL_EXP      go to state 32
+    EXP          go to state 33
+    TERM         go to state 34
+    POWER        go to state 35
+    FACTOR       go to state 36
 
 
 state 92
 
-   17 CONST_DECLARATION: CONST PARAM_TYPE ID SEMICOLON .
+   35 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON . LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@7 STMTS RBRACE
 
-    $default  reduce using rule 17 (CONST_DECLARATION)
+    NOT      shift, and go to state 1
+    LPAREN   shift, and go to state 2
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
+
+    LOGICAL_EXP  go to state 101
+    REL_EXP      go to state 32
+    EXP          go to state 33
+    TERM         go to state 34
+    POWER        go to state 35
+    FACTOR       go to state 36
 
 
 state 93
 
-   30 ASSIGNMENT: ID ASSIGN LOGICAL_EXP SEMICOLON .
+   37 WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN . LBRACE $@8 STMTS RBRACE
 
-    $default  reduce using rule 30 (ASSIGNMENT)
+    LBRACE  shift, and go to state 102
 
 
 state 94
+
+    1 STMTS: STMTS . STMT
+   40 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@9 STMTS . RBRACE UNTIL LPAREN LOGICAL_EXP $@10 RPAREN SEMICOLON
+
+    NOT         shift, and go to state 1
+    LPAREN      shift, and go to state 2
+    LBRACE      shift, and go to state 3
+    RBRACE      shift, and go to state 103
+    FOR         shift, and go to state 4
+    WHILE       shift, and go to state 5
+    REPEAT      shift, and go to state 6
+    IF          shift, and go to state 7
+    SWITCH      shift, and go to state 8
+    SUB         shift, and go to state 9
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+    CONST       shift, and go to state 13
+    INTEGER     shift, and go to state 15
+    FLOAT       shift, and go to state 16
+    CHAR        shift, and go to state 17
+    ID          shift, and go to state 18
+
+    BLOCK              go to state 20
+    STMT               go to state 50
+    DECLARATION        go to state 22
+    CONST_DECLARATION  go to state 23
+    PARAM_TYPE         go to state 24
+    SWITCH_BLOCK       go to state 25
+    FOR_LOOP           go to state 26
+    WHILE_LOOP         go to state 27
+    REPEAT_UNTIL_LOOP  go to state 28
+    UNMATCHED_IF       go to state 29
+    ASSIGNMENT         go to state 30
+    LOGICAL_EXP        go to state 31
+    REL_EXP            go to state 32
+    EXP                go to state 33
+    TERM               go to state 34
+    POWER              go to state 35
+    FACTOR             go to state 36
+
+
+state 95
+
+   42 UNMATCHED_IF: IF LPAREN LOGICAL_EXP RPAREN . LBRACE $@11 STMT RBRACE
+
+    LBRACE  shift, and go to state 104
+
+
+state 96
+
+   23 SWITCH_BLOCK: SWITCH LPAREN ID RPAREN . LBRACE $@3 SWITCH_CASE RBRACE
+
+    LBRACE  shift, and go to state 105
+
+
+state 97
+
+   18 CONST_DECLARATION: CONST PARAM_TYPE ID SEMICOLON .
+
+    $default  reduce using rule 18 (CONST_DECLARATION)
+
+
+state 98
+
+   43 ASSIGNMENT: ID ASSIGN LOGICAL_EXP SEMICOLON .
+
+    $default  reduce using rule 43 (ASSIGNMENT)
+
+
+state 99
 
     6 BLOCK: LBRACE $@1 STMTS RBRACE $@2 .
 
     $default  reduce using rule 6 (BLOCK)
 
 
-state 95
-
-   31 ASSIGNMENT_FORLOOP: ID ASSIGN LOGICAL_EXP .
-
-    $default  reduce using rule 31 (ASSIGNMENT_FORLOOP)
-
-
-state 96
-
-   22 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP . SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@3 STMTS RBRACE
-
-    SEMICOLON  shift, and go to state 100
-
-
-state 97
-
-   24 WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE . $@4 STMTS RBRACE
-
-    $default  reduce using rule 23 ($@4)
-
-    $@4  go to state 101
-
-
-state 98
-
-   27 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@5 STMTS RBRACE . UNTIL LPAREN LOGICAL_EXP $@6 RPAREN SEMICOLON
-
-    UNTIL  shift, and go to state 102
-
-
-state 99
-
-   29 UNMATCHED_IF: IF LPAREN LOGICAL_EXP RPAREN LBRACE . $@7 STMT RBRACE
-
-    $default  reduce using rule 28 ($@7)
-
-    $@7  go to state 103
-
-
 state 100
 
-   22 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON . ASSIGNMENT_FORLOOP RPAREN LBRACE $@3 STMTS RBRACE
+   44 ASSIGNMENT_FORLOOP: ID ASSIGN LOGICAL_EXP .
 
-    ID  shift, and go to state 65
-
-    ASSIGNMENT_FORLOOP  go to state 104
+    $default  reduce using rule 44 (ASSIGNMENT_FORLOOP)
 
 
 state 101
 
-   24 WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE $@4 . STMTS RBRACE
+   35 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP . SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@7 STMTS RBRACE
 
-    NOT         shift, and go to state 1
-    LPAREN      shift, and go to state 2
-    LBRACE      shift, and go to state 3
-    FOR         shift, and go to state 4
-    WHILE       shift, and go to state 5
-    REPEAT      shift, and go to state 6
-    IF          shift, and go to state 7
-    SUB         shift, and go to state 8
-    INT_TYPE    shift, and go to state 9
-    FLOAT_TYPE  shift, and go to state 10
-    CHAR_TYPE   shift, and go to state 11
-    CONST       shift, and go to state 12
-    ERROR       shift, and go to state 13
-    INTEGER     shift, and go to state 14
-    FLOAT       shift, and go to state 15
-    CHAR        shift, and go to state 16
-    ID          shift, and go to state 17
-
-    STMTS              go to state 105
-    BLOCK              go to state 19
-    STMT               go to state 20
-    DECLARATION        go to state 21
-    CONST_DECLARATION  go to state 22
-    PARAM_TYPE         go to state 23
-    FOR_LOOP           go to state 24
-    WHILE_LOOP         go to state 25
-    REPEAT_UNTIL_LOOP  go to state 26
-    UNMATCHED_IF       go to state 27
-    ASSIGNMENT         go to state 28
-    LOGICAL_EXP        go to state 29
-    REL_EXP            go to state 30
-    EXP                go to state 31
-    TERM               go to state 32
-    POWER              go to state 33
-    FACTOR             go to state 34
+    SEMICOLON  shift, and go to state 106
 
 
 state 102
 
-   27 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@5 STMTS RBRACE UNTIL . LPAREN LOGICAL_EXP $@6 RPAREN SEMICOLON
+   37 WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE . $@8 STMTS RBRACE
 
-    LPAREN  shift, and go to state 106
+    $default  reduce using rule 36 ($@8)
+
+    $@8  go to state 107
 
 
 state 103
 
-   29 UNMATCHED_IF: IF LPAREN LOGICAL_EXP RPAREN LBRACE $@7 . STMT RBRACE
+   40 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@9 STMTS RBRACE . UNTIL LPAREN LOGICAL_EXP $@10 RPAREN SEMICOLON
 
-    NOT         shift, and go to state 1
-    LPAREN      shift, and go to state 2
-    LBRACE      shift, and go to state 3
-    FOR         shift, and go to state 4
-    WHILE       shift, and go to state 5
-    REPEAT      shift, and go to state 6
-    IF          shift, and go to state 7
-    SUB         shift, and go to state 8
-    INT_TYPE    shift, and go to state 9
-    FLOAT_TYPE  shift, and go to state 10
-    CHAR_TYPE   shift, and go to state 11
-    CONST       shift, and go to state 12
-    INTEGER     shift, and go to state 14
-    FLOAT       shift, and go to state 15
-    CHAR        shift, and go to state 16
-    ID          shift, and go to state 17
-
-    BLOCK              go to state 19
-    STMT               go to state 107
-    DECLARATION        go to state 21
-    CONST_DECLARATION  go to state 22
-    PARAM_TYPE         go to state 23
-    FOR_LOOP           go to state 24
-    WHILE_LOOP         go to state 25
-    REPEAT_UNTIL_LOOP  go to state 26
-    UNMATCHED_IF       go to state 27
-    ASSIGNMENT         go to state 28
-    LOGICAL_EXP        go to state 29
-    REL_EXP            go to state 30
-    EXP                go to state 31
-    TERM               go to state 32
-    POWER              go to state 33
-    FACTOR             go to state 34
+    UNTIL  shift, and go to state 108
 
 
 state 104
 
-   22 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP . RPAREN LBRACE $@3 STMTS RBRACE
+   42 UNMATCHED_IF: IF LPAREN LOGICAL_EXP RPAREN LBRACE . $@11 STMT RBRACE
 
-    RPAREN  shift, and go to state 108
+    $default  reduce using rule 41 ($@11)
+
+    $@11  go to state 109
 
 
 state 105
 
-    1 STMTS: STMTS . STMT
-   24 WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE $@4 STMTS . RBRACE
+   23 SWITCH_BLOCK: SWITCH LPAREN ID RPAREN LBRACE . $@3 SWITCH_CASE RBRACE
 
-    NOT         shift, and go to state 1
-    LPAREN      shift, and go to state 2
-    LBRACE      shift, and go to state 3
-    RBRACE      shift, and go to state 109
-    FOR         shift, and go to state 4
-    WHILE       shift, and go to state 5
-    REPEAT      shift, and go to state 6
-    IF          shift, and go to state 7
-    SUB         shift, and go to state 8
-    INT_TYPE    shift, and go to state 9
-    FLOAT_TYPE  shift, and go to state 10
-    CHAR_TYPE   shift, and go to state 11
-    CONST       shift, and go to state 12
-    INTEGER     shift, and go to state 14
-    FLOAT       shift, and go to state 15
-    CHAR        shift, and go to state 16
-    ID          shift, and go to state 17
+    $default  reduce using rule 22 ($@3)
 
-    BLOCK              go to state 19
-    STMT               go to state 47
-    DECLARATION        go to state 21
-    CONST_DECLARATION  go to state 22
-    PARAM_TYPE         go to state 23
-    FOR_LOOP           go to state 24
-    WHILE_LOOP         go to state 25
-    REPEAT_UNTIL_LOOP  go to state 26
-    UNMATCHED_IF       go to state 27
-    ASSIGNMENT         go to state 28
-    LOGICAL_EXP        go to state 29
-    REL_EXP            go to state 30
-    EXP                go to state 31
-    TERM               go to state 32
-    POWER              go to state 33
-    FACTOR             go to state 34
+    $@3  go to state 110
 
 
 state 106
 
-   27 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@5 STMTS RBRACE UNTIL LPAREN . LOGICAL_EXP $@6 RPAREN SEMICOLON
+   35 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON . ASSIGNMENT_FORLOOP RPAREN LBRACE $@7 STMTS RBRACE
 
-    NOT      shift, and go to state 1
-    LPAREN   shift, and go to state 2
-    SUB      shift, and go to state 8
-    INTEGER  shift, and go to state 14
-    FLOAT    shift, and go to state 15
-    CHAR     shift, and go to state 16
-    ID       shift, and go to state 35
+    ID  shift, and go to state 68
 
-    LOGICAL_EXP  go to state 110
-    REL_EXP      go to state 30
-    EXP          go to state 31
-    TERM         go to state 32
-    POWER        go to state 33
-    FACTOR       go to state 34
+    ASSIGNMENT_FORLOOP  go to state 111
 
 
 state 107
 
-   29 UNMATCHED_IF: IF LPAREN LOGICAL_EXP RPAREN LBRACE $@7 STMT . RBRACE
+   37 WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE $@8 . STMTS RBRACE
 
-    RBRACE  shift, and go to state 111
+    NOT         shift, and go to state 1
+    LPAREN      shift, and go to state 2
+    LBRACE      shift, and go to state 3
+    FOR         shift, and go to state 4
+    WHILE       shift, and go to state 5
+    REPEAT      shift, and go to state 6
+    IF          shift, and go to state 7
+    SWITCH      shift, and go to state 8
+    SUB         shift, and go to state 9
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+    CONST       shift, and go to state 13
+    ERROR       shift, and go to state 14
+    INTEGER     shift, and go to state 15
+    FLOAT       shift, and go to state 16
+    CHAR        shift, and go to state 17
+    ID          shift, and go to state 18
+
+    STMTS              go to state 112
+    BLOCK              go to state 20
+    STMT               go to state 21
+    DECLARATION        go to state 22
+    CONST_DECLARATION  go to state 23
+    PARAM_TYPE         go to state 24
+    SWITCH_BLOCK       go to state 25
+    FOR_LOOP           go to state 26
+    WHILE_LOOP         go to state 27
+    REPEAT_UNTIL_LOOP  go to state 28
+    UNMATCHED_IF       go to state 29
+    ASSIGNMENT         go to state 30
+    LOGICAL_EXP        go to state 31
+    REL_EXP            go to state 32
+    EXP                go to state 33
+    TERM               go to state 34
+    POWER              go to state 35
+    FACTOR             go to state 36
 
 
 state 108
 
-   22 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN . LBRACE $@3 STMTS RBRACE
+   40 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@9 STMTS RBRACE UNTIL . LPAREN LOGICAL_EXP $@10 RPAREN SEMICOLON
 
-    LBRACE  shift, and go to state 112
+    LPAREN  shift, and go to state 113
 
 
 state 109
 
-   24 WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE $@4 STMTS RBRACE .
+   42 UNMATCHED_IF: IF LPAREN LOGICAL_EXP RPAREN LBRACE $@11 . STMT RBRACE
 
-    $default  reduce using rule 24 (WHILE_LOOP)
+    NOT         shift, and go to state 1
+    LPAREN      shift, and go to state 2
+    LBRACE      shift, and go to state 3
+    FOR         shift, and go to state 4
+    WHILE       shift, and go to state 5
+    REPEAT      shift, and go to state 6
+    IF          shift, and go to state 7
+    SWITCH      shift, and go to state 8
+    SUB         shift, and go to state 9
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+    CONST       shift, and go to state 13
+    INTEGER     shift, and go to state 15
+    FLOAT       shift, and go to state 16
+    CHAR        shift, and go to state 17
+    ID          shift, and go to state 18
+
+    BLOCK              go to state 20
+    STMT               go to state 114
+    DECLARATION        go to state 22
+    CONST_DECLARATION  go to state 23
+    PARAM_TYPE         go to state 24
+    SWITCH_BLOCK       go to state 25
+    FOR_LOOP           go to state 26
+    WHILE_LOOP         go to state 27
+    REPEAT_UNTIL_LOOP  go to state 28
+    UNMATCHED_IF       go to state 29
+    ASSIGNMENT         go to state 30
+    LOGICAL_EXP        go to state 31
+    REL_EXP            go to state 32
+    EXP                go to state 33
+    TERM               go to state 34
+    POWER              go to state 35
+    FACTOR             go to state 36
 
 
 state 110
 
-   27 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@5 STMTS RBRACE UNTIL LPAREN LOGICAL_EXP . $@6 RPAREN SEMICOLON
+   23 SWITCH_BLOCK: SWITCH LPAREN ID RPAREN LBRACE $@3 . SWITCH_CASE RBRACE
 
-    $default  reduce using rule 26 ($@6)
+    CASE     shift, and go to state 115
+    DEFAULT  shift, and go to state 116
 
-    $@6  go to state 113
+    SWITCH_CASE   go to state 117
+    CASE_STMTS    go to state 118
+    CASE_STMT     go to state 119
+    DEFAULT_STMT  go to state 120
 
 
 state 111
 
-   29 UNMATCHED_IF: IF LPAREN LOGICAL_EXP RPAREN LBRACE $@7 STMT RBRACE .
+   35 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP . RPAREN LBRACE $@7 STMTS RBRACE
 
-    $default  reduce using rule 29 (UNMATCHED_IF)
+    RPAREN  shift, and go to state 121
 
 
 state 112
 
-   22 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE . $@3 STMTS RBRACE
+    1 STMTS: STMTS . STMT
+   37 WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE $@8 STMTS . RBRACE
 
-    $default  reduce using rule 21 ($@3)
+    NOT         shift, and go to state 1
+    LPAREN      shift, and go to state 2
+    LBRACE      shift, and go to state 3
+    RBRACE      shift, and go to state 122
+    FOR         shift, and go to state 4
+    WHILE       shift, and go to state 5
+    REPEAT      shift, and go to state 6
+    IF          shift, and go to state 7
+    SWITCH      shift, and go to state 8
+    SUB         shift, and go to state 9
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+    CONST       shift, and go to state 13
+    INTEGER     shift, and go to state 15
+    FLOAT       shift, and go to state 16
+    CHAR        shift, and go to state 17
+    ID          shift, and go to state 18
 
-    $@3  go to state 114
+    BLOCK              go to state 20
+    STMT               go to state 50
+    DECLARATION        go to state 22
+    CONST_DECLARATION  go to state 23
+    PARAM_TYPE         go to state 24
+    SWITCH_BLOCK       go to state 25
+    FOR_LOOP           go to state 26
+    WHILE_LOOP         go to state 27
+    REPEAT_UNTIL_LOOP  go to state 28
+    UNMATCHED_IF       go to state 29
+    ASSIGNMENT         go to state 30
+    LOGICAL_EXP        go to state 31
+    REL_EXP            go to state 32
+    EXP                go to state 33
+    TERM               go to state 34
+    POWER              go to state 35
+    FACTOR             go to state 36
 
 
 state 113
 
-   27 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@5 STMTS RBRACE UNTIL LPAREN LOGICAL_EXP $@6 . RPAREN SEMICOLON
+   40 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@9 STMTS RBRACE UNTIL LPAREN . LOGICAL_EXP $@10 RPAREN SEMICOLON
 
-    RPAREN  shift, and go to state 115
+    NOT      shift, and go to state 1
+    LPAREN   shift, and go to state 2
+    SUB      shift, and go to state 9
+    INTEGER  shift, and go to state 15
+    FLOAT    shift, and go to state 16
+    CHAR     shift, and go to state 17
+    ID       shift, and go to state 37
+
+    LOGICAL_EXP  go to state 123
+    REL_EXP      go to state 32
+    EXP          go to state 33
+    TERM         go to state 34
+    POWER        go to state 35
+    FACTOR       go to state 36
 
 
 state 114
 
-   22 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@3 . STMTS RBRACE
+   42 UNMATCHED_IF: IF LPAREN LOGICAL_EXP RPAREN LBRACE $@11 STMT . RBRACE
 
-    NOT         shift, and go to state 1
-    LPAREN      shift, and go to state 2
-    LBRACE      shift, and go to state 3
-    FOR         shift, and go to state 4
-    WHILE       shift, and go to state 5
-    REPEAT      shift, and go to state 6
-    IF          shift, and go to state 7
-    SUB         shift, and go to state 8
-    INT_TYPE    shift, and go to state 9
-    FLOAT_TYPE  shift, and go to state 10
-    CHAR_TYPE   shift, and go to state 11
-    CONST       shift, and go to state 12
-    ERROR       shift, and go to state 13
-    INTEGER     shift, and go to state 14
-    FLOAT       shift, and go to state 15
-    CHAR        shift, and go to state 16
-    ID          shift, and go to state 17
-
-    STMTS              go to state 116
-    BLOCK              go to state 19
-    STMT               go to state 20
-    DECLARATION        go to state 21
-    CONST_DECLARATION  go to state 22
-    PARAM_TYPE         go to state 23
-    FOR_LOOP           go to state 24
-    WHILE_LOOP         go to state 25
-    REPEAT_UNTIL_LOOP  go to state 26
-    UNMATCHED_IF       go to state 27
-    ASSIGNMENT         go to state 28
-    LOGICAL_EXP        go to state 29
-    REL_EXP            go to state 30
-    EXP                go to state 31
-    TERM               go to state 32
-    POWER              go to state 33
-    FACTOR             go to state 34
+    RBRACE  shift, and go to state 124
 
 
 state 115
 
-   27 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@5 STMTS RBRACE UNTIL LPAREN LOGICAL_EXP $@6 RPAREN . SEMICOLON
+   31 CASE_STMT: CASE . INTEGER COLON $@4 STMTS $@5 BREAK SEMICOLON
 
-    SEMICOLON  shift, and go to state 117
+    INTEGER  shift, and go to state 125
 
 
 state 116
 
-    1 STMTS: STMTS . STMT
-   22 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@3 STMTS . RBRACE
+   33 DEFAULT_STMT: DEFAULT . COLON $@6 STMTS BREAK SEMICOLON
 
-    NOT         shift, and go to state 1
-    LPAREN      shift, and go to state 2
-    LBRACE      shift, and go to state 3
-    RBRACE      shift, and go to state 118
-    FOR         shift, and go to state 4
-    WHILE       shift, and go to state 5
-    REPEAT      shift, and go to state 6
-    IF          shift, and go to state 7
-    SUB         shift, and go to state 8
-    INT_TYPE    shift, and go to state 9
-    FLOAT_TYPE  shift, and go to state 10
-    CHAR_TYPE   shift, and go to state 11
-    CONST       shift, and go to state 12
-    INTEGER     shift, and go to state 14
-    FLOAT       shift, and go to state 15
-    CHAR        shift, and go to state 16
-    ID          shift, and go to state 17
-
-    BLOCK              go to state 19
-    STMT               go to state 47
-    DECLARATION        go to state 21
-    CONST_DECLARATION  go to state 22
-    PARAM_TYPE         go to state 23
-    FOR_LOOP           go to state 24
-    WHILE_LOOP         go to state 25
-    REPEAT_UNTIL_LOOP  go to state 26
-    UNMATCHED_IF       go to state 27
-    ASSIGNMENT         go to state 28
-    LOGICAL_EXP        go to state 29
-    REL_EXP            go to state 30
-    EXP                go to state 31
-    TERM               go to state 32
-    POWER              go to state 33
-    FACTOR             go to state 34
+    COLON  shift, and go to state 126
 
 
 state 117
 
-   27 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@5 STMTS RBRACE UNTIL LPAREN LOGICAL_EXP $@6 RPAREN SEMICOLON .
+   23 SWITCH_BLOCK: SWITCH LPAREN ID RPAREN LBRACE $@3 SWITCH_CASE . RBRACE
 
-    $default  reduce using rule 27 (REPEAT_UNTIL_LOOP)
+    RBRACE  shift, and go to state 127
 
 
 state 118
 
-   22 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@3 STMTS RBRACE .
+   24 SWITCH_CASE: CASE_STMTS .
+   25            | CASE_STMTS . DEFAULT_STMT
+   28 CASE_STMTS: CASE_STMTS . CASE_STMT
 
-    $default  reduce using rule 22 (FOR_LOOP)
+    CASE     shift, and go to state 115
+    DEFAULT  shift, and go to state 116
+
+    $default  reduce using rule 24 (SWITCH_CASE)
+
+    CASE_STMT     go to state 128
+    DEFAULT_STMT  go to state 129
+
+
+state 119
+
+   27 CASE_STMTS: CASE_STMT .
+
+    $default  reduce using rule 27 (CASE_STMTS)
+
+
+state 120
+
+   26 SWITCH_CASE: DEFAULT_STMT .
+
+    $default  reduce using rule 26 (SWITCH_CASE)
+
+
+state 121
+
+   35 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN . LBRACE $@7 STMTS RBRACE
+
+    LBRACE  shift, and go to state 130
+
+
+state 122
+
+   37 WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE $@8 STMTS RBRACE .
+
+    $default  reduce using rule 37 (WHILE_LOOP)
+
+
+state 123
+
+   40 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@9 STMTS RBRACE UNTIL LPAREN LOGICAL_EXP . $@10 RPAREN SEMICOLON
+
+    $default  reduce using rule 39 ($@10)
+
+    $@10  go to state 131
+
+
+state 124
+
+   42 UNMATCHED_IF: IF LPAREN LOGICAL_EXP RPAREN LBRACE $@11 STMT RBRACE .
+
+    $default  reduce using rule 42 (UNMATCHED_IF)
+
+
+state 125
+
+   31 CASE_STMT: CASE INTEGER . COLON $@4 STMTS $@5 BREAK SEMICOLON
+
+    COLON  shift, and go to state 132
+
+
+state 126
+
+   33 DEFAULT_STMT: DEFAULT COLON . $@6 STMTS BREAK SEMICOLON
+
+    $default  reduce using rule 32 ($@6)
+
+    $@6  go to state 133
+
+
+state 127
+
+   23 SWITCH_BLOCK: SWITCH LPAREN ID RPAREN LBRACE $@3 SWITCH_CASE RBRACE .
+
+    $default  reduce using rule 23 (SWITCH_BLOCK)
+
+
+state 128
+
+   28 CASE_STMTS: CASE_STMTS CASE_STMT .
+
+    $default  reduce using rule 28 (CASE_STMTS)
+
+
+state 129
+
+   25 SWITCH_CASE: CASE_STMTS DEFAULT_STMT .
+
+    $default  reduce using rule 25 (SWITCH_CASE)
+
+
+state 130
+
+   35 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE . $@7 STMTS RBRACE
+
+    $default  reduce using rule 34 ($@7)
+
+    $@7  go to state 134
+
+
+state 131
+
+   40 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@9 STMTS RBRACE UNTIL LPAREN LOGICAL_EXP $@10 . RPAREN SEMICOLON
+
+    RPAREN  shift, and go to state 135
+
+
+state 132
+
+   31 CASE_STMT: CASE INTEGER COLON . $@4 STMTS $@5 BREAK SEMICOLON
+
+    $default  reduce using rule 29 ($@4)
+
+    $@4  go to state 136
+
+
+state 133
+
+   33 DEFAULT_STMT: DEFAULT COLON $@6 . STMTS BREAK SEMICOLON
+
+    NOT         shift, and go to state 1
+    LPAREN      shift, and go to state 2
+    LBRACE      shift, and go to state 3
+    FOR         shift, and go to state 4
+    WHILE       shift, and go to state 5
+    REPEAT      shift, and go to state 6
+    IF          shift, and go to state 7
+    SWITCH      shift, and go to state 8
+    SUB         shift, and go to state 9
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+    CONST       shift, and go to state 13
+    ERROR       shift, and go to state 14
+    INTEGER     shift, and go to state 15
+    FLOAT       shift, and go to state 16
+    CHAR        shift, and go to state 17
+    ID          shift, and go to state 18
+
+    STMTS              go to state 137
+    BLOCK              go to state 20
+    STMT               go to state 21
+    DECLARATION        go to state 22
+    CONST_DECLARATION  go to state 23
+    PARAM_TYPE         go to state 24
+    SWITCH_BLOCK       go to state 25
+    FOR_LOOP           go to state 26
+    WHILE_LOOP         go to state 27
+    REPEAT_UNTIL_LOOP  go to state 28
+    UNMATCHED_IF       go to state 29
+    ASSIGNMENT         go to state 30
+    LOGICAL_EXP        go to state 31
+    REL_EXP            go to state 32
+    EXP                go to state 33
+    TERM               go to state 34
+    POWER              go to state 35
+    FACTOR             go to state 36
+
+
+state 134
+
+   35 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@7 . STMTS RBRACE
+
+    NOT         shift, and go to state 1
+    LPAREN      shift, and go to state 2
+    LBRACE      shift, and go to state 3
+    FOR         shift, and go to state 4
+    WHILE       shift, and go to state 5
+    REPEAT      shift, and go to state 6
+    IF          shift, and go to state 7
+    SWITCH      shift, and go to state 8
+    SUB         shift, and go to state 9
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+    CONST       shift, and go to state 13
+    ERROR       shift, and go to state 14
+    INTEGER     shift, and go to state 15
+    FLOAT       shift, and go to state 16
+    CHAR        shift, and go to state 17
+    ID          shift, and go to state 18
+
+    STMTS              go to state 138
+    BLOCK              go to state 20
+    STMT               go to state 21
+    DECLARATION        go to state 22
+    CONST_DECLARATION  go to state 23
+    PARAM_TYPE         go to state 24
+    SWITCH_BLOCK       go to state 25
+    FOR_LOOP           go to state 26
+    WHILE_LOOP         go to state 27
+    REPEAT_UNTIL_LOOP  go to state 28
+    UNMATCHED_IF       go to state 29
+    ASSIGNMENT         go to state 30
+    LOGICAL_EXP        go to state 31
+    REL_EXP            go to state 32
+    EXP                go to state 33
+    TERM               go to state 34
+    POWER              go to state 35
+    FACTOR             go to state 36
+
+
+state 135
+
+   40 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@9 STMTS RBRACE UNTIL LPAREN LOGICAL_EXP $@10 RPAREN . SEMICOLON
+
+    SEMICOLON  shift, and go to state 139
+
+
+state 136
+
+   31 CASE_STMT: CASE INTEGER COLON $@4 . STMTS $@5 BREAK SEMICOLON
+
+    NOT         shift, and go to state 1
+    LPAREN      shift, and go to state 2
+    LBRACE      shift, and go to state 3
+    FOR         shift, and go to state 4
+    WHILE       shift, and go to state 5
+    REPEAT      shift, and go to state 6
+    IF          shift, and go to state 7
+    SWITCH      shift, and go to state 8
+    SUB         shift, and go to state 9
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+    CONST       shift, and go to state 13
+    ERROR       shift, and go to state 14
+    INTEGER     shift, and go to state 15
+    FLOAT       shift, and go to state 16
+    CHAR        shift, and go to state 17
+    ID          shift, and go to state 18
+
+    STMTS              go to state 140
+    BLOCK              go to state 20
+    STMT               go to state 21
+    DECLARATION        go to state 22
+    CONST_DECLARATION  go to state 23
+    PARAM_TYPE         go to state 24
+    SWITCH_BLOCK       go to state 25
+    FOR_LOOP           go to state 26
+    WHILE_LOOP         go to state 27
+    REPEAT_UNTIL_LOOP  go to state 28
+    UNMATCHED_IF       go to state 29
+    ASSIGNMENT         go to state 30
+    LOGICAL_EXP        go to state 31
+    REL_EXP            go to state 32
+    EXP                go to state 33
+    TERM               go to state 34
+    POWER              go to state 35
+    FACTOR             go to state 36
+
+
+state 137
+
+    1 STMTS: STMTS . STMT
+   33 DEFAULT_STMT: DEFAULT COLON $@6 STMTS . BREAK SEMICOLON
+
+    NOT         shift, and go to state 1
+    LPAREN      shift, and go to state 2
+    LBRACE      shift, and go to state 3
+    FOR         shift, and go to state 4
+    WHILE       shift, and go to state 5
+    REPEAT      shift, and go to state 6
+    IF          shift, and go to state 7
+    SWITCH      shift, and go to state 8
+    BREAK       shift, and go to state 141
+    SUB         shift, and go to state 9
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+    CONST       shift, and go to state 13
+    INTEGER     shift, and go to state 15
+    FLOAT       shift, and go to state 16
+    CHAR        shift, and go to state 17
+    ID          shift, and go to state 18
+
+    BLOCK              go to state 20
+    STMT               go to state 50
+    DECLARATION        go to state 22
+    CONST_DECLARATION  go to state 23
+    PARAM_TYPE         go to state 24
+    SWITCH_BLOCK       go to state 25
+    FOR_LOOP           go to state 26
+    WHILE_LOOP         go to state 27
+    REPEAT_UNTIL_LOOP  go to state 28
+    UNMATCHED_IF       go to state 29
+    ASSIGNMENT         go to state 30
+    LOGICAL_EXP        go to state 31
+    REL_EXP            go to state 32
+    EXP                go to state 33
+    TERM               go to state 34
+    POWER              go to state 35
+    FACTOR             go to state 36
+
+
+state 138
+
+    1 STMTS: STMTS . STMT
+   35 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@7 STMTS . RBRACE
+
+    NOT         shift, and go to state 1
+    LPAREN      shift, and go to state 2
+    LBRACE      shift, and go to state 3
+    RBRACE      shift, and go to state 142
+    FOR         shift, and go to state 4
+    WHILE       shift, and go to state 5
+    REPEAT      shift, and go to state 6
+    IF          shift, and go to state 7
+    SWITCH      shift, and go to state 8
+    SUB         shift, and go to state 9
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+    CONST       shift, and go to state 13
+    INTEGER     shift, and go to state 15
+    FLOAT       shift, and go to state 16
+    CHAR        shift, and go to state 17
+    ID          shift, and go to state 18
+
+    BLOCK              go to state 20
+    STMT               go to state 50
+    DECLARATION        go to state 22
+    CONST_DECLARATION  go to state 23
+    PARAM_TYPE         go to state 24
+    SWITCH_BLOCK       go to state 25
+    FOR_LOOP           go to state 26
+    WHILE_LOOP         go to state 27
+    REPEAT_UNTIL_LOOP  go to state 28
+    UNMATCHED_IF       go to state 29
+    ASSIGNMENT         go to state 30
+    LOGICAL_EXP        go to state 31
+    REL_EXP            go to state 32
+    EXP                go to state 33
+    TERM               go to state 34
+    POWER              go to state 35
+    FACTOR             go to state 36
+
+
+state 139
+
+   40 REPEAT_UNTIL_LOOP: REPEAT LBRACE $@9 STMTS RBRACE UNTIL LPAREN LOGICAL_EXP $@10 RPAREN SEMICOLON .
+
+    $default  reduce using rule 40 (REPEAT_UNTIL_LOOP)
+
+
+state 140
+
+    1 STMTS: STMTS . STMT
+   31 CASE_STMT: CASE INTEGER COLON $@4 STMTS . $@5 BREAK SEMICOLON
+
+    NOT         shift, and go to state 1
+    LPAREN      shift, and go to state 2
+    LBRACE      shift, and go to state 3
+    FOR         shift, and go to state 4
+    WHILE       shift, and go to state 5
+    REPEAT      shift, and go to state 6
+    IF          shift, and go to state 7
+    SWITCH      shift, and go to state 8
+    SUB         shift, and go to state 9
+    INT_TYPE    shift, and go to state 10
+    FLOAT_TYPE  shift, and go to state 11
+    CHAR_TYPE   shift, and go to state 12
+    CONST       shift, and go to state 13
+    INTEGER     shift, and go to state 15
+    FLOAT       shift, and go to state 16
+    CHAR        shift, and go to state 17
+    ID          shift, and go to state 18
+
+    $default  reduce using rule 30 ($@5)
+
+    BLOCK              go to state 20
+    STMT               go to state 50
+    DECLARATION        go to state 22
+    CONST_DECLARATION  go to state 23
+    PARAM_TYPE         go to state 24
+    SWITCH_BLOCK       go to state 25
+    $@5                go to state 143
+    FOR_LOOP           go to state 26
+    WHILE_LOOP         go to state 27
+    REPEAT_UNTIL_LOOP  go to state 28
+    UNMATCHED_IF       go to state 29
+    ASSIGNMENT         go to state 30
+    LOGICAL_EXP        go to state 31
+    REL_EXP            go to state 32
+    EXP                go to state 33
+    TERM               go to state 34
+    POWER              go to state 35
+    FACTOR             go to state 36
+
+
+state 141
+
+   33 DEFAULT_STMT: DEFAULT COLON $@6 STMTS BREAK . SEMICOLON
+
+    SEMICOLON  shift, and go to state 144
+
+
+state 142
+
+   35 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN LBRACE $@7 STMTS RBRACE .
+
+    $default  reduce using rule 35 (FOR_LOOP)
+
+
+state 143
+
+   31 CASE_STMT: CASE INTEGER COLON $@4 STMTS $@5 . BREAK SEMICOLON
+
+    BREAK  shift, and go to state 145
+
+
+state 144
+
+   33 DEFAULT_STMT: DEFAULT COLON $@6 STMTS BREAK SEMICOLON .
+
+    $default  reduce using rule 33 (DEFAULT_STMT)
+
+
+state 145
+
+   31 CASE_STMT: CASE INTEGER COLON $@4 STMTS $@5 BREAK . SEMICOLON
+
+    SEMICOLON  shift, and go to state 146
+
+
+state 146
+
+   31 CASE_STMT: CASE INTEGER COLON $@4 STMTS $@5 BREAK SEMICOLON .
+
+    $default  reduce using rule 31 (CASE_STMT)

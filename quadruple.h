@@ -28,6 +28,7 @@ SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, S
 void printQuadruples();
 void addQuadrupleLabel(SymbolTableEntry *condition , char * loopLabel , char* exitLabel, bool beforeSomeCode);
 void unmatchedIfQuadruple(SymbolTableEntry *condition , char * loopLabel , char* exitLabel, bool beforeSomeCode);
+void switchcaseQuadruple(SymbolTableEntry *condition , char * nextLabel ,char* endLabel, bool beforeSomeCode, bool isEnd);
 void writeQuadrupleToFile(int i) ;
 void writeCommandToFile(char *command) ;
 #endif // QUADRUPLE_H

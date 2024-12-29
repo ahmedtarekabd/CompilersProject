@@ -1,7 +1,15 @@
-{ int x;
-    x=5;
-    if(x>1)
-    {
-        x=x+1;
+{   
+    int x;
+    x = 5;
+    switch(x) {
+        case 1:
+            x = x + 1;
+            break;
+        case 5:
+            x = x + 5;
+            break;
+        default:
+            x = x + 2;
+            break;
     }
 }

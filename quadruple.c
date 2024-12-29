@@ -135,6 +135,33 @@ label2:
 
 }
 
+void switchcaseQuadruple(SymbolTableEntry *condition , char * nextLabel ,char* endLabel, bool beforeSomeCode, bool isEnd){
+    if (isEnd) { 
+        //endLabel:
+        char command[256]; // Adjust the size as needed
+        sprintf(command, " %s:", endLabel);
+        writeCommandToFile(command);
+    }
+    else
+    {
+    if (beforeSomeCode) { 
+    
+        // if i!=1 goto label2
+        char * conditionName = condition->name;
+        char command[256]; // Adjust the size as needed
+        sprintf(command,"if %s false goto %s",conditionName, nextLabel);
+        writeCommandToFile(command);
+    }else{
+        // goto endLabel
+        // label2;
+        char command[256]; // Adjust the size as needed
+        sprintf(command, "goto %s\n%s:", endLabel,nextLabel);
+        writeCommandToFile(command);
+    }
+    }
+    quadIndex++;
+}
+
 // Function to print all generated quadruples 
 
 void printQuadruples() {
