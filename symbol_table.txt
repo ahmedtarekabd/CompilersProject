@@ -5,7 +5,9 @@ Symbol: 1, Type: int, Initialized: 0, Value: 0.000000
 Symbol: z, Type: char, Initialized: 0, Value: 0.000000
 Symbol: y, Type: int, Initialized: 0, Value: 0.000000
 Symbol: x, Type: int, Initialized: 1, Value: 0.000000
-Symbol: t4, Type: int, Initialized: 0, Value: 0.000000
+Symbol: t6, Type: int, Initialized: 0, Value: 0.000000
+Symbol: t5, Type: int, Initialized: 0, Value: 0.000000
+Symbol: t4, Type: void, Initialized: 0, Value: 0.000000
 Symbol: print, Type: void, Initialized: 0, Value: 0.000000
 Symbol: sum, Type: int, Initialized: 0, Value: 0.000000
 Symbol: t0, Type: int, Initialized: 0, Value: 0.000000

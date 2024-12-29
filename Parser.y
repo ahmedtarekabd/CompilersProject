@@ -259,7 +259,10 @@ FUNCTION_CALL:  ID LPAREN FUNCTION_CALL_PARAMS RPAREN
             }
         }
         $$ = entry;
-        addQuadrupleFunctionCall($1,currentFunctionParams, currentFunctionParamsCount);
+        SymbolTableEntry * func = addQuadrupleFunctionCall(entry ,currentFunctionParams, currentFunctionParamsCount);
+        if(func->type != "void"){
+            $$ = func;
+        }
         currentFunctionParamsCount = 0;
 
     }

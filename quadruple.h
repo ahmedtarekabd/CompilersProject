@@ -44,5 +44,5 @@ void writeQuadrupleToFile(int i) ;
 void writeCommandToFile(char *command) ;
 void insertCommandBeforeEnd(const char *command);
 void printFileContents(const char *filename);
-void addQuadrupleFunctionCall(char * function_name,SymbolTableEntry **currentFunctionParams, int currentFunctionParamsCount);
+SymbolTableEntry *addQuadrupleFunctionCall(SymbolTableEntry *function_name,SymbolTableEntry **currentFunctionParams, int currentFunctionParamsCount);
 #endif // QUADRUPLE_H
