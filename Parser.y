@@ -15,24 +15,31 @@
     char* nextLabel;
     char* endLabel; 
     FunctionDef *currentFunction;
+    //create array of function definitions 
+    FunctionDef *functionDefinitions[200];
+    int functionsCount = 0;
+    SymbolTableEntry * currentFunctionParams[100];
+    int currentFunctionParamsCount = 0;
+
+    
      // Function to free the current function definition
-    void freeCurrentFunction() {
-        if (currentFunction) {
-            free(currentFunction->name);
-            for (int i = 0; i < currentFunction->paramCount; i++) {
-                free(currentFunction->paramNames[i]);
-                free(currentFunction->paramTypes[i]);
-            }
-            free(currentFunction->paramNames);
-            free(currentFunction->paramTypes);
-            free(currentFunction->returnType);
-            free(currentFunction);
-            currentFunction = NULL;
-        }
-    }
+    // void freeCurrentFunction() {
+    //     if (currentFunction) {
+    //         free(currentFunction->name);
+    //         for (int i = 0; i < currentFunction->paramCount; i++) {
+    //             free(currentFunction->paramNames[i]);
+    //             free(currentFunction->paramTypes[i]);
+    //         }
+    //         free(currentFunction->paramNames);
+    //         free(currentFunction->paramTypes);
+    //         free(currentFunction->returnType);
+    //         free(currentFunction);
+    //         currentFunction = NULL;
+    //     }
+    // }
    void initializeCurrentFunction(const char *name, const char *returnType) {
     if (currentFunction) {
-        freeCurrentFunction();
+        currentFunction = NULL;
     }
     currentFunction = (FunctionDef *)malloc(sizeof(FunctionDef));
     currentFunction->name = strdup(name);
@@ -67,11 +74,11 @@
 %token <s> ID
 %token <s> STRING
 
-// %type <i> EXP TERM FACTOR REL_EXP LOGICAL_EXP STMT ASSIGNMENT STMTS 
-%type <symbolTableEntry> LOGICAL_EXP REL_EXP BLOCK FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP MATCHED_IF UNMATCHED_IF 
+// %type <i> EXP TERM FACTOR REL_EXP FINAL_EXP STMT ASSIGNMENT STMTS 
+%type <symbolTableEntry> FINAL_EXP REL_EXP BLOCK FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP MATCHED_IF UNMATCHED_IF LOGICAL_EXP
 %type <symbolTableEntry> EXP TERM FACTOR POWER //FUNCTION_STMTS
 %type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION ASSIGNMENT_FORLOOP 
-%type <symbolTableEntry> FUNCTION_DEFINITION   PARAMS PARAM FUNCTION_BODY FUNCTION_PARAMS FUNCTION_PARAM FUNCTION_START VOID_FUNCTION_BODY
+%type <symbolTableEntry> FUNCTION_DEFINITION   PARAMS PARAM FUNCTION_BODY FUNCTION_PARAMS FUNCTION_PARAM FUNCTION_START VOID_FUNCTION_BODY FUNCTION_CALL
 // %type <symbolTableEntry> FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP SWITCH_CASE CASES CASE_BLOCK
 // %type <i> FUNCTION_DECL FUNCTION_BODY 
 %type <Dtype> PARAM_TYPE //RETURN_TYPE
@@ -103,10 +110,6 @@ BLOCK : LBRACE {
 STMT: 
       MATCHED_IF                    
     | UNMATCHED_IF  
-//     |   
-    // | FUNCTION_DECL SEMICOLON
-    // | FUNCTION_DECL FUNCTION_BODY
-   
     | SWITCH_BLOCK
     | BLOCK
     | FOR_LOOP    
@@ -115,11 +118,11 @@ STMT:
     | DECLARATION 
     | CONST_DECLARATION 
     | ASSIGNMENT           
-    | LOGICAL_EXP SEMICOLON
+    | FINAL_EXP SEMICOLON
     | FUNCTION_DEFINITION
     | RETURN SEMICOLON
-    | RETURN LOGICAL_EXP SEMICOLON
-   // | FUNCTION_CALL
+    | RETURN FINAL_EXP SEMICOLON
+    // | FUNCTION_CALL
     ;
 
 DECLARATION: PARAM_TYPE ID SEMICOLON {
@@ -163,16 +166,21 @@ FUNCTION_DEFINITION: FUNCTION_START
             for (int i = 0; i < currentFunction->paramCount; i++) {
                 addSymbol(currentFunction->paramNames[i], currentFunction->paramTypes[i], false);
             }
-        addQuadrupleFunction(currentFunction,true);
+            addQuadrupleFunction(currentFunction,true);
         
          }
     STMTS
     RETURN 
-    LOGICAL_EXP SEMICOLON   
+    FINAL_EXP SEMICOLON   
     RBRACE  {
         currentFunction->returnVar = ($5)->name;
         addQuadrupleFunction(currentFunction,false);
-        freeCurrentFunction();
+        printf("function name: %s\n", currentFunction->name);
+        functionDefinitions[functionsCount] = currentFunction;
+        printf("functionDefinitions[functionsCount]->name: %s\n", functionDefinitions[functionsCount]->name);
+        functionsCount++;
+        // freeCurrentFunction();
+        currentFunction = NULL;
         exitScope();
         }
     ;
@@ -189,7 +197,10 @@ VOID_FUNCTION_BODY:
     // RETURN SEMICOLON   
     RBRACE  {
         addQuadrupleFunction(currentFunction,false);
-        freeCurrentFunction();
+        functionDefinitions[functionsCount] = currentFunction;
+        functionsCount++;
+        // freeCurrentFunction();
+        currentFunction = NULL;
         exitScope();
         }
     ;
@@ -241,10 +252,54 @@ FUNCTION_START: PARAM_TYPE ID {
         initializeCurrentFunction($2, $1);
     }
 }
-// RETURN_TYPE: VOID_TYPE      
-//            | PARAM_TYPE     
-//            ;
+FUNCTION_CALL:  ID LPAREN FUNCTION_CALL_PARAMS RPAREN 
+    {
+        SymbolTableEntry *entry = lookupSymbol($1);
+        if (!entry) {
+            yyerror("Function not declared in any scope");
+        } else {
+            printf("functionsCount: %d\n", functionsCount);
+            // for loop on the functionDefinitions array to find the function with the same name 
+            for (int i = 0; i < functionsCount; i++) {
+                printf("ana gowa"); 
+                
+                
+                printf("functionDefinitions[i].name: %s\n", functionDefinitions[i]->name);
+                if (strcmp(functionDefinitions[i]->name, $1) == 0) {
+                    printf("paramCount: %d\n", functionDefinitions[i]->paramCount);
+                    printf("currentFunctionParamsCount: %d\n", currentFunctionParamsCount);
+                    if (functionDefinitions[i]->paramCount != currentFunctionParamsCount) {
+                        yyerror("Function called with incorrect number of parameters");
+                    } else {
+                        for (int j = 0; j < currentFunctionParamsCount; j++) {
+                            if (strcmp(functionDefinitions[i]->paramTypes[j], currentFunctionParams[j]->type) != 0) {
+                                yyerror("Function called with incorrect parameter types");
+                            }
+                        }
+                    }
+                    entry->type = functionDefinitions[i]->returnType;
+                }
+            }
+        }
+        $$ = entry;
+        currentFunctionParamsCount = 0;
 
+    }
+    ;
+FUNCTION_CALL_PARAMS: FUNCTION_CALL_PARAMS COMMA FINAL_EXP
+    {
+        currentFunctionParams[currentFunctionParamsCount] = $3;
+        currentFunctionParamsCount++;
+    }
+
+    | FINAL_EXP
+    {
+        currentFunctionParams[currentFunctionParamsCount] = $1;
+        currentFunctionParamsCount++;
+
+    }
+    |
+    ;
 SWITCH_BLOCK: SWITCH LPAREN ID RPAREN 
             LBRACE { 
                 enterScope(); 
@@ -257,10 +312,8 @@ SWITCH_BLOCK: SWITCH LPAREN ID RPAREN
                 exitScope();
                 currentSwitchVar = NULL;
                 endLabel = NULL;
-
             }
             ;
-
 SWITCH_CASE: CASE_STMTS
             | CASE_STMTS DEFAULT_STMT
             | DEFAULT_STMT
@@ -336,12 +389,12 @@ some code
 if (i<6) goto label1
 label2:
 */
-FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON LOGICAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN 
+FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON FINAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN 
     LBRACE
         {
             // Start a new scope for the loop
             enterScope();
-            SymbolTableEntry *condition = $5; // Assuming LOGICAL_EXP returns a SymbolTableEntry*
+            SymbolTableEntry *condition = $5; // Assuming FINAL_EXP returns a SymbolTableEntry*
             Labels *labels = (Labels *)malloc(sizeof(Labels));
             labels->loopLabel = newLabel();
             labels->exitLabel = newLabel();
@@ -371,11 +424,11 @@ goto label1
 label2:
 */
 
-WHILE_LOOP: WHILE LPAREN LOGICAL_EXP RPAREN LBRACE
+WHILE_LOOP: WHILE LPAREN FINAL_EXP RPAREN LBRACE
    {
             // Start a new scope for the loop
             enterScope();
-            SymbolTableEntry *condition = $3; // Assuming LOGICAL_EXP returns a SymbolTableEntry*
+            SymbolTableEntry *condition = $3; // Assuming FINAL_EXP returns a SymbolTableEntry*
             Labels *labels = (Labels *)malloc(sizeof(Labels));
             labels->loopLabel = newLabel();
             labels->exitLabel = newLabel();
@@ -412,7 +465,7 @@ REPEAT_UNTIL_LOOP: REPEAT LBRACE
 
 }
 STMTS RBRACE
- UNTIL LPAREN LOGICAL_EXP 
+ UNTIL LPAREN FINAL_EXP 
  {
     SymbolTableEntry *condition = $8;
     Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
@@ -438,7 +491,7 @@ some code
 label2:
 */
 // MATCHED_IF: 
-//     IF LPAREN LOGICAL_EXP RPAREN LBRACE MATCHED_IF RBRACE ELSE LBRACE MATCHED_IF RBRACE
+//     IF LPAREN FINAL_EXP RPAREN LBRACE MATCHED_IF RBRACE ELSE LBRACE MATCHED_IF RBRACE
 //     {
 
       
@@ -506,11 +559,11 @@ some code1
 label2:
 */
 UNMATCHED_IF:
-    IF LPAREN LOGICAL_EXP RPAREN LBRACE
+    IF LPAREN FINAL_EXP RPAREN LBRACE
     {
         // Start a new scope for the if block
         enterScope();
-        SymbolTableEntry *condition = $3; // Assuming LOGICAL_EXP returns a SymbolTableEntry*
+        SymbolTableEntry *condition = $3; // Assuming FINAL_EXP returns a SymbolTableEntry*
         Labels *labels = (Labels *)malloc(sizeof(Labels));
         labels->loopLabel = newLabel();
         labels->exitLabel = newLabel();
@@ -525,7 +578,7 @@ UNMATCHED_IF:
         exitScope();
     }    
 ; 
-ASSIGNMENT : ID ASSIGN LOGICAL_EXP SEMICOLON
+ASSIGNMENT : ID ASSIGN FINAL_EXP SEMICOLON
     { 
         SymbolTableEntry *entry = lookupSymbol($1);
         if (!entry) {
@@ -539,10 +592,14 @@ ASSIGNMENT : ID ASSIGN LOGICAL_EXP SEMICOLON
     }            
 ;
 
-ASSIGNMENT_FORLOOP : ID ASSIGN LOGICAL_EXP 
+ASSIGNMENT_FORLOOP : ID ASSIGN FINAL_EXP 
     { 
         // Assign the value of EXP to the variable ID
         // assign_var($1, $3); 
+        bool isVoid = strcmp(($3)->type, "void") == 0;
+                if (isVoid) {
+                    yyerror("Function call in expression must return a value");
+                }
         SymbolTableEntry *entry = lookupSymbol($1);
         if (!entry) {
             yyerror("Variable not declared in any scope");
@@ -556,6 +613,15 @@ ASSIGNMENT_FORLOOP : ID ASSIGN LOGICAL_EXP
 ;
 
 
+
+FINAL_EXP : LOGICAL_EXP 
+            { $$ = $1; }
+            |  FUNCTION_CALL 
+            { 
+                
+                $$ = $1;
+
+            }
 
 LOGICAL_EXP : REL_EXP OR LOGICAL_EXP   { $$ = addQuadruple("OR", $1, $3); }
             | REL_EXP AND LOGICAL_EXP  { $$ = addQuadruple("AND", $1, $3); }
@@ -603,7 +669,7 @@ POWER : FACTOR POW POWER    { $$ = addQuadruple("POW", $1, $3); }
       | FACTOR              { $$ = $1; }
       ;
 
-FACTOR : LPAREN LOGICAL_EXP RPAREN 
+FACTOR : LPAREN FINAL_EXP RPAREN 
         { 
             $$ = $2; 
             printf("Logical expression evaluated.\n"); 
