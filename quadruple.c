@@ -3,7 +3,6 @@
 // Initialize the quadruple array and index
 Quadruple quadruples[MAX_QUADRUPLES];
 int quadIndex = 0;
-
 // Function to add a quadruple to the array
 SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, SymbolTableEntry *operand2)
 {
@@ -54,13 +53,38 @@ SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, S
     quadruples[quadIndex].result[sizeof(quadruples[quadIndex].result) - 1] = '\0'; // Null-terminate
     writeQuadrupleToFile(quadIndex);
     quadIndex++;
-
-    // Determine the type of the result variable (same as the type of operand1)
-    char *varType = operand1->type; // Assuming 'type' is a field in SymbolTableEntry
-
-    // Add the result variable to the symbol table with the same type as the operators
+    char *varType;
+    char * operand_name ;
+    char *  message ;
+    //CHECK FOR IMPILICIT TYPE CONVERSION 
+    if (strcmp(operand1->type, operand2->type) == 0) {
+    varType = operand1->type;
+    } else {
+    if (strcmp(operand1->type, "int") == 0 && strcmp(operand2->type, "float") == 0) {
+        varType = "float";
+        handleTypeConversion("int", "float", operand1->name);
+    } else if (strcmp(operand1->type, "float") == 0 && strcmp(operand2->type, "int") == 0) {
+        varType = "float";
+        handleTypeConversion("int", "float", operand2->name);
+    } else if (strcmp(operand1->type, "int") == 0 && strcmp(operand2->type, "char") == 0) {
+        varType = "char";
+        handleTypeConversion("int", "char", operand1->name);
+    } else if (strcmp(operand1->type, "char") == 0 && strcmp(operand2->type, "int") == 0) {
+        varType = "char";
+        handleTypeConversion("int", "char", operand2->name);
+    } else if (strcmp(operand1->type, "char") == 0 && strcmp(operand2->type, "string") == 0) {
+        varType = "string";
+        handleTypeConversion("char", "string", operand1->name);
+    } else if (strcmp(operand1->type, "string") == 0 && strcmp(operand2->type, "char") == 0) {
+        varType = "string";
+        handleTypeConversion("char", "string", operand2->name);
+    } else {
+        char message[256]; // Adjust the size as needed
+        sprintf(message, "Invalid type conversion between %s and %s", operand1->type, operand2->type);
+        semanticError(message);
+    }
+}
     SymbolTableEntry *entry = addSymbol(result, varType, false,true);
-
     return entry; // Return the symbol table entry for the result
 }
 
@@ -362,4 +386,19 @@ void printFileContents(const char *filename)
         printf("%s", line); // Print each line to the console
     }
     fclose(file);
+}
+void semanticError(const char *s) {
+    FILE *errorFile = fopen("semantic_err.txt", "a");
+    if (errorFile == NULL) {
+        fprintf(stderr, "Error opening semantic_err.txt for writing!\n");
+        return;
+    }
+    fprintf(errorFile, "Semantic error: %s at line %d\n", s, yylineno);
+    fclose(errorFile);
+    fprintf(stderr, "Semantic error: %s at line %d\n", s, yylineno);
+}
+void handleTypeConversion(const char *fromType, const char *toType, const char *varName) {
+    char message[256];
+    snprintf(message, sizeof(message), "Implicit conversion from %s to %s for variable: %s", fromType, toType, varName);
+    semanticError(message);
 }

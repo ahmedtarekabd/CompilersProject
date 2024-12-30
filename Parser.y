@@ -8,7 +8,7 @@
     #include "utils/label_stack.h" 
 
     void yyerror(const char *s);
-    void semanticError(const char *s) ;
+    // void semanticError(const char *s) ;
     int yylex(void);
     void clearFile(const char *filename) ;
     extern FILE *yyin;
@@ -147,10 +147,16 @@ FUNCTION_DEFINITION: FUNCTION_START
     LPAREN FUNCTION_PARAMS RPAREN FUNCTION_BODY
     {
         printf("Function definition\n");
+
     }
     |
     VOID_TYPE ID
     {
+        if (currentFunction)
+        {
+            yyerror("Cannot declare a function inside another function");
+            exit(1);
+        }
         if (lookupSymbol($2) && isSymbolDeclaredInCurrentScope($2)) {
             semanticError("Function already declared in this scope");
         } else {
@@ -247,6 +253,11 @@ PARAM_TYPE: INT_TYPE        { $$ = "int"; }
           | STRING_TYPE     { $$ = "string"; }
           ;
 FUNCTION_START: PARAM_TYPE ID {
+    if (currentFunction)
+    {
+        yyerror("Cannot declare a function inside another function");
+        exit(1);
+    }
     if (lookupSymbol($2) && isSymbolDeclaredInCurrentScope($2)) {
         semanticError("Function already declared in this scope");
     } else {
@@ -381,9 +392,6 @@ label3:
 some code
 label4:
 */
-
-
-
 
 /*
 for loop
@@ -779,7 +787,7 @@ void yyerror(const char *s) {
     fclose(errorFile);
     fprintf(stderr, "Syntax error: %s at line %d\n", s, yylineno);
 }
-void semanticError(const char *s) {
+/* void semanticError(const char *s) {
     FILE *errorFile = fopen("semantic_err.txt", "a");
     if (errorFile == NULL) {
         fprintf(stderr, "Error opening semantic_err.txt for writing!\n");
@@ -788,7 +796,7 @@ void semanticError(const char *s) {
     fprintf(errorFile, "Semantic error: %s at line %d\n", s, yylineno);
     fclose(errorFile);
     fprintf(stderr, "Semantic error: %s at line %d\n", s, yylineno);
-}
+} */
  void clearFile(const char *filename) {
         FILE *file = fopen(filename, "w");
         if (file == NULL) {

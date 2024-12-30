@@ -1,0 +1,9 @@
+Semantic error: Invalid type conversion between int and string at line 17
+Semantic error: Type mismatch in assignment at line 17
+Unused variable: ya_welcome in scope 0
+Unused variable: str in scope 0
+Unused variable: z in scope 0
+Unused variable: decWith_Assign in scope 0
+Unused variable: declaration in scope 0
+Unused variable: SABET in scope 0
+Unused variable: k in scope 0
