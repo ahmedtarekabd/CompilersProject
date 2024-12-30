@@ -44,4 +44,5 @@ void displayAllScopes();
 //void writeSymbolTableToFile();
 void writeSymbolTableOfCurrentScopeToFile();
 void checkUnusedVariables() ;
+void writeSymbolTableOfAllScopesToFile();
 #endif // SYMBOL_TABLE_H

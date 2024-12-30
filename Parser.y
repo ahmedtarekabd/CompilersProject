@@ -925,11 +925,12 @@ int main(int argc, char **argv) {
     if (yyparse() == 0) {
         printf("Parsing successful\n");
         printQuadruples();
-       // writeSymbolTableToFile();
+        
 
     } else {
         printf("Parsing failed\n");
     }
+    writeSymbolTableOfAllScopesToFile();
     checkUnusedVariables();
     return 0;
 }
