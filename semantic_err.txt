@@ -1,8 +1,3 @@
+Semantic error: Variable used before initialization at line 14
 Unused variable: j in scope 0
 Unused variable: coco in scope 0
-Unused variable: 'p' in scope 1
-Unused variable: 'b' in scope 1
-Unused variable: coco in scope 1
-Unused variable: 'p' in scope 4
-Unused variable: 'b' in scope 4
-Unused variable: coco in scope 4

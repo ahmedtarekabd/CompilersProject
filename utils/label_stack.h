@@ -6,6 +6,7 @@
 typedef struct {
     char *loopLabel;
     char *exitLabel;
+    
 } Labels;
 typedef struct LabelStackNode {
     Labels *labels;

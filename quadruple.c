@@ -5,19 +5,18 @@ Quadruple quadruples[MAX_QUADRUPLES];
 int quadIndex = 0;
 // Function to add a quadruple to the array
 SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, SymbolTableEntry *operand2)
-{    
+{    char * operand1_name = operand1->name;
+    char * operand1_type = operand1->type;
+    char * operand2_name = operand2->name;
+    char * operand2_type = operand2->type;
     // Generate a new temporary variable for the result
-    printf("adding quadruple\n");
     char *result = newTemp();
-    
-
     // printf("Adding quadruple: (%s, %s, %s, %s)\n", operat, operand1->name, operand2->name, result);
-
+    
     // Ensure operands are copied into local storage, not just pointers
     char operand1_copy[100];
     char operand2_copy[100];
     char result_copy[100];
-
     strncpy(operand1_copy, operand1->name, sizeof(operand1_copy) - 1);
     operand1_copy[sizeof(operand1_copy) - 1] = '\0'; // Null-terminate
     if (operand2)
@@ -59,54 +58,60 @@ SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, S
     char *operand_name;
     char *message;
     // CHECK FOR IMPILICIT TYPE CONVERSION
+    printf("adding quadruple\n");
+    printf("operand1 name: %s\n", operand1_name);
+    printf("operand1 type: %s\n", operand1_type);
+    printf("operand2 name: %s\n", operand2_name);
+    printf("operand2 type: %s\n", operand2_type);
+    
     if (operand2)
-    if (strcmp(operand1->type, operand2->type) == 0)
-    {
-        varType = operand1->type;
+    if (strcmp(operand1_type, operand2_type) == 0)
+    {   
+        varType = operand1_type;
     }
     else
     {
-        
-            if (strcmp(operand1->type, "int") == 0 && strcmp(operand2->type, "float") == 0)
+            if (strcmp(operand1_type, "int") == 0 && strcmp(operand2_type, "float") == 0)
+            {
+   
+                varType = "float";
+                handleTypeConversion("int", "float", operand1_name);
+            }
+            else if (strcmp(operand1_type, "float") == 0 && strcmp(operand2_type, "int") == 0)
             {
                 varType = "float";
-                handleTypeConversion("int", "float", operand1->name);
+                handleTypeConversion("int", "float", operand2_name);
             }
-            else if (strcmp(operand1->type, "float") == 0 && strcmp(operand2->type, "int") == 0)
-            {
-                varType = "float";
-                handleTypeConversion("int", "float", operand2->name);
-            }
-            else if (strcmp(operand1->type, "int") == 0 && strcmp(operand2->type, "char") == 0)
+            else if (strcmp(operand1_type, "int") == 0 && strcmp(operand2_type, "char") == 0)
             {
                 varType = "char";
-                handleTypeConversion("int", "char", operand1->name);
+                handleTypeConversion("int", "char", operand1_name);
             }
-            else if (strcmp(operand1->type, "char") == 0 && strcmp(operand2->type, "int") == 0)
+            else if (strcmp(operand1_type, "char") == 0 && strcmp(operand2_type, "int") == 0)
             {
                 varType = "char";
-                handleTypeConversion("int", "char", operand2->name);
+                handleTypeConversion("int", "char", operand2_name);
             }
-            else if (strcmp(operand1->type, "char") == 0 && strcmp(operand2->type, "string") == 0)
+            else if (strcmp(operand1_type, "char") == 0 && strcmp(operand2_type, "string") == 0)
             {
                 varType = "string";
-                handleTypeConversion("char", "string", operand1->name);
+                handleTypeConversion("char", "string", operand1_name);
             }
-            else if (strcmp(operand1->type, "string") == 0 && strcmp(operand2->type, "char") == 0)
+            else if (strcmp(operand1_type, "string") == 0 && strcmp(operand2_type, "char") == 0)
             {
                 varType = "string";
-                handleTypeConversion("char", "string", operand2->name);
+                handleTypeConversion("char", "string", operand2_name);
             }
             else
             {
                 char message[256]; // Adjust the size as needed
-                sprintf(message, "Invalid type conversion between %s and %s", operand1->type, operand2->type);
+                sprintf(message, "Invalid type conversion between %s and %s", operand1_type, operand2_type);
                 semanticError(message);
             }
     }
     else
     {
-        varType = operand1->type;
+        varType = operand1_type;
     }
     SymbolTableEntry *entry = addSymbol(result, varType, false, true);
     return entry; // Return the symbol table entry for the result

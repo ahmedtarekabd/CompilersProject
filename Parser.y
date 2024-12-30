@@ -6,6 +6,7 @@
     #include "symbol_table.h" 
     #include "quadruple.h"
     #include "utils/label_stack.h" 
+    #include "utils/for_loop_stack.h"
     void yyerror(const char *s);
     // void semanticError(const char *s) ;
     int yylex(void);
@@ -13,6 +14,8 @@
     extern FILE *yyin;
     extern int yylineno;  
     LabelStack *labelStack;
+    ForLoopStack *forLoopStack;
+    
     char *currentSwitchVar;
     char* nextLabel;
     char* endLabel; 
@@ -59,7 +62,7 @@
 %token <s> STRING
 
 // %type <i> EXP TERM FACTOR REL_EXP FINAL_EXP STMT ASSIGNMENT STMTS 
-%type <symbolTableEntry> FINAL_EXP REL_EXP BLOCK FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP MATCHED_IF UNMATCHED_IF LOGICAL_EXP
+%type <symbolTableEntry> FINAL_EXP REL_EXP BLOCK FOR_LOOP ASSIGNMENT_FOR_LOOP_END WHILE_LOOP REPEAT_UNTIL_LOOP MATCHED_IF UNMATCHED_IF LOGICAL_EXP
 %type <symbolTableEntry> EXP TERM FACTOR POWER //FUNCTION_STMTS
 %type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION ASSIGNMENT_FORLOOP 
 %type <symbolTableEntry> FUNCTION_DEFINITION   PARAMS PARAM FUNCTION_BODY FUNCTION_PARAMS FUNCTION_PARAM FUNCTION_START VOID_FUNCTION_BODY FUNCTION_CALL
@@ -418,7 +421,7 @@ some code
 if (i<6) goto label1
 label2:
 */
-FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON FINAL_EXP SEMICOLON ASSIGNMENT_FORLOOP RPAREN 
+FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON FINAL_EXP SEMICOLON ASSIGNMENT_FOR_LOOP_END RPAREN 
     LBRACE
         {
             // Start a new scope for the loop
@@ -434,14 +437,58 @@ FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON FINAL_EXP SEMICOLON ASSIGNMENT
         RBRACE
         {   
             Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
-           
+    
+            //pop for loop stack
+            ForLoopAttributes *forLoopAttributes = popForLoopStack(forLoopStack);
+            SymbolTableEntry *operand1;
+            SymbolTableEntry *operand2;
+            operand1->name = forLoopAttributes->id;
+            operand2->name = forLoopAttributes->final_expression_result;
+            operand1->type = forLoopAttributes->id_type;
+            operand2->type = forLoopAttributes-> final_expression_result_type;
+            addQuadruple("ASSIGN", operand1, operand2);
+            free(forLoopAttributes);
             addQuadrupleLabel(NULL, labels->loopLabel, labels->exitLabel, false);
-            
             free(labels);
             exitScope();
         }
     ;
-
+ASSIGNMENT_FOR_LOOP_END : ID ASSIGN FINAL_EXP 
+    { 
+        // Assign the value of EXP to the variable ID
+        // assign_var($1, $3); 
+        bool isVoid = strcmp(($3)->type, "void") == 0;
+                if (isVoid) {
+                    semanticError("void value cannot be assigned to a variable");
+                }
+        SymbolTableEntry *entry = lookupSymbol($1);
+        if (!entry) {
+            semanticError("Variable not declared in any scope");
+        } else {
+            //check types before assigning
+            if (strcmp(entry->type, ($3)->type) != 0) {
+                semanticError("Type mismatch in assignment");
+            }
+            ForLoopAttributes *forLoopAttributes = (ForLoopAttributes *)malloc(sizeof(ForLoopAttributes));
+            SymbolTableEntry *entry = lookupSymbol($1);
+            if(!entry){ 
+                char message[256]; // Adjust the size as needed
+                sprintf(message, " Variable %s is not declared in the current scope",($1));
+                semanticError(message);
+                exit(1);
+            }
+            forLoopAttributes->id = entry->name;
+            forLoopAttributes->id_type = entry->type;
+            forLoopAttributes->final_expression_result= ($3)->name;
+            forLoopAttributes->final_expression_result_type = ($3)->type;
+            pushForLoopStack(&forLoopStack, forLoopAttributes);
+           // $$ = addQuadruple("ASSIGN", entry, $3);
+           // updateSymbolValue($1, ($3)->value);
+            entry->isInitialized = 1;  // Mark the variable as initialized
+        }
+        $$ = $3;
+    }            
+;
 /*
 while (i<6) {
     some code
