@@ -3,12 +3,14 @@
     char z;
     char x;
     i = 0;
+    i = i+1;
     int sum (int x, int y, char z){
+        z='k';
+        z = 'j';
         return x+y;
     } 
     void print(){
         return;
     }
-    i= print();
-    z = sum(1,0,'k');
+    print();
 }

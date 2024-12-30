@@ -1,2 +1,3 @@
-Semantic error: void value cannot be assigned to a variable at line 12
-Semantic error: Type mismatch in assignment at line 13
+Unused variable: x in scope 0
+Unused variable: z in scope 0
+Unused variable: z in scope 1

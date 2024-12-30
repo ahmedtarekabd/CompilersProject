@@ -59,7 +59,7 @@ SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, S
     char *varType = operand1->type; // Assuming 'type' is a field in SymbolTableEntry
 
     // Add the result variable to the symbol table with the same type as the operators
-    SymbolTableEntry *entry = addSymbol(result, varType, false);
+    SymbolTableEntry *entry = addSymbol(result, varType, false,true);
 
     return entry; // Return the symbol table entry for the result
 }
@@ -272,7 +272,7 @@ SymbolTableEntry * addQuadrupleFunctionCall(SymbolTableEntry * function, SymbolT
     writeCommandToFile(command);
     quadIndex++;
     //henaaa
-    SymbolTableEntry *entry = addSymbol(result, function->type, false);
+    SymbolTableEntry *entry = addSymbol(result, function->type, false,true);
 }
 
 void printQuadruples()

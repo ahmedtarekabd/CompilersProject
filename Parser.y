@@ -130,7 +130,7 @@ DECLARATION: PARAM_TYPE ID SEMICOLON {
                 if (lookupSymbol($2) && isSymbolDeclaredInCurrentScope($2)) {
                     semanticError("Variable already declared in this scope");
                 } else {
-                    $$ = addSymbol($2, $1, false);  // Add variable to current scope
+                    $$ = addSymbol($2, $1, false,false);  // Add variable to current scope
                 }
             }
             ;
@@ -139,7 +139,7 @@ CONST_DECLARATION: CONST PARAM_TYPE ID SEMICOLON {
                 if (lookupSymbol($3) && isSymbolDeclaredInCurrentScope($3)) {
                     semanticError("Variable already declared in this scope");
                 } else {
-                    addSymbol($3, $2, true);  // Add variable to current scope
+                    addSymbol($3, $2, true,false);  // Add variable to current scope
                 }
             }
             ;
@@ -154,7 +154,7 @@ FUNCTION_DEFINITION: FUNCTION_START
         if (lookupSymbol($2) && isSymbolDeclaredInCurrentScope($2)) {
             semanticError("Function already declared in this scope");
         } else {
-            addSymbol($2, "void", false);  // Add function to current scope 
+            addSymbol($2, "void", false,true);  // Add function to current scope 
             initializeCurrentFunction($2, "void");
         }
     }
@@ -165,7 +165,7 @@ FUNCTION_DEFINITION: FUNCTION_START
     LBRACE  { 
           enterScope();
             for (int i = 0; i < currentFunction->paramCount; i++) {
-                SymbolTableEntry * s= addSymbol(currentFunction->paramNames[i], currentFunction->paramTypes[i], false);
+                SymbolTableEntry * s= addSymbol(currentFunction->paramNames[i], currentFunction->paramTypes[i], false,false);
                 s->isInitialized = 1;
             }
             addQuadrupleFunction(currentFunction,true);
@@ -191,7 +191,7 @@ VOID_FUNCTION_BODY:
     LBRACE  { 
           enterScope();
             for (int i = 0; i < currentFunction->paramCount; i++) {
-                addSymbol(currentFunction->paramNames[i], currentFunction->paramTypes[i], false);
+                addSymbol(currentFunction->paramNames[i], currentFunction->paramTypes[i], false,false);
             }
         addQuadrupleFunction(currentFunction,true);
          }
@@ -235,7 +235,7 @@ PARAM : PARAM_TYPE ID {
                 semanticError("Variable already declared in this scope");
             } else {
                 printf("Parameter %s of type %s\n", $2, $1);
-                $$ = addSymbol($2, $1, false);  // Add variable to current scope
+                $$ = addSymbol($2, $1, false,false);  // Add variable to current scope
             }
             $$ = entry;
             
@@ -250,7 +250,7 @@ FUNCTION_START: PARAM_TYPE ID {
     if (lookupSymbol($2) && isSymbolDeclaredInCurrentScope($2)) {
         semanticError("Function already declared in this scope");
     } else {
-        addSymbol($2, $1, false);  // Add function to current scope 
+        addSymbol($2, $1, false,true);  // Add function to current scope 
         initializeCurrentFunction($2, $1);
     }
 }
@@ -308,7 +308,7 @@ SWITCH_BLOCK: SWITCH LPAREN ID RPAREN
             LBRACE { 
                 enterScope(); 
                 currentSwitchVar = $3;
-                addSymbol($3, "int", false);
+                addSymbol($3, "int", false,false);
                 endLabel = newLabel();
             }
             SWITCH_CASE RBRACE
@@ -331,7 +331,7 @@ CASE_STMT: CASE INTEGER COLON
     {
     // if i!=1 goto label2
         SymbolTableEntry *switchVar = lookupSymbol(currentSwitchVar);
-        SymbolTableEntry *caseVar = addSymbol($2, "int", false);
+        SymbolTableEntry *caseVar = addSymbol($2, "int", false,false);
         SymbolTableEntry *condition = addQuadruple("EQ", switchVar, caseVar);
         nextLabel = newLabel();
         switchcaseQuadruple(condition , nextLabel ,endLabel, true,false);
@@ -716,7 +716,7 @@ FACTOR : LPAREN FINAL_EXP RPAREN
         { 
             SymbolTableEntry *entry = lookupSymbol($1);
             if (!entry) {
-                $$ = addSymbol($1, "int", false);
+                $$ = addSymbol($1, "int", false,true);
             }
             else
             $$ = entry;
@@ -726,7 +726,7 @@ FACTOR : LPAREN FINAL_EXP RPAREN
         { 
             SymbolTableEntry *entry = lookupSymbol($1);
             if (!entry) {
-                $$ = addSymbol($1, "float", false);
+                $$ = addSymbol($1, "float", false,true);
             } else
             $$ = entry;
             printf("Float constant: %s\n", $1);
@@ -735,7 +735,7 @@ FACTOR : LPAREN FINAL_EXP RPAREN
         { 
             SymbolTableEntry *entry = lookupSymbol($1);
             if (!entry) {
-                $$ = addSymbol($1, "char", false);
+                $$ = addSymbol($1, "char", false,true);
             } else
             $$ = entry;
             printf("Character constant: %s\n", $1);
@@ -745,7 +745,7 @@ FACTOR : LPAREN FINAL_EXP RPAREN
             printf("String constant: %s\n", $1);
             SymbolTableEntry *entry = lookupSymbol($1);
             if (!entry) {
-                $$ = addSymbol($1, "string", false);
+                $$ = addSymbol($1, "string", false,true);
             } else
             $$ = entry;
             printf("String constant: %s\n", $1);
@@ -765,8 +765,7 @@ FACTOR : LPAREN FINAL_EXP RPAREN
                 }
                 entry->isUsed = 1;  // Mark the variable as used
                 $$ = lookupSymbol($1);  // Retrieve its runtime value
-                printf("Variable '%s' of type '%s' used. Value: %f\n", $1, entry->type, $$);
-            }
+printf("Variable '%s' of type '%s' used at line %d. Value: %f\n", $1, entry->type, yylineno, $$);                   }
         }
        ;
 %% 
@@ -807,18 +806,20 @@ int main(int argc, char **argv) {
             return 1;
         }
     } 
+    
     clearFile("syntax_err.txt");
     clearFile("semantic_err.txt");
     clearFile("quadruples.txt");
     clearFile("symbol_table.txt");
-    
+
     if (yyparse() == 0) {
         printf("Parsing successful\n");
         printQuadruples();
-        // writeSymbolTableToFile();
+       // writeSymbolTableToFile();
 
     } else {
         printf("Parsing failed\n");
     }
+    checkUnusedVariables();
     return 0;
 }

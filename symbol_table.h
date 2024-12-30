@@ -20,6 +20,7 @@ typedef struct SymbolTable {
     int isInitialized;        // 1 if initialized, 0 otherwise
     int isUsed;               // 1 if used, 0 otherwise
     float value;              // Store variable's value (assuming the type is numeric)
+    bool isTemp;
     struct SymbolTable *next; // Pointer to next symbol in this table
 } SymbolTableEntry;
 
@@ -34,12 +35,13 @@ void enterScope();
 void exitScope();
 char *newTemp();
 char *newLabel();
-SymbolTableEntry *addSymbol(char *name, char *type, bool isConst);
+SymbolTableEntry *addSymbol(char *name, char *type, bool isConst,bool isTemp);
 SymbolTableEntry *lookupSymbol(char *name);
 int updateSymbolValue(char *name, float value);
 bool isSymbolDeclaredInCurrentScope(char *name);
 void displayScope();
 void displayAllScopes();
-void writeSymbolTableToFile();
+//void writeSymbolTableToFile();
 void writeSymbolTableOfCurrentScopeToFile();
+void checkUnusedVariables() ;
 #endif // SYMBOL_TABLE_H
