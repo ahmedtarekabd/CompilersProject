@@ -15,7 +15,15 @@ typedef struct {
     char result[50];    // The result of the operation
 } Quadruple;
 
-
+// Define the function definition structure
+typedef struct {
+    char *name;               // Function name
+    char **paramNames;        // Array of parameter names
+    char **paramTypes;        // Array of parameter types
+    int paramCount;           // Number of parameters
+    char *returnType;         // Return type
+    char *returnVar;          // Return variable name
+} FunctionDef;
 // Max number of quadruples
 #define MAX_QUADRUPLES 1000
 
@@ -28,6 +36,7 @@ char *newTemp();
 SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, SymbolTableEntry *operand2);
 void printQuadruples();
 void addQuadrupleLabel(SymbolTableEntry *condition , char * loopLabel , char* exitLabel, bool beforeSomeCode);
+void addQuadrupleFunction(FunctionDef *functionDef , bool beforeSomeCode);
 void unmatchedIfQuadruple(SymbolTableEntry *condition , char * loopLabel , char* exitLabel, bool beforeSomeCode);
 void matchedIfQuadruple(char* exitLabel, bool beforeSomeCode);
 void switchcaseQuadruple(SymbolTableEntry *condition , char * nextLabel ,char* endLabel, bool beforeSomeCode, bool isEnd);
@@ -35,4 +44,5 @@ void writeQuadrupleToFile(int i) ;
 void writeCommandToFile(char *command) ;
 void insertCommandBeforeEnd(const char *command);
 void printFileContents(const char *filename);
+SymbolTableEntry *addQuadrupleFunctionCall(SymbolTableEntry *function_name,SymbolTableEntry **currentFunctionParams, int currentFunctionParamsCount);
 #endif // QUADRUPLE_H

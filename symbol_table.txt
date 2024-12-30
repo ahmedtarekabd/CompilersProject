@@ -1,0 +1,11 @@
+Symbol: t5, Type: int, Initialized: 0, Value: 0.000000
+Symbol: t4, Type: int, Initialized: 0, Value: 0.000000
+Symbol: t7, Type: int, Initialized: 0, Value: 0.000000
+Symbol: t6, Type: int, Initialized: 0, Value: 0.000000
+Symbol: t3, Type: int, Initialized: 0, Value: 0.000000
+Symbol: t2, Type: int, Initialized: 0, Value: 0.000000
+Symbol: t1, Type: int, Initialized: 0, Value: 0.000000
+Symbol: 1, Type: int, Initialized: 0, Value: 0.000000
+Symbol: t0, Type: int, Initialized: 0, Value: 0.000000
+Symbol: 0, Type: int, Initialized: 0, Value: 0.000000
+Symbol: i, Type: int, Initialized: 1, Value: 0.000000
