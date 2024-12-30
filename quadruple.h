@@ -7,6 +7,7 @@
 #include "symbol_table.h"
 #include <io.h>
 #include <unistd.h>
+extern int yylineno;  
 // Define the quadruple structure
 typedef struct {
     char operat[10];  // The operation (e.g., "+", "-", "=", "if")
@@ -44,5 +45,7 @@ void writeQuadrupleToFile(int i) ;
 void writeCommandToFile(char *command) ;
 void insertCommandBeforeEnd(const char *command);
 void printFileContents(const char *filename);
+void handleTypeConversion(const char *fromType, const char *toType, const char *varName);
+void semanticError(const char *s) ;
 SymbolTableEntry *addQuadrupleFunctionCall(SymbolTableEntry *function_name,SymbolTableEntry **currentFunctionParams, int currentFunctionParamsCount);
 #endif // QUADRUPLE_H

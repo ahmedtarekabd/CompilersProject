@@ -1,0 +1,40 @@
+{
+    int x;
+    x= 1;
+    int test;
+    int booleanFunc(){
+        return 1;
+    }
+# MAGNONA:   COMBO CONDITIONAL EXPRESSION TEST
+if (x == 10)
+{
+    x = booleanFunc();
+    test = 10;
+    if(x == 10 && x  || x)
+    {
+        test = 10;
+        int i;
+        for (i = 0; i < 10; i = i+1)
+        {
+            int b ;
+            b= 10;
+        }
+    }
+    else
+    {
+        test = 20;
+    }
+}
+else{ if (x == 5)
+{
+    test = 5;
+}}
+
+int i ;
+i= 9;
+int var;
+
+//MAGNONA:   COMBO EXPRESSION TEST
+if((i>8 && i < 9) || (i!=8 && i <= 9) && i == 9){
+    var=12;
+}}
