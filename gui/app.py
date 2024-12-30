@@ -1,10 +1,14 @@
 import streamlit as st
 import subprocess
 import os
+import re
+import pandas as pd
 from streamlit_monaco import st_monaco  # Monaco editor integration
+from streamlit_extras.let_it_rain import rain
 
 # Define working directory as the current directory of the script
 FLEX_BISON_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUTPUT_FILES_DIR = os.path.join(FLEX_BISON_DIR, "output_files")
 WORK_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMP_DIR = os.path.join(WORK_DIR, "temp_files")
 
@@ -50,11 +54,42 @@ def run_compile(input_file):
         return process.stdout or process.stderr
     except Exception as e:
         return f"Error during compile: {e}"
+    
+def display_files(files_to_display: list[str]):
+    for file_name in files_to_display:
+        file_path = os.path.join(OUTPUT_FILES_DIR, file_name)
+        if os.path.exists(file_path):
+            with open(file_path, "r") as file:
+                st.markdown(f"### {file_name}")
+                if file_name == "symbol_table.txt":
+                    # Display symbol_table.txt as a table
+                    keys = ["Scope", "Symbol", "Type", "Initialized"]
+                    data = {}
+                    file_content = file.read()
+                    for key in keys:
+                        pattern = re.compile(rf"(?<={key}:\s).+?(?=\b)")
+                        data[key] = pattern.findall(file_content)
+                    df = pd.DataFrame(data)
+                    st.table(df)
+                else:
+                    st.text(file.read())
+        else:
+            st.markdown(f"### {file_name}")
+            st.text("File not found.")
+        st.markdown("---")
 
 # Streamlit UI
-st.title("Not C++!")
+st.image(os.path.join(WORK_DIR, "image.png"), width=50)
+st.title("Not C++! - Streamlit Coding Editor & Compiler")
+rain(
+    emoji="🍬مساء ال",
+    font_size=54,
+    falling_speed=5,
+    animation_length=1,
+)
+
 st.write("This is a simple compiler for a subset of the C language.")
-st.write("Streamlit Coding Editor and Compiler.")
+st.warning("Please make sure to upload a valid C (Not C++!) file for compilation.")
 st.markdown("---")
 
 # Initialize session state for the working file and its content
@@ -103,9 +138,16 @@ if uploaded_file:
         st.text(make_output)
 
     if st.button("Compile"):
+        print(f"Working file path: {working_file_path}")
         compile_output = run_compile(working_file_path)
         st.text("Compilation Output:")
         st.text(compile_output)
+        st.markdown("---")
+        # Display the content of the four txt files
+        files_to_display = ["quadruples.txt", "symbol_table.txt", "semantic_err.txt", "syntax_err.txt"]
+        display_files(files_to_display)
+
+
 else:
     # Reset session state if no file is uploaded or the uploaded file is removed
     st.session_state.uploaded_file = None
