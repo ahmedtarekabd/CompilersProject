@@ -13,5 +13,3 @@ Parser.tab.h
 *~
 *.bak
 
-# Ignore quadruples.txt
-quadruples.txt

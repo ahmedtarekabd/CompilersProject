@@ -25,10 +25,12 @@ typedef struct SymbolTable {
 
 typedef struct Scope {
     SymbolTableEntry *symbols;  // Linked list of symbols
+    int number;
     struct Scope *parent;       // Pointer to the parent scope
 } Scope;
 
 extern Scope *currentScope;  // Pointer to the current (innermost) scope
+// extern int scopeNumber;      // Number of scopes created so far
 
 void enterScope();
 void exitScope();
@@ -42,4 +44,5 @@ void displayScope();
 void displayAllScopes();
 void writeSymbolTableToFile();
 void writeSymbolTableOfCurrentScopeToFile();
+
 #endif // SYMBOL_TABLE_H

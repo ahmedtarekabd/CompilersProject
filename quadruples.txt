@@ -1,0 +1,31 @@
+0: (Operator: ASSIGN, Operand1: i, Operand2: 0, Result: t0)
+int proc diff int x, int y
+2: (Operator: SUB, Operand1: x, Operand2: y, Result: t1)
+3: (Operator: ASSIGN, Operand1: z, Operand2: t1, Result: t2)
+return z
+
+5: (Operator: ASSIGN, Operand1: j, Operand2: 5, Result: t3)
+char proc sum int x, int y, char z
+call diff x, y :=t4
+return t4
+
+void proc print 
+return
+call print
+call sum 1, 0, 'k' :=t6
+13: (Operator: ASSIGN, Operand1: i, Operand2: 0, Result: t7)
+14: (Operator: LT, Operand1: i, Operand2: 0, Result: t8)
+15: (Operator: ADD, Operand1: i, Operand2: 1, Result: t9)
+16: (Operator: ASSIGN, Operand1: i, Operand2: t9, Result: t10)
+L0:
+if t8 false goto L1
+18: (Operator: ASSIGN, Operand1: x, Operand2: 0, Result: t11)
+goto L0
+L1:
+20: (Operator: LT, Operand1: i, Operand2: 0, Result: t12)
+if t12 goto L2
+ goto L3 
+ L2
+22: (Operator: ADD, Operand1: j, Operand2: 1, Result: t13)
+23: (Operator: ASSIGN, Operand1: j, Operand2: t13, Result: t14)
+L3:

@@ -212,7 +212,7 @@ void addQuadrupleFunction(FunctionDef *functionDef, bool beforeSomeCode)
     char command[256]; // Adjust the size as needed
     if (beforeSomeCode)
     {
-        sprintf(command, "%s proc %s", functionDef->returnType, functionDef->name);
+        sprintf(command, "%s proc %s ", functionDef->returnType, functionDef->name);
         for (int i = 0; i < functionDef->paramCount; i++)
         {
             char param[100]; // Adjust the size as needed

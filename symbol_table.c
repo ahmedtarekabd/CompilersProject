@@ -5,6 +5,7 @@
 #include "symbol_table.h"
 
 Scope *currentScope = NULL;  // Pointer to the current (innermost) scope
+int scopeNumber = 0;  // Counter to ensure uniqueness of scope names
 int tempCounter = 0;
 
 char *newTemp() {
@@ -28,7 +29,11 @@ void enterScope() {
     Scope *newScope = (Scope *)malloc(sizeof(Scope));
     newScope->symbols = NULL;
     newScope->parent = currentScope;
+
     currentScope = newScope;
+    scopeNumber++;
+
+    
 }
 
 
@@ -44,6 +49,7 @@ SymbolTableEntry *addSymbol(char *name, char *type, bool isConst) {
     entry->value = 0.0;  // Initialize value to 0
     entry->next = currentScope->symbols;
     currentScope->symbols = entry;
+
 
     printf("Added symbol '%s' with type: %s isConst = %i\n", name, type, isConst);
     return entry;
@@ -120,7 +126,8 @@ void writeSymbolTableOfCurrentScopeToFile()
     }
     SymbolTableEntry *entry = currentScope->symbols;
     while (entry) {
-        fprintf(file, "Symbol: %s, Type: %s, Initialized: %d, Value: %f\n", 
+        fprintf(file, "Scope: %d,Symbol: %s, Type: %s, Initialized: %d, Value: %f\n", 
+                scopeNumber,
                entry->name, entry->type, entry->isInitialized, entry->value);
         entry = entry->next;
     }
@@ -130,8 +137,10 @@ void writeSymbolTableOfCurrentScopeToFile()
 void exitScope() {
     Scope *oldScope = currentScope;
     writeSymbolTableOfCurrentScopeToFile();
+    
     currentScope = currentScope->parent;
     free(oldScope);
+    scopeNumber--;
 }
 
 // void writeSymbolTableToFile(){
