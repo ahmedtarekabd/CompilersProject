@@ -13,9 +13,14 @@ symbol_table.txt
 quadruples.txt
 syntax_err.txt 
 semantic_err.txt
+Parser.output
+
 # Ignore backup files
 *~
 *.bak
 
 # Ignore quadruples.txt
 quadruples.txt
+
+# GUI
+env/
