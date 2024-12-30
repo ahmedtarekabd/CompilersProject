@@ -765,7 +765,7 @@ FACTOR : LPAREN FINAL_EXP RPAREN
                 }
                 entry->isUsed = 1;  // Mark the variable as used
                 $$ = lookupSymbol($1);  // Retrieve its runtime value
-printf("Variable '%s' of type '%s' used at line %d. Value: %f\n", $1, entry->type, yylineno, $$);                   }
+                printf("Variable '%s' of type '%s' used at line %d. Value: %f\n", $1, entry->type, yylineno, $$);                   }
         }
        ;
 %% 

@@ -304,6 +304,7 @@ void writeQuadrupleToFile(int i)
             quadruples[i].operand1[0] ? quadruples[i].operand1 : "NULL", // Handle empty operand1
             quadruples[i].operand2[0] ? quadruples[i].operand2 : "NULL", // Handle empty operand2
             quadruples[i].result);
+    fclose(file);
 }
 void writeCommandToFile(char *command)
 {
@@ -313,14 +314,41 @@ void writeCommandToFile(char *command)
         fprintf(stderr, "Error opening file!\n");
         exit(1);
     }
-
     fprintf(file, "%s\n", command);
+    fclose(file);
+
 }
 void insertCommandBeforeEnd(const char *command)
 {
-    printFileContents("quadruples.txt");
+    FILE *file = fopen("quadruples.txt", "r");
+    if (file == NULL)
+    {
+        fprintf(stderr, "Error opening file!\n");
+        exit(1);
+    }
+    char line[256];
+    char *lines[1000];
+    int i = 0;
+    while (fgets(line, sizeof(line), file))
+    {
+        lines[i] = strdup(line);
+        i++;
+    }
+    fclose(file);
+    file = fopen("quadruples.txt", "w");
+    if (file == NULL)
+    {
+        fprintf(stderr, "Error opening file!\n");
+        exit(1);
+    }
+    for (int j = 0; j < i - 1; j++)
+    {
+        fprintf(file, "%s", lines[j]);
+    }
+    fprintf(file, "%s\n", command);
+    fprintf(file, "%s", lines[i - 1]);
+    fclose(file);
 }
-
 void printFileContents(const char *filename)
 {
     FILE *file = fopen(filename, "r");

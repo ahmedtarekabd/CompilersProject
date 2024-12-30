@@ -1,3 +1,0 @@
-Unused variable: x in scope 0
-Unused variable: z in scope 0
-Unused variable: z in scope 1
