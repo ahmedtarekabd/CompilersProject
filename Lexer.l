@@ -31,8 +31,11 @@
 
 
 [0-9]+\.[0-9]+  { yylval.s = yytext; printf("Float: %f\n", yylval.f); return FLOAT; }
-[0-9]+      { yylval.s = yytext; return INTEGER; }
+[0-9]+      { yylval.s = yytext; return INTEGER; } 
+
 [ \t\n]     { /* Ignore whitespace */ }
+#.*    { /* Ignore comments */ }
+\/\/.*    { /* Ignore comments */ }
 
 \"[^"]*\" { yylval.s = strdup(yytext); return STRING; }
 \'[^\']\' { yylval.s = strdup(yytext); return CHAR; }
@@ -48,6 +51,7 @@
 "*"         { return MUL; }
 "/"         { return DIV; }
 "^"         { return POW; }
+"%"         { return MOD; }
 
 "!"         { return NOT; }
 "||"        { return OR; }

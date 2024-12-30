@@ -6,7 +6,6 @@
     #include "symbol_table.h" 
     #include "quadruple.h"
     #include "utils/label_stack.h" 
-
     void yyerror(const char *s);
     // void semanticError(const char *s) ;
     int yylex(void);
@@ -44,7 +43,7 @@
     SymbolTableEntry *symbolTableEntry;
 }
 
-%token POW NOT OR AND EQ NE LT LE GT GE ASSIGN LPAREN RPAREN LBRACE RBRACE SEMICOLON COLON
+%token POW NOT OR AND EQ NE LT LE GT GE ASSIGN LPAREN RPAREN LBRACE RBRACE SEMICOLON COLON MOD
 %token FOR WHILE REPEAT UNTIL
 %token IF ELSE SWITCH CASE BREAK DEFAULT
 %token SUB ADD DIV MUL
@@ -355,6 +354,24 @@ CASE_STMT: CASE INTEGER COLON
         switchcaseQuadruple(NULL , nextLabel ,endLabel, false,false); 
     }
     BREAK SEMICOLON
+    |
+    CASE CHAR COLON 
+    {
+    // if i!=1 goto label2
+        SymbolTableEntry *switchVar = lookupSymbol(currentSwitchVar);
+        SymbolTableEntry *caseVar = addSymbol($2, "int", false,false);
+        SymbolTableEntry *condition = addQuadruple("EQ", switchVar, caseVar);
+        nextLabel = newLabel();
+        switchcaseQuadruple(condition , nextLabel ,endLabel, true,false);
+
+    }
+    STMTS 
+    {
+     // goto endLabel
+     // label2;
+        switchcaseQuadruple(NULL , nextLabel ,endLabel, false,false); 
+    }
+    BREAK SEMICOLON
     ;
     
 DEFAULT_STMT: DEFAULT COLON 
@@ -419,6 +436,7 @@ FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON FINAL_EXP SEMICOLON ASSIGNMENT
             Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
            
             addQuadrupleLabel(NULL, labels->loopLabel, labels->exitLabel, false);
+            
             free(labels);
             exitScope();
         }
@@ -587,7 +605,13 @@ UNMATCHED_IF:
         unmatchedIfQuadruple(NULL, labels->loopLabel, labels->exitLabel, false);
         free(labels);
         exitScope();
-    }    
+    }
+    // |
+    // IF LPAREN FINAL_EXP RPAREN STMT
+    // {
+    //     SymbolTableEntry *condition = $3;
+    //     unmatchedIfQuadruple(condition, NULL, NULL, true);
+    // }
 ; 
 ASSIGNMENT : ID ASSIGN FINAL_EXP SEMICOLON
     { 
@@ -633,7 +657,8 @@ ASSIGNMENT_FORLOOP : ID ASSIGN FINAL_EXP
             if (strcmp(entry->type, ($3)->type) != 0) {
                 semanticError("Type mismatch in assignment");
             }
-            SymbolTableEntry *temp = addQuadruple("ASSIGN", entry, $3);
+            
+            $$ = addQuadruple("ASSIGN", entry, $3);
             updateSymbolValue($1, ($3)->value);
             entry->isInitialized = 1;  // Mark the variable as initialized
         }
@@ -649,18 +674,11 @@ FINAL_EXP : LOGICAL_EXP
                 currentFunction->returnVar = ($1)->name;
             }
             }
-            |  FUNCTION_CALL 
-            { 
-                
-                $$ = $1;
-                if(currentFunction){
-                    currentFunction->returnVar = ($1)->name;
-                }
+            
+            ;
 
-            }
-
-LOGICAL_EXP : REL_EXP OR LOGICAL_EXP   { $$ = addQuadruple("OR", $1, $3); }
-            | REL_EXP AND LOGICAL_EXP  { $$ = addQuadruple("AND", $1, $3); }
+LOGICAL_EXP : LOGICAL_EXP OR  REL_EXP  { $$ = addQuadruple("OR", $1, $3); }
+            | LOGICAL_EXP AND REL_EXP  { $$ = addQuadruple("AND", $1, $3); }
             | REL_EXP                  { $$ = $1;  }
             ;
 
@@ -698,6 +716,7 @@ TERM : TERM MUL POWER   { $$ = addQuadruple("MUL", $1, $3); }
          }
      }
       
+     | TERM MOD POWER    { $$ = addQuadruple("MOD", $1, $3); }
      | POWER                { $$ = $1; }
      ;
 
@@ -712,8 +731,10 @@ FACTOR : LPAREN FINAL_EXP RPAREN
         }
        | SUB FACTOR          
         { 
-            $$ = addQuadruple("NEG", $2, NULL);
             printf("Negation applied: %f\n", $$); 
+        
+            $$ = addQuadruple("NEG", $2, NULL);
+            printf("Negation applied2: %f\n", $$);
         }
        | NOT FACTOR          
         { 
@@ -765,7 +786,7 @@ FACTOR : LPAREN FINAL_EXP RPAREN
             SymbolTableEntry *entry = lookupSymbol($1);
             if (!entry) {
                 char errorMsg[256];
-                sprintf(errorMsg, "Variable '%s' not declared in any scope", $1);
+                sprintf(errorMsg, "Variable '%s' not declared in the current scope", $1);
                 semanticError(errorMsg);
             } else {
                 if (!entry->isInitialized && !entry->isUsed) {
@@ -775,6 +796,15 @@ FACTOR : LPAREN FINAL_EXP RPAREN
                 $$ = lookupSymbol($1);  // Retrieve its runtime value
                 printf("Variable '%s' of type '%s' used at line %d. Value: %f\n", $1, entry->type, yylineno, $$);                   }
         }
+        |  FUNCTION_CALL 
+            { 
+                
+                $$ = $1;
+                if(currentFunction){
+                    currentFunction->returnVar = ($1)->name;
+                }
+
+            }
        ;
 %% 
 void yyerror(const char *s) {

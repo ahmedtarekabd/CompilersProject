@@ -5,12 +5,13 @@ Quadruple quadruples[MAX_QUADRUPLES];
 int quadIndex = 0;
 // Function to add a quadruple to the array
 SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, SymbolTableEntry *operand2)
-{
+{    
     // Generate a new temporary variable for the result
     printf("adding quadruple\n");
     char *result = newTemp();
+    
 
-    printf("Adding quadruple: (%s, %s, %s, %s)\n", operat, operand1->name, operand2->name, result);
+    // printf("Adding quadruple: (%s, %s, %s, %s)\n", operat, operand1->name, operand2->name, result);
 
     // Ensure operands are copied into local storage, not just pointers
     char operand1_copy[100];
@@ -19,9 +20,9 @@ SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, S
 
     strncpy(operand1_copy, operand1->name, sizeof(operand1_copy) - 1);
     operand1_copy[sizeof(operand1_copy) - 1] = '\0'; // Null-terminate
-
-    if (operand2->name)
+    if (operand2)
     {
+
         strncpy(operand2_copy, operand2->name, sizeof(operand2_copy) - 1);
         operand2_copy[sizeof(operand2_copy) - 1] = '\0'; // Null-terminate
     }
@@ -29,6 +30,7 @@ SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, S
     {
         operand2_copy[0] = '\0'; // Ensure it's empty if not provided
     }
+
 
     strncpy(result_copy, result, sizeof(result_copy) - 1);
     result_copy[sizeof(result_copy) - 1] = '\0'; // Null-terminate
@@ -54,37 +56,59 @@ SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, S
     writeQuadrupleToFile(quadIndex);
     quadIndex++;
     char *varType;
-    char * operand_name ;
-    char *  message ;
-    //CHECK FOR IMPILICIT TYPE CONVERSION 
-    if (strcmp(operand1->type, operand2->type) == 0) {
-    varType = operand1->type;
-    } else {
-    if (strcmp(operand1->type, "int") == 0 && strcmp(operand2->type, "float") == 0) {
-        varType = "float";
-        handleTypeConversion("int", "float", operand1->name);
-    } else if (strcmp(operand1->type, "float") == 0 && strcmp(operand2->type, "int") == 0) {
-        varType = "float";
-        handleTypeConversion("int", "float", operand2->name);
-    } else if (strcmp(operand1->type, "int") == 0 && strcmp(operand2->type, "char") == 0) {
-        varType = "char";
-        handleTypeConversion("int", "char", operand1->name);
-    } else if (strcmp(operand1->type, "char") == 0 && strcmp(operand2->type, "int") == 0) {
-        varType = "char";
-        handleTypeConversion("int", "char", operand2->name);
-    } else if (strcmp(operand1->type, "char") == 0 && strcmp(operand2->type, "string") == 0) {
-        varType = "string";
-        handleTypeConversion("char", "string", operand1->name);
-    } else if (strcmp(operand1->type, "string") == 0 && strcmp(operand2->type, "char") == 0) {
-        varType = "string";
-        handleTypeConversion("char", "string", operand2->name);
-    } else {
-        char message[256]; // Adjust the size as needed
-        sprintf(message, "Invalid type conversion between %s and %s", operand1->type, operand2->type);
-        semanticError(message);
+    char *operand_name;
+    char *message;
+    // CHECK FOR IMPILICIT TYPE CONVERSION
+    if (operand2)
+    if (strcmp(operand1->type, operand2->type) == 0)
+    {
+        varType = operand1->type;
     }
-}
-    SymbolTableEntry *entry = addSymbol(result, varType, false,true);
+    else
+    {
+        
+            if (strcmp(operand1->type, "int") == 0 && strcmp(operand2->type, "float") == 0)
+            {
+                varType = "float";
+                handleTypeConversion("int", "float", operand1->name);
+            }
+            else if (strcmp(operand1->type, "float") == 0 && strcmp(operand2->type, "int") == 0)
+            {
+                varType = "float";
+                handleTypeConversion("int", "float", operand2->name);
+            }
+            else if (strcmp(operand1->type, "int") == 0 && strcmp(operand2->type, "char") == 0)
+            {
+                varType = "char";
+                handleTypeConversion("int", "char", operand1->name);
+            }
+            else if (strcmp(operand1->type, "char") == 0 && strcmp(operand2->type, "int") == 0)
+            {
+                varType = "char";
+                handleTypeConversion("int", "char", operand2->name);
+            }
+            else if (strcmp(operand1->type, "char") == 0 && strcmp(operand2->type, "string") == 0)
+            {
+                varType = "string";
+                handleTypeConversion("char", "string", operand1->name);
+            }
+            else if (strcmp(operand1->type, "string") == 0 && strcmp(operand2->type, "char") == 0)
+            {
+                varType = "string";
+                handleTypeConversion("char", "string", operand2->name);
+            }
+            else
+            {
+                char message[256]; // Adjust the size as needed
+                sprintf(message, "Invalid type conversion between %s and %s", operand1->type, operand2->type);
+                semanticError(message);
+            }
+    }
+    else
+    {
+        varType = operand1->type;
+    }
+    SymbolTableEntry *entry = addSymbol(result, varType, false, true);
     return entry; // Return the symbol table entry for the result
 }
 
@@ -254,7 +278,6 @@ void addQuadrupleFunction(FunctionDef *functionDef, bool beforeSomeCode)
         if (strncmp(functionDef->returnType, "void", 4) != 0)
         {
             sprintf(command, "return %s\n", functionDef->returnVar);
-            
         }
         else
         {
@@ -265,7 +288,7 @@ void addQuadrupleFunction(FunctionDef *functionDef, bool beforeSomeCode)
 
     quadIndex++;
 }
-SymbolTableEntry * addQuadrupleFunctionCall(SymbolTableEntry * function, SymbolTableEntry **currentFunctionParams, int currentFunctionParamsCount)
+SymbolTableEntry *addQuadrupleFunctionCall(SymbolTableEntry *function, SymbolTableEntry **currentFunctionParams, int currentFunctionParamsCount)
 {
     char *result = newTemp();
     // Store quadruple using copied values
@@ -295,8 +318,8 @@ SymbolTableEntry * addQuadrupleFunctionCall(SymbolTableEntry * function, SymbolT
     }
     writeCommandToFile(command);
     quadIndex++;
-    //henaaa
-    SymbolTableEntry *entry = addSymbol(result, function->type, false,true);
+    // henaaa
+    SymbolTableEntry *entry = addSymbol(result, function->type, false, true);
 }
 
 void printQuadruples()
@@ -324,8 +347,8 @@ void writeQuadrupleToFile(int i)
 
     fprintf(file, "%s  %s  %s :=%s\n",
             quadruples[i].operat,
-            quadruples[i].operand1[0] ? quadruples[i].operand1 : "NULL", // Handle empty operand1
-            quadruples[i].operand2[0] ? quadruples[i].operand2 : "NULL", // Handle empty operand2
+            quadruples[i].operand1[0] ? quadruples[i].operand1 : "", // Handle empty operand1
+            quadruples[i].operand2[0] ? quadruples[i].operand2 : "", // Handle empty operand2
             quadruples[i].result);
     fclose(file);
 }
@@ -339,7 +362,6 @@ void writeCommandToFile(char *command)
     }
     fprintf(file, "%s\n", command);
     fclose(file);
-
 }
 void insertCommandBeforeEnd(const char *command)
 {
@@ -387,9 +409,11 @@ void printFileContents(const char *filename)
     }
     fclose(file);
 }
-void semanticError(const char *s) {
+void semanticError(const char *s)
+{
     FILE *errorFile = fopen("semantic_err.txt", "a");
-    if (errorFile == NULL) {
+    if (errorFile == NULL)
+    {
         fprintf(stderr, "Error opening semantic_err.txt for writing!\n");
         return;
     }
@@ -397,7 +421,8 @@ void semanticError(const char *s) {
     fclose(errorFile);
     fprintf(stderr, "Semantic error: %s at line %d\n", s, yylineno);
 }
-void handleTypeConversion(const char *fromType, const char *toType, const char *varName) {
+void handleTypeConversion(const char *fromType, const char *toType, const char *varName)
+{
     char message[256];
     snprintf(message, sizeof(message), "Implicit conversion from %s to %s for variable: %s", fromType, toType, varName);
     semanticError(message);
