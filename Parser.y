@@ -8,8 +8,10 @@
     #include "utils/label_stack.h" 
 
     void yyerror(const char *s);
+    void semanticError(const char *s) ;
     int yylex(void);
     extern FILE *yyin;
+    extern int yylineno;  
     LabelStack *labelStack;
     char *currentSwitchVar;
     char* nextLabel;
@@ -108,7 +110,7 @@ STMT:
 
 DECLARATION: PARAM_TYPE ID SEMICOLON {
                 if (lookupSymbol($2) && isSymbolDeclaredInCurrentScope($2)) {
-                    yyerror("Variable already declared in this scope");
+                    semanticError("Variable already declared in this scope");
                 } else {
                     $$ = addSymbol($2, $1, false);  // Add variable to current scope
                 }
@@ -117,7 +119,7 @@ DECLARATION: PARAM_TYPE ID SEMICOLON {
 
 CONST_DECLARATION: CONST PARAM_TYPE ID SEMICOLON {
                 if (lookupSymbol($3) && isSymbolDeclaredInCurrentScope($3)) {
-                    yyerror("Variable already declared in this scope");
+                    semanticError("Variable already declared in this scope");
                 } else {
                     addSymbol($3, $2, true);  // Add variable to current scope
                 }
@@ -132,7 +134,7 @@ FUNCTION_DEFINITION: FUNCTION_START
     VOID_TYPE ID
     {
         if (lookupSymbol($2) && isSymbolDeclaredInCurrentScope($2)) {
-            yyerror("Function already declared in this scope");
+            semanticError("Function already declared in this scope");
         } else {
             addSymbol($2, "void", false);  // Add function to current scope 
             initializeCurrentFunction($2, "void");
@@ -145,7 +147,8 @@ FUNCTION_DEFINITION: FUNCTION_START
     LBRACE  { 
           enterScope();
             for (int i = 0; i < currentFunction->paramCount; i++) {
-                addSymbol(currentFunction->paramNames[i], currentFunction->paramTypes[i], false);
+                SymbolTableEntry * s= addSymbol(currentFunction->paramNames[i], currentFunction->paramTypes[i], false);
+                s->isInitialized = 1;
             }
             addQuadrupleFunction(currentFunction,true);
         
@@ -211,7 +214,7 @@ PARAM : PARAM_TYPE ID {
             printf("Parameter %s of type %s\n", $2, $1);
             SymbolTableEntry *entry = lookupSymbol($2);
             if (entry) {
-                yyerror("Variable already declared in this scope");
+                semanticError("Variable already declared in this scope");
             } else {
                 printf("Parameter %s of type %s\n", $2, $1);
                 $$ = addSymbol($2, $1, false);  // Add variable to current scope
@@ -227,7 +230,7 @@ PARAM_TYPE: INT_TYPE        { $$ = "int"; }
           ;
 FUNCTION_START: PARAM_TYPE ID {
     if (lookupSymbol($2) && isSymbolDeclaredInCurrentScope($2)) {
-        yyerror("Function already declared in this scope");
+        semanticError("Function already declared in this scope");
     } else {
         addSymbol($2, $1, false);  // Add function to current scope 
         initializeCurrentFunction($2, $1);
@@ -237,7 +240,7 @@ FUNCTION_CALL:  ID LPAREN FUNCTION_CALL_PARAMS RPAREN
     {
         SymbolTableEntry *entry = lookupSymbol($1);
         if (!entry) {
-            yyerror("Function not declared in any scope");
+            semanticError("Function not declared in any scope");
         } else {
             printf("functionsCount: %d\n", functionsCount);
             // for loop on the functionDefinitions array to find the function with the same name 
@@ -245,11 +248,11 @@ FUNCTION_CALL:  ID LPAREN FUNCTION_CALL_PARAMS RPAREN
 
                 if (strcmp(functionDefinitions[i]->name, $1) == 0) {
                     if (functionDefinitions[i]->paramCount != currentFunctionParamsCount) {
-                        yyerror("Function called with incorrect number of parameters");
+                        semanticError("Function called with incorrect number of parameters");
                     } else {
                         for (int j = 0; j < currentFunctionParamsCount; j++) {
                             if (strcmp(functionDefinitions[i]->paramTypes[j], currentFunctionParams[j]->type) != 0) {
-                                yyerror("Function called with incorrect parameter types");
+                                semanticError("Function called with incorrect parameter types");
                             }
                         }
                     }
@@ -563,7 +566,7 @@ ASSIGNMENT : ID ASSIGN FINAL_EXP SEMICOLON
     { 
         SymbolTableEntry *entry = lookupSymbol($1);
         if (!entry) {
-            yyerror("Variable not declared in any scope");
+            semanticError("Variable not declared in any scope");
         } else {
             SymbolTableEntry *temp = addQuadruple("ASSIGN", entry, $3);
             updateSymbolValue($1, ($3)->value);
@@ -579,11 +582,11 @@ ASSIGNMENT_FORLOOP : ID ASSIGN FINAL_EXP
         // assign_var($1, $3); 
         bool isVoid = strcmp(($3)->type, "void") == 0;
                 if (isVoid) {
-                    yyerror("Function call in expression must return a value");
+                    semanticError("void value cannot be assigned to a variable");
                 }
         SymbolTableEntry *entry = lookupSymbol($1);
         if (!entry) {
-            yyerror("Variable not declared in any scope");
+            semanticError("Variable not declared in any scope");
         } else {
             SymbolTableEntry *temp = addQuadruple("ASSIGN", entry, $3);
             updateSymbolValue($1, ($3)->value);
@@ -642,7 +645,7 @@ TERM : TERM MUL POWER   { $$ = addQuadruple("MUL", $1, $3); }
      | TERM DIV POWER       
      { 
          if (strcmp(($3)->name, "0") == 0) { 
-            yyerror("Division by zero"); 
+            semanticError("Division by zero"); 
             exit(1); 
          } else {
             $$ = addQuadruple("DIV", $1, $3);
@@ -712,13 +715,16 @@ FACTOR : LPAREN FINAL_EXP RPAREN
         }
        | ID                  
         { 
+            // TODO: understand this errors 
             // Look up the variable in the symbol table
             SymbolTableEntry *entry = lookupSymbol($1);
             if (!entry) {
-                yyerror("Variable not declared in any scope");
+                char errorMsg[256];
+                sprintf(errorMsg, "Variable '%s' not declared in any scope", $1);
+                semanticError(errorMsg);
             } else {
-                if (!entry->isInitialized) {
-                    yyerror("Variable used before initialization");
+                if (!entry->isInitialized && !entry->isUsed) {
+                    semanticError("Variable used before initialization");
                 }
                 entry->isUsed = 1;  // Mark the variable as used
                 $$ = lookupSymbol($1);  // Retrieve its runtime value
@@ -728,9 +734,25 @@ FACTOR : LPAREN FINAL_EXP RPAREN
        ;
 %% 
 void yyerror(const char *s) {
-    fprintf(stderr, "%s\n", s);
+    FILE *errorFile = fopen("syntax_err.txt", "a");
+    if (errorFile == NULL) {
+        fprintf(stderr, "Error opening syntax_err.txt for writing!\n");
+        return;
+    }
+    fprintf(errorFile, "Syntax error: %s at line %d\n", s, yylineno);
+    fclose(errorFile);
+    fprintf(stderr, "Syntax error: %s at line %d\n", s, yylineno);
 }
-
+void semanticError(const char *s) {
+    FILE *errorFile = fopen("semantic_err.txt", "a");
+    if (errorFile == NULL) {
+        fprintf(stderr, "Error opening semantic_err.txt for writing!\n");
+        return;
+    }
+    fprintf(errorFile, "Semantic error: %s at line %d\n", s, yylineno);
+    fclose(errorFile);
+    fprintf(stderr, "Semantic error: %s at line %d\n", s, yylineno);
+}
 int main(int argc, char **argv) {
      // Clear the contents of quadruples.txt
     FILE *quadFile = fopen("quadruples.txt", "w");
@@ -753,7 +775,21 @@ int main(int argc, char **argv) {
             return 1;
         }
     } 
-  
+  //clear the semantic_err.txt file 
+    FILE *semFile = fopen("semantic_err.txt", "w");
+    if (semFile == NULL) {
+        fprintf(stderr, "Error opening semantic_err.txt for writing!\n");
+        return 1;
+    }
+    fclose(semFile);
+    // clear the syntax_err.txt file
+    FILE *synFile = fopen("syntax_err.txt", "w");
+    if (synFile == NULL) {
+        fprintf(stderr, "Error opening syntax_err.txt for writing!\n");
+        return 1;
+    }
+    fclose(synFile);
+
     if (yyparse() == 0) {
         printf("Parsing successful\n");
         printQuadruples();

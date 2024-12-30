@@ -7,7 +7,7 @@
     
 
 %}
-
+%option yylineno
 
 %%
 "for"       { return FOR; }

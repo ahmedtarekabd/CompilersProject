@@ -2,7 +2,7 @@
     int i ;
     char z;
     int x;
-    i =0;
+    i = 0;
     int sum (int x, int y, char z){
         return x+y;
     } 
@@ -10,6 +10,6 @@
         return;
     }
     print();
-    z = sum(x,i,z);
+    z = sum(x,i);
     
 }

@@ -1,0 +1,2 @@
+Semantic error: Variable used before initialization at line 13
+Semantic error: Function called with incorrect number of parameters at line 13
