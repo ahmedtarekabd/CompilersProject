@@ -140,7 +140,7 @@ void unmatchedIfQuadruple(SymbolTableEntry *condition, char *loopLabel, char *ex
     {
         char *conditionName = condition->name;
         char command[256]; // Adjust the size as needed
-        sprintf(command, "if %s goto %s\n goto %s \n %s", conditionName, loopLabel, exitLabel, loopLabel);
+        sprintf(command, "if %s goto %s\ngoto %s \n%s:", conditionName, loopLabel, exitLabel, loopLabel);
         writeCommandToFile(command);
     }
     else
@@ -298,8 +298,7 @@ void writeQuadrupleToFile(int i)
         exit(1);
     }
 
-    fprintf(file, "%d: (Operator: %s, Operand1: %s, Operand2: %s, Result: %s)\n",
-            i,
+    fprintf(file, "%s  %s  %s :=%s\n",
             quadruples[i].operat,
             quadruples[i].operand1[0] ? quadruples[i].operand1 : "NULL", // Handle empty operand1
             quadruples[i].operand2[0] ? quadruples[i].operand2 : "NULL", // Handle empty operand2
