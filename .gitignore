@@ -14,6 +14,7 @@ quadruples.txt
 syntax_err.txt 
 semantic_err.txt
 Parser.output
+compiler.exe
 
 # Ignore backup files
 *~
@@ -24,3 +25,5 @@ quadruples.txt
 
 # GUI
 env/
+temp_files/
+
