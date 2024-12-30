@@ -126,6 +126,13 @@ void addQuadrupleLabel(SymbolTableEntry *condition, char *loopLabel, char *exitL
         fprintf(stderr, "Quadruple storage overflow!\n");
         exit(1);
     }
+
+    if(beforeSomeCode && !exitLabel && !condition){
+        char command[256]; 
+        sprintf(command, "%s:", loopLabel);
+        writeCommandToFile(command);
+        return;
+    }
     if (exitLabel == NULL)
     {
         /*
@@ -152,6 +159,7 @@ void addQuadrupleLabel(SymbolTableEntry *condition, char *loopLabel, char *exitL
         }
         return;
     }
+    
     /*
     label1:
     if condition false goto label2
@@ -164,7 +172,8 @@ void addQuadrupleLabel(SymbolTableEntry *condition, char *loopLabel, char *exitL
         char *conditionName = condition->name;
 
         char command[256]; // Adjust the size as needed
-        sprintf(command, "%s:\nif %s false goto %s", loopLabel, conditionName, exitLabel);
+        // sprintf(command, "%s:\nif %s false goto %s", loopLabel, conditionName, exitLabel);
+        sprintf(command, "if %s false goto %s", conditionName, exitLabel);
         writeCommandToFile(command);
     }
     else

@@ -421,27 +421,43 @@ some code
 if (i<6) goto label1
 label2:
 */
-FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON FINAL_EXP SEMICOLON ASSIGNMENT_FOR_LOOP_END RPAREN 
-    LBRACE
-        {
+FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON 
+{
+    Labels *labels = (Labels *)malloc(sizeof(Labels));
+    labels->loopLabel = newLabel();
+    labels->exitLabel = newLabel();
+    pushLabelStack(&labelStack, labels);  // Push labels onto the stack 
+    addQuadrupleLabel(NULL, labels->loopLabel,NULL, true);
+
+}
+FINAL_EXP SEMICOLON
+{
             // Start a new scope for the loop
-            enterScope();
-            SymbolTableEntry *condition = $5; // Assuming FINAL_EXP returns a SymbolTableEntry*
-            Labels *labels = (Labels *)malloc(sizeof(Labels));
-            labels->loopLabel = newLabel();
-            labels->exitLabel = newLabel();
+            
+            SymbolTableEntry *condition = $6; // Assuming FINAL_EXP returns a SymbolTableEntry*
+          
+            Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
             addQuadrupleLabel(condition, labels->loopLabel, labels->exitLabel, true);
             pushLabelStack(&labelStack, labels);  // Push labels onto the stack
+            
+            
+        }
+ ASSIGNMENT_FOR_LOOP_END RPAREN 
+        LBRACE
+        {
+            enterScope();
         }
         STMTS 
         RBRACE
         {   
             Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
-    
-            //pop for loop stack
             ForLoopAttributes *forLoopAttributes = popForLoopStack(forLoopStack);
             SymbolTableEntry *operand1;
             SymbolTableEntry *operand2;
+            printf("after add quaddddddd\n");
+            operand1 = (SymbolTableEntry *)malloc(sizeof(SymbolTableEntry));
+            operand2 = (SymbolTableEntry *)malloc(sizeof(SymbolTableEntry));
+
             operand1->name = forLoopAttributes->id;
             operand2->name = forLoopAttributes->final_expression_result;
             operand1->type = forLoopAttributes->id_type;
@@ -449,6 +465,7 @@ FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON FINAL_EXP SEMICOLON ASSIGNMENT
             addQuadruple("ASSIGN", operand1, operand2);
             free(forLoopAttributes);
             addQuadrupleLabel(NULL, labels->loopLabel, labels->exitLabel, false);
+            
             free(labels);
             exitScope();
         }
@@ -501,14 +518,22 @@ goto label1
 label2:
 */
 
-WHILE_LOOP: WHILE LPAREN FINAL_EXP RPAREN LBRACE
+WHILE_LOOP: WHILE LPAREN 
+{
+    Labels *labels = (Labels *)malloc(sizeof(Labels));
+            labels->loopLabel = newLabel();
+            labels->exitLabel = newLabel();
+            pushLabelStack(&labelStack, labels);
+            addQuadrupleLabel(NULL, labels->loopLabel,NULL, true);
+}
+
+FINAL_EXP RPAREN LBRACE
    {
             // Start a new scope for the loop
             enterScope();
-            SymbolTableEntry *condition = $3; // Assuming FINAL_EXP returns a SymbolTableEntry*
-            Labels *labels = (Labels *)malloc(sizeof(Labels));
-            labels->loopLabel = newLabel();
-            labels->exitLabel = newLabel();
+            SymbolTableEntry *condition = $4; // Assuming FINAL_EXP returns a SymbolTableEntry*
+            
+            Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
             addQuadrupleLabel(condition, labels->loopLabel, labels->exitLabel, true);
             pushLabelStack(&labelStack, labels);  // Push labels onto the stack
         }

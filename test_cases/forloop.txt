@@ -1,0 +1,18 @@
+{
+char coco;
+coco = 'a';
+float j;
+
+
+//MAGNONA:   COMBO EXPRESSION TEST
+int k;
+int i;
+i=1;
+for (k = 0; k < 20; k=k+1)
+{
+    int i;
+   i = i+1;
+}
+i = i+1;
+
+}
