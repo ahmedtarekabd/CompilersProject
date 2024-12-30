@@ -8,7 +8,11 @@
 lex.yy.c
 Parser.tab.c
 Parser.tab.h
-
+compiler.exe
+symbol_table.txt
+quadruples.txt
+syntax_err.txt 
+semantic_err.txt
 # Ignore backup files
 *~
 *.bak

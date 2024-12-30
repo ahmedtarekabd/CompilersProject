@@ -10,6 +10,7 @@
     void yyerror(const char *s);
     void semanticError(const char *s) ;
     int yylex(void);
+    void clearFile(const char *filename) ;
     extern FILE *yyin;
     extern int yylineno;  
     LabelStack *labelStack;
@@ -584,7 +585,13 @@ ASSIGNMENT : ID ASSIGN FINAL_EXP SEMICOLON
     { 
         SymbolTableEntry *entry = lookupSymbol($1);
         if (!entry) {
-            semanticError("Variable not declared in any scope");
+           char errorMsg[256];
+            if (currentFunction) {
+                sprintf(errorMsg, "Variable '%s' not declared in the current scope of function '%s'", $1, currentFunction->name);
+            } else {
+                sprintf(errorMsg, "Variable '%s' not declared in the current scope", $1);
+            }
+            semanticError(errorMsg);
         } else {
             if (strcmp(($3)->type, "void") == 0) {
                 semanticError("void value cannot be assigned to a variable");
@@ -783,21 +790,16 @@ void semanticError(const char *s) {
     fclose(errorFile);
     fprintf(stderr, "Semantic error: %s at line %d\n", s, yylineno);
 }
+ void clearFile(const char *filename) {
+        FILE *file = fopen(filename, "w");
+        if (file == NULL) {
+            fprintf(stderr, "Error opening %s for writing!\n", filename);
+            return;
+        }
+        fclose(file);
+    }
 int main(int argc, char **argv) {
-     // Clear the contents of quadruples.txt
-    FILE *quadFile = fopen("quadruples.txt", "w");
-    if (quadFile == NULL) {
-        fprintf(stderr, "Error opening quadruples.txt for writing!\n");
-        return 1;
-    }
-    fclose(quadFile);
-    // Clear the contents of symbol_table.txt 
-    FILE *symFile = fopen("symbol_table.txt", "w");
-    if (symFile == NULL) {
-        fprintf(stderr, "Error opening symbol_table.txt for writing!\n");
-        return 1;
-    }
-    fclose(symFile);
+
     if (argc > 1) {
         yyin = fopen(argv[1], "r");
         if (!yyin) {
@@ -805,21 +807,11 @@ int main(int argc, char **argv) {
             return 1;
         }
     } 
-  //clear the semantic_err.txt file 
-    FILE *semFile = fopen("semantic_err.txt", "w");
-    if (semFile == NULL) {
-        fprintf(stderr, "Error opening semantic_err.txt for writing!\n");
-        return 1;
-    }
-    fclose(semFile);
-    // clear the syntax_err.txt file
-    FILE *synFile = fopen("syntax_err.txt", "w");
-    if (synFile == NULL) {
-        fprintf(stderr, "Error opening syntax_err.txt for writing!\n");
-        return 1;
-    }
-    fclose(synFile);
-
+    clearFile("syntax_err.txt");
+    clearFile("semantic_err.txt");
+    clearFile("quadruples.txt");
+    clearFile("symbol_table.txt");
+    
     if (yyparse() == 0) {
         printf("Parsing successful\n");
         printQuadruples();
