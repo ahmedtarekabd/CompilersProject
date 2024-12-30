@@ -104,10 +104,27 @@ STMT:
     | ASSIGNMENT           
     | FINAL_EXP SEMICOLON
     | FUNCTION_DEFINITION
-    | RETURN SEMICOLON
-    | RETURN FINAL_EXP SEMICOLON
+    | RETURN SEMICOLON             
+    {
+        if (currentFunction) {
+            if (strcmp("void", currentFunction->returnType) != 0) {
+                semanticError("Function must return a value");
+            }
+        }
+    }
+    | RETURN FINAL_EXP SEMICOLON    
+    {
+        
+        if (currentFunction) {
+            if(strcmp("void", currentFunction->returnType) == 0){
+                semanticError("Function return type is void");
+            }
+            else if (strcmp(($2)->type, currentFunction->returnType) != 0) {
+                semanticError("Function return type does not match");
+            }
+        }
+    }
     ;
-
 DECLARATION: PARAM_TYPE ID SEMICOLON {
                 if (lookupSymbol($2) && isSymbolDeclaredInCurrentScope($2)) {
                     semanticError("Variable already declared in this scope");
@@ -262,8 +279,10 @@ FUNCTION_CALL:  ID LPAREN FUNCTION_CALL_PARAMS RPAREN
             }
         }
         $$ = entry;
+        printf("function %s , type %s\n", entry->name, entry->type);
         SymbolTableEntry * func = addQuadrupleFunctionCall(entry ,currentFunctionParams, currentFunctionParamsCount);
-        if(func->type != "void"){
+        func->type = entry->type;
+        if(strcmp(func->type, "void") != 0){
             $$ = func;
         }
         currentFunctionParamsCount = 0;
@@ -446,7 +465,6 @@ REPEAT_UNTIL_LOOP: REPEAT LBRACE
     
     pushLabelStack(&labelStack, labels);  // Push labels onto the stack
     addQuadrupleLabel(NULL, labels->loopLabel, NULL, true);
-
 }
 STMTS RBRACE
  UNTIL LPAREN FINAL_EXP 
@@ -568,9 +586,17 @@ ASSIGNMENT : ID ASSIGN FINAL_EXP SEMICOLON
         if (!entry) {
             semanticError("Variable not declared in any scope");
         } else {
-            SymbolTableEntry *temp = addQuadruple("ASSIGN", entry, $3);
-            updateSymbolValue($1, ($3)->value);
-            entry->isInitialized = 1;  
+            if (strcmp(($3)->type, "void") == 0) {
+                semanticError("void value cannot be assigned to a variable");
+            }
+            else if (strcmp(entry->type, ($3)->type) != 0) {
+                semanticError("Type mismatch in assignment");
+            }
+            else {
+                $$ = addQuadruple("ASSIGN", entry, $3);
+                updateSymbolValue($1, ($3)->value);
+                entry->isInitialized = 1;  
+            }
         }
         $$ = $3;
     }            
@@ -588,6 +614,10 @@ ASSIGNMENT_FORLOOP : ID ASSIGN FINAL_EXP
         if (!entry) {
             semanticError("Variable not declared in any scope");
         } else {
+            //check types before assigning
+            if (strcmp(entry->type, ($3)->type) != 0) {
+                semanticError("Type mismatch in assignment");
+            }
             SymbolTableEntry *temp = addQuadruple("ASSIGN", entry, $3);
             updateSymbolValue($1, ($3)->value);
             entry->isInitialized = 1;  // Mark the variable as initialized

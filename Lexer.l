@@ -35,6 +35,10 @@
 [ \t\n]     { /* Ignore whitespace */ }
 
 \"[^"]*\" { yylval.s = strdup(yytext); return STRING; }
+\'[^\']\' { yylval.s = strdup(yytext); return CHAR; }
+\'[^']*\' { yylval.s = strdup(yytext); return STRING; }
+
+
 [a-zA-Z_][a-zA-Z0-9_]* { yylval.s = strdup(yytext); return ID; }  // Adjusted identifier rule
 
 

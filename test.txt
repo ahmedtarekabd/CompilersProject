@@ -1,7 +1,7 @@
 {
     int i ;
     char z;
-    int x;
+    char x;
     i = 0;
     int sum (int x, int y, char z){
         return x+y;
@@ -9,7 +9,6 @@
     void print(){
         return;
     }
-    print();
-    z = sum(x,i);
-    
+    i= print();
+    z = sum(1,0,'k');
 }
