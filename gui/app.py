@@ -8,7 +8,7 @@ from streamlit_extras.let_it_rain import rain
 
 # Define working directory as the current directory of the script
 FLEX_BISON_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_FILES_DIR = os.path.join(FLEX_BISON_DIR, "")
+OUTPUT_FILES_DIR = os.path.join(FLEX_BISON_DIR, "output_files")
 WORK_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMP_DIR = os.path.join(WORK_DIR, "temp_files")
 
@@ -61,7 +61,7 @@ def display_files(files_to_display: list[str]):
         if os.path.exists(file_path):
             with open(file_path, "r") as file:
                 st.markdown(f"### {file_name}")
-                if file_name == "output_files/symbol_table.txt":
+                if file_name == "symbol_table.txt":
                     # Display output_files/symbol_table.txt as a table
                     keys = ["Scope", "Symbol", "Type", "Initialized"]
                     data = {}
@@ -84,12 +84,12 @@ def display_files(files_to_display: list[str]):
 # Streamlit UI
 st.image(os.path.join(WORK_DIR, "image.png"), width=50)
 st.title("Not C++! - Streamlit Coding Editor & Compiler")
-rain(
-    emoji="🍬مساء ال",
-    font_size=54,
-    falling_speed=5,
-    animation_length=1,
-)
+# rain(
+#     emoji="🍬مساء ال",
+#     font_size=54,
+#     falling_speed=5,
+#     animation_length=1,
+# )
 
 st.write("This is a simple compiler for a subset of the C language.")
 st.warning("Please make sure to upload a valid C (Not C++!) file for compilation.")
@@ -147,7 +147,7 @@ if uploaded_file:
         # st.text(compile_output)
         st.markdown("---")
         # Display the content of the four txt files
-        files_to_display = ["output_files/quadruples.txt", "output_files/symbol_table.txt", "output_files/semantics.txt", "output_files/syntax_err.txt"]
+        files_to_display = ["quadruples.txt", "symbol_table.txt", "semantics.txt", "syntax_err.txt"]
         display_files(files_to_display)
 
 
