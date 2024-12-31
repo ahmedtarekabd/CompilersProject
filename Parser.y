@@ -454,7 +454,6 @@ FINAL_EXP SEMICOLON
             ForLoopAttributes *forLoopAttributes = popForLoopStack(forLoopStack);
             SymbolTableEntry *operand1;
             SymbolTableEntry *operand2;
-            printf("after add quaddddddd\n");
             operand1 = (SymbolTableEntry *)malloc(sizeof(SymbolTableEntry));
             operand2 = (SymbolTableEntry *)malloc(sizeof(SymbolTableEntry));
 
@@ -482,6 +481,9 @@ ASSIGNMENT_FOR_LOOP_END : ID ASSIGN FINAL_EXP
         if (!entry) {
             semanticError("Variable not declared in any scope");
         } else {
+            if(entry->isTemp){
+                semanticError("Cannot assign a value to a function.");
+            }
             //check types before assigning
             if (strcmp(entry->type, ($3)->type) != 0) {
                 semanticError("Type mismatch in assignment");
@@ -720,6 +722,7 @@ ASSIGNMENT : ID ASSIGN FINAL_EXP SEMICOLON
 
 ASSIGNMENT_FORLOOP : ID ASSIGN FINAL_EXP 
     { 
+        printf("hebaaaaaaaaa");
         // Assign the value of EXP to the variable ID
         // assign_var($1, $3); 
         bool isVoid = strcmp(($3)->type, "void") == 0;
@@ -727,9 +730,13 @@ ASSIGNMENT_FORLOOP : ID ASSIGN FINAL_EXP
                     semanticError("void value cannot be assigned to a variable");
                 }
         SymbolTableEntry *entry = lookupSymbol($1);
+        printf("entrry->name %s\n", entry->name);
         if (!entry) {
             semanticError("Variable not declared in any scope");
         } else {
+            if(entry->isTemp){
+                semanticError("Cannot assign a value to a function.");
+            }
             //check types before assigning
             if (strcmp(entry->type, ($3)->type) != 0) {
                 semanticError("Type mismatch in assignment");
@@ -866,8 +873,13 @@ FACTOR : LPAREN FINAL_EXP RPAREN
                 sprintf(errorMsg, "Variable '%s' not declared in the current scope", $1);
                 semanticError(errorMsg);
             } else {
-                if (!entry->isInitialized && !entry->isUsed) {
-                    semanticError("Variable used before initialization");
+                if (!entry->isInitialized && !entry->isUsed ) {
+                    if(entry->isTemp){
+                        yyerror("Invalid function call , missing parenthesis ");
+                    }else{
+
+                        semanticError("Variable used before initialization");
+                    }
                 }
                 entry->isUsed = 1;  // Mark the variable as used
                 $$ = lookupSymbol($1);  // Retrieve its runtime value

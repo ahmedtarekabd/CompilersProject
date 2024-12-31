@@ -1,0 +1,14 @@
+Scope: 0, Symbol: 1, Type: int, Initialized: 0, Value: 0.000000
+Scope: 0, Symbol: t4, Type: int, Initialized: 0, Value: 0.000000
+Scope: 0, Symbol: 5, Type: int, Initialized: 0, Value: 0.000000
+Scope: 0, Symbol: t3, Type: int, Initialized: 0, Value: 0.000000
+Scope: 0, Symbol: t2, Type: int, Initialized: 0, Value: 0.000000
+Scope: 0, Symbol: sum, Type: int, Initialized: 1, Value: 0.000000
+Scope: 0, Symbol: t1, Type: int, Initialized: 0, Value: 0.000000
+Scope: 0, Symbol: x, Type: int, Initialized: 1, Value: 0.000000
+Scope: 0, Symbol: t0, Type: int, Initialized: 0, Value: 0.000000
+Scope: 0, Symbol: 0, Type: int, Initialized: 0, Value: 0.000000
+Scope: 0, Symbol: i, Type: int, Initialized: 1, Value: 0.000000
+Scope: 2, Symbol: t7, Type: int, Initialized: 0, Value: 0.000000
+Scope: 2, Symbol: t6, Type: int, Initialized: 0, Value: 0.000000
+Scope: 2, Symbol: t5, Type: int, Initialized: 0, Value: 0.000000
