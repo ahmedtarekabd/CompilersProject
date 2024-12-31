@@ -1,9 +1,9 @@
 
 #include "symbol_table.h"
 
-Scope *currentScope = NULL;  // Pointer to the current (innermost) scope
+Scope *currentScope = NULL; 
 extern int tempCounter;
-Scope *allScopes[1000];  // Array to keep track of all scopes
+Scope *allScopes[1000];     
 int scopeCount = 0;    
 
 void enterScope() {
@@ -26,7 +26,7 @@ SymbolTableEntry *addSymbol(char *name, char *type, bool isConst,bool isTempVarO
     entry->isInitialized = 0;
     entry->isTempVarOrFunction = isTempVarOrFunction;
     entry->isUsed = 0;
-    entry->value = 0.0;  // Initialize value to 0
+    entry->value = 0.0;  
     entry->next = currentScope->symbols;
     currentScope->symbols = entry;
 
@@ -43,9 +43,9 @@ SymbolTableEntry *lookupSymbol(char *name) {
             entry = entry->next;
         }
 
-        scope = scope->parent;  // Go to parent scope
+        scope = scope->parent;  
     }
-    return NULL;  // Symbol not found
+    return NULL;                
 }
 
 bool isSymbolDeclaredInCurrentScope(char *name) {
@@ -62,20 +62,17 @@ int updateSymbolValue(char *name, float value) {
     SymbolTableEntry *entry = lookupSymbol(name);
     if (entry == NULL) {
         printf("Error: Symbol '%s' not found.\n", name);
-        return 0;  // Symbol not found
+        return 0; 
     }
-    // printf("/////// is init %d\n", entry->isInitialized);
     if (entry->isConst && entry->isInitialized) {
         printf("Error: Cannot update value of constant symbol '%s'.\n", name);
-        return 0;  // Cannot update value of constant symbol
+        return 0; 
     }
-    entry->value = value;  // Update value
-    entry->isInitialized = 1;  // Mark as initialized
+    entry->value = value;      
+    entry->isInitialized = 1;  
     printf("Updated symbol '%s' with value: %f\n", name, value);
-    return 1;  // Successfully updated
+    return 1;  
 }
-
-// write the symbol table of all scopes to a file with the number of the scope
 void writeSymbolTableOfAllScopesToFile()
 {
     FILE *file = fopen("output_files/symbol_table.txt", "w");
@@ -107,10 +104,8 @@ void writeSymbolTableOfAllScopesToFile()
 
 void exitScope() {
     Scope *oldScope = currentScope;
-    // writeSymbolTableOfCurrentScopeToFile();
     currentScope = currentScope->parent;
-    //free(oldScope);
-    //oldScope = NULL;
+  
 }
 void checkUnusedVariables() {
     FILE *file = fopen("output_files/semantics.txt", "a");
