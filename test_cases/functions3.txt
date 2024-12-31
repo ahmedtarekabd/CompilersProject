@@ -6,6 +6,12 @@
     int sum (){
         return 0;
     }
-   sum = x;
-   x = sum;
+    void print(){}
+    if(x){
+        for (i=0;i<0;i=i+1)
+        {
+            x = sum;
+            x = print();
+        }
+    }
 }
