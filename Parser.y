@@ -545,7 +545,7 @@ ASSIGNMENT : ID ASSIGN FINAL_EXP SEMICOLON
             }
             else {
                 $$ = addQuadruple("ASSIGN", entry, $3);
-                updateSymbolValue($1, ($3)->value);
+                updateSymbolValue($1, atof(($3)->name));
                 entry->isInitialized = 1;  
             }
         }
