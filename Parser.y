@@ -3,39 +3,27 @@
     #include <stdlib.h>
     #include <string.h>
     #include <math.h>
-    #include "symbol_table.h" 
     #include "quadruple.h"
-    #include "utils/label_stack.h" 
-    #include "utils/for_loop_stack.h"
-    void yyerror(const char *s);
-    // void semanticError(const char *s) ;
+    #include"utils/helper_functions.h"
+    #include"utils/generic_stack.h"
+    #include"utils/data_structures.h"
+    /* Functions */
     int yylex(void);
-    void clearFile(const char *filename) ;
+
+    /* Globals */ 
     extern FILE *yyin;
-    extern int yylineno;  
-    LabelStack *labelStack;
-    ForLoopStack *forLoopStack;
-    
     char *currentSwitchVar;
     char* nextLabel;
     char* endLabel; 
     FunctionDef *currentFunction;
-    //create array of function definitions 
+    GenericStack * labelStack  ;
+    GenericStack * forLoopStack;
     FunctionDef *functionDefinitions[200];
     int functionsCount = 0;
+    /* For function calls */
     SymbolTableEntry * currentFunctionParams[100];
     int currentFunctionParamsCount = 0;
-    void initializeCurrentFunction(const char *name, const char *returnType) {
-    if (currentFunction) {
-        currentFunction = NULL;
-    }
-    currentFunction = (FunctionDef *)malloc(sizeof(FunctionDef));
-    currentFunction->name = strdup(name);
-    currentFunction->returnType = strdup(returnType);
-    currentFunction->paramNames = NULL;
-    currentFunction->paramTypes = NULL;
-    currentFunction->paramCount = 0;
-}
+    void yyerror(const char *s) ;
 %}
 %union {
     int i;
@@ -45,14 +33,23 @@
     char *Dtype;
     SymbolTableEntry *symbolTableEntry;
 }
-
-%token POW NOT OR AND EQ NE LT LE GT GE ASSIGN LPAREN RPAREN LBRACE RBRACE SEMICOLON COLON MOD
-%token FOR WHILE REPEAT UNTIL
-%token IF ELSE SWITCH CASE BREAK DEFAULT
-%token SUB ADD DIV MUL
-%token INT_TYPE FLOAT_TYPE CHAR_TYPE VOID_TYPE CONST STRING_TYPE
+/* Logical operators */
+%token  NOT OR AND  
+/* Rel operators */
+%token EQ NE LT LE GT GE ASSIGN 
+/* General */
+%token LPAREN RPAREN LBRACE RBRACE SEMICOLON COLON 
 %token RETURN COMMA 
 %token ERROR
+/* Loops */
+%token FOR WHILE REPEAT UNTIL
+/* Conditional statements */
+%token IF ELSE SWITCH CASE BREAK DEFAULT
+/* Mathematical operations*/
+%token SUB ADD DIV MUL MOD POW
+/* DataTypes */
+%token INT_TYPE FLOAT_TYPE CHAR_TYPE VOID_TYPE CONST STRING_TYPE
+
 
 
 %token <s> INTEGER
@@ -61,16 +58,11 @@
 %token <s> ID
 %token <s> STRING
 
-// %type <i> EXP TERM FACTOR REL_EXP FINAL_EXP STMT ASSIGNMENT STMTS 
 %type <symbolTableEntry> FINAL_EXP REL_EXP BLOCK FOR_LOOP ASSIGNMENT_FOR_LOOP_END WHILE_LOOP REPEAT_UNTIL_LOOP MATCHED_IF UNMATCHED_IF LOGICAL_EXP
-%type <symbolTableEntry> EXP TERM FACTOR POWER //FUNCTION_STMTS
+%type <symbolTableEntry> EXP TERM FACTOR POWER 
 %type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION ASSIGNMENT_FORLOOP 
 %type <symbolTableEntry> FUNCTION_DEFINITION   PARAMS PARAM FUNCTION_BODY FUNCTION_PARAMS FUNCTION_PARAM FUNCTION_START VOID_FUNCTION_BODY FUNCTION_CALL
-// %type <symbolTableEntry> FOR_LOOP WHILE_LOOP REPEAT_UNTIL_LOOP SWITCH_CASE CASES CASE_BLOCK
-// %type <i> FUNCTION_DECL FUNCTION_BODY 
-%type <Dtype> PARAM_TYPE //RETURN_TYPE
-
-
+%type <Dtype> PARAM_TYPE 
 
 %%
 
@@ -78,7 +70,7 @@
 
 STMTS : STMTS STMT  { /* Handle multiple statements */ }
       | STMT        { /* Handle a single statement */ }
-      | ERROR       { fprintf(stderr, "Syntax error: Skipping invalid statement.\n"); yyerrok; }
+      | ERROR       { fprintf(stderr, "Syntax error: Skipping invalid statement.\n"); yyerror; }
       ;
       
 BLOCK : LBRACE {
@@ -163,7 +155,7 @@ FUNCTION_DEFINITION: FUNCTION_START
             semanticError("Function already declared in this scope");
         } else {
             addSymbol($2, "void", false,true);  // Add function to current scope 
-            initializeCurrentFunction($2, "void");
+            initializeCurrentFunction(&currentFunction,$2, "void");
         }
     }
     LPAREN FUNCTION_PARAMS RPAREN VOID_FUNCTION_BODY 
@@ -180,10 +172,7 @@ FUNCTION_DEFINITION: FUNCTION_START
         
          }
     STMTS
-    // RETURN 
-    // FINAL_EXP SEMICOLON   
     RBRACE  {
-        // currentFunction->returnVar = ($5)->name;
         addQuadrupleFunction(currentFunction,false);
         printf("function name: %s\n", currentFunction->name);
         functionDefinitions[functionsCount] = currentFunction;
@@ -204,7 +193,7 @@ VOID_FUNCTION_BODY:
         addQuadrupleFunction(currentFunction,true);
          }
     STMTS 
-    // RETURN SEMICOLON   
+   
     RBRACE  {
         addQuadrupleFunction(currentFunction,false);
         functionDefinitions[functionsCount] = currentFunction;
@@ -227,8 +216,7 @@ FUNCTION_PARAM: PARAM_TYPE ID {
     currentFunction->paramTypes = (char **)realloc(currentFunction->paramTypes, currentFunction->paramCount * sizeof(char *));
     currentFunction->paramNames[currentFunction->paramCount - 1] = strdup($2);
     currentFunction->paramTypes[currentFunction->paramCount - 1] = strdup($1); 
-    //TODO : ADD PARAMETERS TO SYMBOL TABLE IN THE FUNCTION SCOPE 
-    printf("Parameter %s of type %s\n", $2, $1);
+  
         }
         |
         ;
@@ -237,12 +225,11 @@ PARAMS: PARAMS COMMA PARAM
       | PARAM
       ;
 PARAM : PARAM_TYPE ID {
-            printf("Parameter %s of type %s\n", $2, $1);
+          
             SymbolTableEntry *entry = lookupSymbol($2);
             if (entry) {
                 semanticError("Variable already declared in this scope");
             } else {
-                printf("Parameter %s of type %s\n", $2, $1);
                 $$ = addSymbol($2, $1, false,false);  // Add variable to current scope
             }
             $$ = entry;
@@ -264,7 +251,7 @@ FUNCTION_START: PARAM_TYPE ID {
         semanticError("Function already declared in this scope");
     } else {
         addSymbol($2, $1, false,true);  // Add function to current scope 
-        initializeCurrentFunction($2, $1);
+        initializeCurrentFunction(&currentFunction,$2, $1);
     }
 }
 FUNCTION_CALL:  ID LPAREN FUNCTION_CALL_PARAMS RPAREN 
@@ -273,7 +260,6 @@ FUNCTION_CALL:  ID LPAREN FUNCTION_CALL_PARAMS RPAREN
         if (!entry) {
             semanticError("Function not declared in any scope");
         } else {
-            printf("functionsCount: %d\n", functionsCount);
             // for loop on the functionDefinitions array to find the function with the same name 
             for (int i = 0; i < functionsCount; i++) {
 
@@ -342,7 +328,6 @@ CASE_STMTS: CASE_STMT
 
 CASE_STMT: CASE INTEGER COLON 
     {
-    // if i!=1 goto label2
         SymbolTableEntry *switchVar = lookupSymbol(currentSwitchVar);
         SymbolTableEntry *caseVar = addSymbol($2, "int", false,false);
         SymbolTableEntry *condition = addQuadruple("EQ", switchVar, caseVar);
@@ -352,15 +337,14 @@ CASE_STMT: CASE INTEGER COLON
     }
     STMTS 
     {
-     // goto endLabel
-     // label2;
+    
         switchcaseQuadruple(NULL , nextLabel ,endLabel, false,false); 
     }
     BREAK SEMICOLON
     |
     CASE CHAR COLON 
     {
-    // if i!=1 goto label2
+  
         SymbolTableEntry *switchVar = lookupSymbol(currentSwitchVar);
         SymbolTableEntry *caseVar = addSymbol($2, "int", false,false);
         SymbolTableEntry *condition = addQuadruple("EQ", switchVar, caseVar);
@@ -370,8 +354,7 @@ CASE_STMT: CASE INTEGER COLON
     }
     STMTS 
     {
-     // goto endLabel
-     // label2;
+     
         switchcaseQuadruple(NULL , nextLabel ,endLabel, false,false); 
     }
     BREAK SEMICOLON
@@ -383,62 +366,21 @@ DEFAULT_STMT: DEFAULT COLON
         switchcaseQuadruple(NULL , endLabel ,endLabel, false,false); 
     }
     ;
-/*
-//switch case
-switch (i) {
-    case 1:
-        some code
-        break;
-    case 2:
-        some code
-        break;
-    default:
-        some code
-        break;
-}
----->
-if i==1 goto label1
-if i==2 goto label2
-goto label3
-label1:
-if i!=1 goto label2
-some code
-goto label4
-label2:
-if i!=2 goto label3
-some code
-goto label4
-label3:
-some code
-label4:
-*/
 
-/*
-for loop
-if  i>=6 goto label2
-label1: 
-some code
-if (i<6) goto label1
-label2:
-*/
 FOR_LOOP: FOR LPAREN ASSIGNMENT_FORLOOP SEMICOLON 
 {
-    Labels *labels = (Labels *)malloc(sizeof(Labels));
-    labels->loopLabel = newLabel();
-    labels->exitLabel = newLabel();
-    pushLabelStack(&labelStack, labels);  // Push labels onto the stack 
+    Labels *labels = createLabels(2);
+    push(&labelStack, labels); 
     addQuadrupleLabel(NULL, labels->loopLabel,NULL, true);
-
 }
 FINAL_EXP SEMICOLON
 {
             // Start a new scope for the loop
             
-            SymbolTableEntry *condition = $6; // Assuming FINAL_EXP returns a SymbolTableEntry*
-          
-            Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
+            SymbolTableEntry *condition = $6; 
+            Labels *labels = pop(labelStack); 
             addQuadrupleLabel(condition, labels->loopLabel, labels->exitLabel, true);
-            pushLabelStack(&labelStack, labels);  // Push labels onto the stack
+            push(&labelStack, labels);  
             
             
         }
@@ -450,8 +392,8 @@ FINAL_EXP SEMICOLON
         STMTS 
         RBRACE
         {   
-            Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
-            ForLoopAttributes *forLoopAttributes = popForLoopStack(forLoopStack);
+            Labels *labels = pop(labelStack);  
+            ForLoopAttributes *forLoopAttributes = pop(forLoopStack);
             SymbolTableEntry *operand1;
             SymbolTableEntry *operand2;
             operand1 = (SymbolTableEntry *)malloc(sizeof(SymbolTableEntry));
@@ -464,15 +406,12 @@ FINAL_EXP SEMICOLON
             addQuadruple("ASSIGN", operand1, operand2);
             free(forLoopAttributes);
             addQuadrupleLabel(NULL, labels->loopLabel, labels->exitLabel, false);
-            
             free(labels);
             exitScope();
         }
     ;
 ASSIGNMENT_FOR_LOOP_END : ID ASSIGN FINAL_EXP 
     { 
-        // Assign the value of EXP to the variable ID
-        // assign_var($1, $3); 
         bool isVoid = strcmp(($3)->type, "void") == 0;
                 if (isVoid) {
                     semanticError("void value cannot be assigned to a variable");
@@ -484,94 +423,61 @@ ASSIGNMENT_FOR_LOOP_END : ID ASSIGN FINAL_EXP
             if(entry->isTemp){
                 semanticError("Cannot assign a value to a function.");
             }
-            //check types before assigning
             if (strcmp(entry->type, ($3)->type) != 0) {
                 semanticError("Type mismatch in assignment");
             }
-            ForLoopAttributes *forLoopAttributes = (ForLoopAttributes *)malloc(sizeof(ForLoopAttributes));
             SymbolTableEntry *entry = lookupSymbol($1);
             if(!entry){ 
-                char message[256]; // Adjust the size as needed
+                char message[256];
                 sprintf(message, " Variable %s is not declared in the current scope",($1));
                 semanticError(message);
                 exit(1);
             }
-            forLoopAttributes->id = entry->name;
-            forLoopAttributes->id_type = entry->type;
-            forLoopAttributes->final_expression_result= ($3)->name;
-            forLoopAttributes->final_expression_result_type = ($3)->type;
-            pushForLoopStack(&forLoopStack, forLoopAttributes);
-           // $$ = addQuadruple("ASSIGN", entry, $3);
-           // updateSymbolValue($1, ($3)->value);
-            entry->isInitialized = 1;  // Mark the variable as initialized
+            ForLoopAttributes *forLoopAttributes = createForLoopAttributes(entry->name, ($3)->name, entry->type, ($3)->type);
+            push(&forLoopStack, forLoopAttributes);
+            entry->isInitialized = 1;  
         }
         $$ = $3;
     }            
 ;
-/*
-while (i<6) {
-    some code
-}
----->
-label1:
-if i>=6 goto label2
-some code
-goto label1
-label2:
-*/
+
 
 WHILE_LOOP: WHILE LPAREN 
 {
-    Labels *labels = (Labels *)malloc(sizeof(Labels));
-            labels->loopLabel = newLabel();
-            labels->exitLabel = newLabel();
-            pushLabelStack(&labelStack, labels);
+    Labels *labels = createLabels(2);
+            push(&labelStack, labels);
             addQuadrupleLabel(NULL, labels->loopLabel,NULL, true);
 }
 
 FINAL_EXP RPAREN LBRACE
    {
-            // Start a new scope for the loop
             enterScope();
-            SymbolTableEntry *condition = $4; // Assuming FINAL_EXP returns a SymbolTableEntry*
-            
-            Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
+            SymbolTableEntry *condition = $4; 
+            Labels *labels = pop(labelStack); 
             addQuadrupleLabel(condition, labels->loopLabel, labels->exitLabel, true);
-            pushLabelStack(&labelStack, labels);  // Push labels onto the stack
+            push(&labelStack, labels); 
         }
  STMTS RBRACE
      {   
-            Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
-           
+            Labels *labels = pop(labelStack);
             addQuadrupleLabel(NULL, labels->loopLabel, labels->exitLabel, false);
             free(labels);
             exitScope();
         }
 ;
-/* 
-repeat {
-    some code
-} until (i<6)
----->
-label1:
-some code
-if i<6 goto label1
-
-*/
 REPEAT_UNTIL_LOOP: REPEAT LBRACE 
 {
     enterScope();
-    Labels *labels = (Labels *)malloc(sizeof(Labels));
-    labels->loopLabel = newLabel();
+    Labels *labels = createLabels(1);
     
-    pushLabelStack(&labelStack, labels);  // Push labels onto the stack
+    push(&labelStack, labels); 
     addQuadrupleLabel(NULL, labels->loopLabel, NULL, true);
 }
 STMTS RBRACE
  UNTIL LPAREN FINAL_EXP 
  {
     SymbolTableEntry *condition = $8;
-    Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
+    Labels *labels = pop(labelStack);  
     addQuadrupleLabel(condition, labels->loopLabel, NULL, false);
     free(labels);
     exitScope();
@@ -579,113 +485,40 @@ STMTS RBRACE
  RPAREN SEMICOLON
     
 ;
-/*
-if (i>=6) {
-    some code
-} else {
-    some code
-} 
----->
-if i>=6 goto label1
-some code
-goto label2
-label1:
-some code
-label2:
-*/
-// MATCHED_IF: 
-//     IF LPAREN FINAL_EXP RPAREN LBRACE MATCHED_IF RBRACE ELSE LBRACE MATCHED_IF RBRACE
-//     {
-
-      
-//     }
-//   | STMTS
-//     {
-       
-//     }
-// ;
-
-/*
-if (i>=6) {
-    some code1
-}
-else {
-    some code2
-}
----->
-
-if i>=6 goto label1
-some code2
-goto label2
-label1:
-some code1
-label2:
-*/
 
 MATCHED_IF : 
 UNMATCHED_IF
 ELSE LBRACE
     {
         enterScope();
-        //go to end
-        Labels *labels = (Labels *)malloc(sizeof(Labels));
-        labels->exitLabel = newLabel();
+        Labels *labels = createLabels(0);
         matchedIfQuadruple( labels->exitLabel, true);
-        pushLabelStack(&labelStack, labels);  
+        push(&labelStack, labels);  
     }
-    STMTS RBRACE   //stmts is somecode2
+    STMTS RBRACE   
     {
-        Labels *labels = popLabelStack(labelStack);  
+        Labels *labels = pop(labelStack);  
         matchedIfQuadruple( labels->exitLabel, false);
         free(labels);
         exitScope();
     }
     ; 
-/*
-unmatched if  
-if (i>=6) {
-    some code
-}
----->
-if i>=6 goto label1
-goto label2
-label1:
-some code
-label2:
-*/
-/*
-if i>=6 goto label1
-some code2
-goto label2
-label1:
-some code1
-label2:
-*/
+
 UNMATCHED_IF:
     IF LPAREN FINAL_EXP RPAREN LBRACE
     {
-        // Start a new scope for the if block
         enterScope();
-        SymbolTableEntry *condition = $3; // Assuming FINAL_EXP returns a SymbolTableEntry*
-        Labels *labels = (Labels *)malloc(sizeof(Labels));
-        labels->loopLabel = newLabel();
-        labels->exitLabel = newLabel();
+        SymbolTableEntry *condition = $3; 
+        Labels *labels = createLabels(2);
         unmatchedIfQuadruple(condition, labels->loopLabel, labels->exitLabel, true);
-        pushLabelStack(&labelStack, labels);  // Push labels onto the stack
-
+        push(&labelStack, labels);  
     } STMTS RBRACE
     {
-        Labels *labels = popLabelStack(labelStack);  // Pop labels from the stack
+        Labels *labels = pop(labelStack);  
         unmatchedIfQuadruple(NULL, labels->loopLabel, labels->exitLabel, false);
         free(labels);
         exitScope();
     }
-    // |
-    // IF LPAREN FINAL_EXP RPAREN STMT
-    // {
-    //     SymbolTableEntry *condition = $3;
-    //     unmatchedIfQuadruple(condition, NULL, NULL, true);
-    // }
 ; 
 ASSIGNMENT : ID ASSIGN FINAL_EXP SEMICOLON
     { 
@@ -722,9 +555,7 @@ ASSIGNMENT : ID ASSIGN FINAL_EXP SEMICOLON
 
 ASSIGNMENT_FORLOOP : ID ASSIGN FINAL_EXP 
     { 
-        printf("hebaaaaaaaaa");
-        // Assign the value of EXP to the variable ID
-        // assign_var($1, $3); 
+      
         bool isVoid = strcmp(($3)->type, "void") == 0;
                 if (isVoid) {
                     semanticError("void value cannot be assigned to a variable");
@@ -744,14 +575,11 @@ ASSIGNMENT_FORLOOP : ID ASSIGN FINAL_EXP
             
             $$ = addQuadruple("ASSIGN", entry, $3);
             updateSymbolValue($1, ($3)->value);
-            entry->isInitialized = 1;  // Mark the variable as initialized
+            entry->isInitialized = 1;  
         }
         $$ = $3;
     }            
 ;
-
-
-
 FINAL_EXP : LOGICAL_EXP 
             { $$ = $1; 
             if(currentFunction){
@@ -865,8 +693,6 @@ FACTOR : LPAREN FINAL_EXP RPAREN
         }
        | ID                  
         { 
-            // TODO: understand this errors 
-            // Look up the variable in the symbol table
             SymbolTableEntry *entry = lookupSymbol($1);
             if (!entry) {
                 char errorMsg[256];
@@ -881,8 +707,8 @@ FACTOR : LPAREN FINAL_EXP RPAREN
                         semanticError("Variable used before initialization");
                     }
                 }
-                entry->isUsed = 1;  // Mark the variable as used
-                $$ = lookupSymbol($1);  // Retrieve its runtime value
+                entry->isUsed = 1;      
+                $$ = lookupSymbol($1);  
                 printf("Variable '%s' of type '%s' used at line %d. Value: %f\n", $1, entry->type, yylineno, $$);                   }
         }
         |  FUNCTION_CALL 
@@ -896,7 +722,6 @@ FACTOR : LPAREN FINAL_EXP RPAREN
             }
        ;
 %% 
-
 void yyerror(const char *s) {
     FILE *errorFile = fopen("syntax_err.txt", "a");
     if (errorFile == NULL) {
@@ -907,16 +732,6 @@ void yyerror(const char *s) {
     fclose(errorFile);
     fprintf(stderr, "Syntax error: %s at line %d\n", s, yylineno);
 }
-
-void clearFile(const char *filename) {
-        FILE *file = fopen(filename, "w");
-        if (file == NULL) {
-            fprintf(stderr, "Error opening %s for writing!\n", filename);
-            return;
-        }
-        fclose(file);
-    }
-
 int main(int argc, char **argv) {
 
     if (argc > 1) {
@@ -926,12 +741,12 @@ int main(int argc, char **argv) {
             return 1;
         }
     } 
-    
     clearFile("syntax_err.txt");
     clearFile("semantic_err.txt");
     clearFile("quadruples.txt");
     clearFile("symbol_table.txt");
-
+    labelStack = createStack();
+    forLoopStack = createStack();
     if (yyparse() == 0) {
         printf("Parsing successful\n");
         printQuadruples();

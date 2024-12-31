@@ -1,8 +1,40 @@
 {
-    int bolo1;
-    int bolo2;
-    bolo1=0;
-    bolo2=1;
-    bresult = !((bolo1 || !bolo1) && bolo1 || bolo2 != (bolo1 < bolo2));
+int sum(int x, int y)
+{
+  return x + y;
+}
+int x;
+x = 1;
+void fun(){
+    int res;
+    if (x>7)
+    {
+        res = 7;
+    }
+    else
+    {if (x < 4) {
+        res = 8;
+    }
+    else{
+        res = 10;
+    }}
+}
+
+# MAGNONA:   COMBO EXPRESSION TEST
+int paramChecker(string str, float ff , char c){
+    if (ff > 7.5)
+    {
+        int i;
+        for ( i = 0; i < 10; i = i+1)
+        {
+            int b;
+             fun();
+        }
+        return 8;
+    }
+    else{
+        return 10;
+    }
+}
 
 }

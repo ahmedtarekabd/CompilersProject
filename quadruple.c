@@ -296,18 +296,7 @@ void printFileContents(const char *filename)
     }
     fclose(file);
 }
-void semanticError(const char *s)
-{
-    FILE *errorFile = fopen("semantic_err.txt", "a");
-    if (errorFile == NULL)
-    {
-        fprintf(stderr, "Error opening semantic_err.txt for writing!\n");
-        return;
-    }
-    fprintf(errorFile, "Semantic error: %s at line %d\n", s, yylineno);
-    fclose(errorFile);
-    fprintf(stderr, "Semantic error: %s at line %d\n", s, yylineno);
-}
+
 void handleTypeConversion(const char *fromType, const char *toType, const char *varName)
 {
     char message[256];

@@ -1,1 +1,4 @@
-Semantic error: Variable 'bresult' not declared in the current scope at line 6
+Unused variable: res in scope 2
+Unused variable: c in scope 7
+Unused variable: str in scope 7
+Unused variable: b in scope 9

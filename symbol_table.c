@@ -1,29 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
+
 #include "symbol_table.h"
+
 Scope *currentScope = NULL;  // Pointer to the current (innermost) scope
-int tempCounter = 0;
+extern int tempCounter;
 Scope *allScopes[1000];  // Array to keep track of all scopes
 int scopeCount = 0;    
-
-char *newTemp() {
-    static char tempName[16]   ;    
-    snprintf(tempName, sizeof(tempName), "t%d", tempCounter++);
-    printf("Creating new temp: %s\n", tempName);
-    return tempName;
-}
-char* newLabel() {
-    static int labelCounter = 0; // Counter to ensure uniqueness
-    char* label = (char*)malloc(20 * sizeof(char)); // Allocate memory for the label
-    if (!label) {
-        fprintf(stderr, "Memory allocation failed for newLabel.\n");
-        exit(1);
-    }
-    snprintf(label, 20, "L%d", labelCounter++); // Create label in the format L0, L1, L2, ...
-    return label;
-}
 
 void enterScope() {
     printf("Entering new scope...\n");
