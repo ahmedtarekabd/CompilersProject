@@ -1,3 +1,1 @@
-Semantic error: Variable used before initialization at line 14
-Unused variable: j in scope 0
-Unused variable: coco in scope 0
+Semantic error: Function already declared in this scope at line 9

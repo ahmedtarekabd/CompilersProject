@@ -697,6 +697,11 @@ ASSIGNMENT : ID ASSIGN FINAL_EXP SEMICOLON
             }
             semanticError(errorMsg);
         } else {
+
+            if (entry->isTemp) {
+                semanticError("Cannot assign a value to a function.");
+            }
+
             if (strcmp(($3)->type, "void") == 0) {
                 semanticError("void value cannot be assigned to a variable");
             }
@@ -879,6 +884,7 @@ FACTOR : LPAREN FINAL_EXP RPAREN
             }
        ;
 %% 
+
 void yyerror(const char *s) {
     FILE *errorFile = fopen("syntax_err.txt", "a");
     if (errorFile == NULL) {
@@ -889,17 +895,8 @@ void yyerror(const char *s) {
     fclose(errorFile);
     fprintf(stderr, "Syntax error: %s at line %d\n", s, yylineno);
 }
-/* void semanticError(const char *s) {
-    FILE *errorFile = fopen("semantic_err.txt", "a");
-    if (errorFile == NULL) {
-        fprintf(stderr, "Error opening semantic_err.txt for writing!\n");
-        return;
-    }
-    fprintf(errorFile, "Semantic error: %s at line %d\n", s, yylineno);
-    fclose(errorFile);
-    fprintf(stderr, "Semantic error: %s at line %d\n", s, yylineno);
-} */
- void clearFile(const char *filename) {
+
+void clearFile(const char *filename) {
         FILE *file = fopen(filename, "w");
         if (file == NULL) {
             fprintf(stderr, "Error opening %s for writing!\n", filename);
@@ -907,6 +904,7 @@ void yyerror(const char *s) {
         }
         fclose(file);
     }
+
 int main(int argc, char **argv) {
 
     if (argc > 1) {
