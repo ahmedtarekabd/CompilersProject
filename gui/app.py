@@ -69,6 +69,9 @@ def display_files(files_to_display: list[str]):
                     for key in keys:
                         pattern = re.compile(rf"(?<={key}:\s).+?(?=\b)")
                         data[key] = pattern.findall(file_content)
+                        # Remove empty key-values
+                        if len(data[key]) == 0:
+                            del data[key]
                     df = pd.DataFrame(data)
                     st.table(df)
                 else:
