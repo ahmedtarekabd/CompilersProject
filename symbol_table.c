@@ -118,10 +118,30 @@ void writeSymbolTableOfCurrentScopeToFile()
     }
     fclose(file);
 }
+// write the symbol table of all scopes to a file with the number of the scope
+void writeSymbolTableOfAllScopesToFile()
+{
+    FILE *file = fopen("symbol_table.txt", "w");
+    if (!file) {
+        fprintf(stderr, "Error: Could not open file for writing.\n");
+        return;
+    }
+    for (int i = 0; i < scopeCount; i++) {
+        // fprintf(file, "Scope %d\n", i);
+        SymbolTableEntry *entry = allScopes[i]->symbols;
+        while (entry) {
+            fprintf(file, "Scope: %d, Symbol: %s, Type: %s, Initialized: %d, Value: %f\n", 
+                i,
+                   entry->name, entry->type, entry->isInitialized, entry->value);
+            entry = entry->next;
+        }
+    }
+    fclose(file);
+}
 
 void exitScope() {
     Scope *oldScope = currentScope;
-    writeSymbolTableOfCurrentScopeToFile();
+    // writeSymbolTableOfCurrentScopeToFile();
     currentScope = currentScope->parent;
     //free(oldScope);
     //oldScope = NULL;

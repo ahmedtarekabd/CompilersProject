@@ -63,7 +63,7 @@ def display_files(files_to_display: list[str]):
                 st.markdown(f"### {file_name}")
                 if file_name == "symbol_table.txt":
                     # Display symbol_table.txt as a table
-                    keys = ["Symbol", "Type", "Initialized"]
+                    keys = ["Scope", "Symbol", "Type", "Initialized"]
                     data = {}
                     file_content = file.read()
                     for key in keys:
