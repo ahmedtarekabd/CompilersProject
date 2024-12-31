@@ -85,10 +85,10 @@ void initializeCurrentFunction(FunctionDef **currentFunction, const char *name, 
 }
 void semanticError(const char *s)
 {
-    FILE *errorFile = fopen("semantic_err.txt", "a");
+    FILE *errorFile = fopen("output_files/semantics.txt", "a");
     if (errorFile == NULL)
     {
-        fprintf(stderr, "Error opening semantic_err.txt for writing!\n");
+        fprintf(stderr, "Error opening output_files/semantics.txt for writing!\n");
         return;
     }
     fprintf(errorFile, "Semantic error: %s at line %d\n", s, yylineno);

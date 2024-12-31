@@ -7,9 +7,7 @@
     #include"utils/helper_functions.h"
     #include"utils/generic_stack.h"
     #include"utils/data_structures.h"
-    /* Functions */
-    int yylex(void);
-
+    
     /* Globals */ 
     extern FILE *yyin;
     char *currentSwitchVar;
@@ -23,6 +21,8 @@
     /* For function calls */
     SymbolTableEntry * currentFunctionParams[100];
     int currentFunctionParamsCount = 0;
+    /* Functions */
+    int yylex(void);
     void yyerror(const char *s) ;
 %}
 %union {
@@ -420,7 +420,7 @@ ASSIGNMENT_FOR_LOOP_END : ID ASSIGN FINAL_EXP
         if (!entry) {
             semanticError("Variable not declared in any scope");
         } else {
-            if(entry->isTemp){
+            if(entry->isTempVarOrFunction){
                 semanticError("Cannot assign a value to a function.");
             }
             if (strcmp(entry->type, ($3)->type) != 0) {
@@ -533,7 +533,7 @@ ASSIGNMENT : ID ASSIGN FINAL_EXP SEMICOLON
             semanticError(errorMsg);
         } else {
 
-            if (entry->isTemp) {
+            if (entry->isTempVarOrFunction) {
                 semanticError("Cannot assign a value to a function.");
             }
 
@@ -565,7 +565,7 @@ ASSIGNMENT_FORLOOP : ID ASSIGN FINAL_EXP
         if (!entry) {
             semanticError("Variable not declared in any scope");
         } else {
-            if(entry->isTemp){
+            if(entry->isTempVarOrFunction){
                 semanticError("Cannot assign a value to a function.");
             }
             //check types before assigning
@@ -700,7 +700,7 @@ FACTOR : LPAREN FINAL_EXP RPAREN
                 semanticError(errorMsg);
             } else {
                 if (!entry->isInitialized && !entry->isUsed ) {
-                    if(entry->isTemp){
+                    if(entry->isTempVarOrFunction){
                         yyerror("Invalid function call , missing parenthesis ");
                     }else{
 
@@ -723,9 +723,9 @@ FACTOR : LPAREN FINAL_EXP RPAREN
        ;
 %% 
 void yyerror(const char *s) {
-    FILE *errorFile = fopen("syntax_err.txt", "a");
+    FILE *errorFile = fopen("output_files/syntax_err.txt", "a");
     if (errorFile == NULL) {
-        fprintf(stderr, "Error opening syntax_err.txt for writing!\n");
+        fprintf(stderr, "Error opening output_files/syntax_err.txt for writing!\n");
         return;
     }
     fprintf(errorFile, "Syntax error: %s at line %d\n", s, yylineno);
@@ -741,10 +741,10 @@ int main(int argc, char **argv) {
             return 1;
         }
     } 
-    clearFile("syntax_err.txt");
-    clearFile("semantic_err.txt");
-    clearFile("quadruples.txt");
-    clearFile("symbol_table.txt");
+    clearFile("output_files/syntax_err.txt");
+    clearFile("output_files/semantics.txt");
+    clearFile("output_files/quadruples.txt");
+    clearFile("output_files/symbol_table.txt");
     labelStack = createStack();
     forLoopStack = createStack();
     if (yyparse() == 0) {

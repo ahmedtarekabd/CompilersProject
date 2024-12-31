@@ -61,8 +61,8 @@ def display_files(files_to_display: list[str]):
         if os.path.exists(file_path):
             with open(file_path, "r") as file:
                 st.markdown(f"### {file_name}")
-                if file_name == "symbol_table.txt":
-                    # Display symbol_table.txt as a table
+                if file_name == "output_files/symbol_table.txt":
+                    # Display output_files/symbol_table.txt as a table
                     keys = ["Scope", "Symbol", "Type", "Initialized"]
                     data = {}
                     file_content = file.read()
@@ -147,7 +147,7 @@ if uploaded_file:
         # st.text(compile_output)
         st.markdown("---")
         # Display the content of the four txt files
-        files_to_display = ["quadruples.txt", "symbol_table.txt", "semantic_err.txt", "syntax_err.txt"]
+        files_to_display = ["output_files/quadruples.txt", "output_files/symbol_table.txt", "output_files/semantics.txt", "output_files/syntax_err.txt"]
         display_files(files_to_display)
 
 

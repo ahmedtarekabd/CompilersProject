@@ -225,7 +225,7 @@ void printQuadruples()
 // function to write one quadruple to a file
 void writeQuadrupleToFile(int i)
 {
-    FILE *file = fopen("quadruples.txt", "a");
+    FILE *file = fopen("output_files/quadruples.txt", "a");
     if (file == NULL)
     {
         fprintf(stderr, "Error opening file!\n");
@@ -241,7 +241,7 @@ void writeQuadrupleToFile(int i)
 }
 void writeCommandToFile(char *command)
 {
-    FILE *file = fopen("quadruples.txt", "a");
+    FILE *file = fopen("output_files/quadruples.txt", "a");
     if (file == NULL)
     {
         fprintf(stderr, "Error opening file!\n");
@@ -252,7 +252,7 @@ void writeCommandToFile(char *command)
 }
 void insertCommandBeforeEnd(const char *command)
 {
-    FILE *file = fopen("quadruples.txt", "r");
+    FILE *file = fopen("output_files/quadruples.txt", "r");
     if (file == NULL)
     {
         fprintf(stderr, "Error opening file!\n");
@@ -267,7 +267,7 @@ void insertCommandBeforeEnd(const char *command)
         i++;
     }
     fclose(file);
-    file = fopen("quadruples.txt", "w");
+    file = fopen("output_files/quadruples.txt", "w");
     if (file == NULL)
     {
         fprintf(stderr, "Error opening file!\n");

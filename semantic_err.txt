@@ -1,4 +1,0 @@
-Unused variable: res in scope 2
-Unused variable: c in scope 7
-Unused variable: str in scope 7
-Unused variable: b in scope 9

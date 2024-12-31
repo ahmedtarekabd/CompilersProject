@@ -18,13 +18,13 @@ void enterScope() {
     printf("Scope count inside enterScope: %d\n", scopeCount);
 }
 
-SymbolTableEntry *addSymbol(char *name, char *type, bool isConst,bool isTemp ) {
+SymbolTableEntry *addSymbol(char *name, char *type, bool isConst,bool isTempVarOrFunction ) {
     SymbolTableEntry *entry = (SymbolTableEntry *)malloc(sizeof(SymbolTableEntry));
     entry->name = strdup(name);
     entry->type = strdup(type);
     entry->isConst = isConst;
     entry->isInitialized = 0;
-    entry->isTemp = isTemp;
+    entry->isTempVarOrFunction = isTempVarOrFunction;
     entry->isUsed = 0;
     entry->value = 0.0;  // Initialize value to 0
     entry->next = currentScope->symbols;
@@ -75,48 +75,33 @@ int updateSymbolValue(char *name, float value) {
     return 1;  // Successfully updated
 }
 
-void displayScope() {
-    SymbolTableEntry *entry = currentScope->symbols;
-    while (entry) {
-        printf("Symbol: %s, Type: %s, Initialized: %d, Value: %f\n", 
-               entry->name, entry->type, entry->isInitialized, entry->value);
-        entry = entry->next;
-    }
-}
-
-void writeSymbolTableOfCurrentScopeToFile()
-{
-    FILE *file = fopen("symbol_table.txt", "a");
-    if (!file) {
-        fprintf(stderr, "Error: Could not open file for writing.\n");
-        return;
-    }
-    SymbolTableEntry *entry = currentScope->symbols;
-    while (entry) {
-        fprintf(file, "Symbol: %s, Type: %s, Initialized: %d, Value: %f\n", 
-               entry->name, entry->type, entry->isInitialized, entry->value);
-        entry = entry->next;
-    }
-    fclose(file);
-}
 // write the symbol table of all scopes to a file with the number of the scope
 void writeSymbolTableOfAllScopesToFile()
 {
-    FILE *file = fopen("symbol_table.txt", "w");
+    FILE *file = fopen("output_files/symbol_table.txt", "w");
     if (!file) {
         fprintf(stderr, "Error: Could not open file for writing.\n");
         return;
     }
+
+    // Print table header
+    fprintf(file, "+-------+----------------+--------+-------------+---------+------------+\n");
+    fprintf(file, "| Scope | Symbol         | Type   | Initialized | Value   | Is Temp    |\n");
+    fprintf(file, "+-------+----------------+--------+-------------+---------+------------+\n");
+
     for (int i = 0; i < scopeCount; i++) {
-        // fprintf(file, "Scope %d\n", i);
         SymbolTableEntry *entry = allScopes[i]->symbols;
         while (entry) {
-            fprintf(file, "Scope: %d, Symbol: %s, Type: %s, Initialized: %d, Value: %f\n", 
+            fprintf(file, "| %-5d | %-14s | %-6s | %-11d | %-7.2f | %-10d |\n",
                 i,
-                   entry->name, entry->type, entry->isInitialized, entry->value);
+                entry->name, entry->type, entry->isInitialized, entry->value, entry->isTempVarOrFunction);
             entry = entry->next;
         }
     }
+
+    // Print table footer
+    fprintf(file, "+-------+----------------+--------+-------------+---------+------------+\n");
+
     fclose(file);
 }
 
@@ -128,7 +113,7 @@ void exitScope() {
     //oldScope = NULL;
 }
 void checkUnusedVariables() {
-    FILE *file = fopen("semantic_err.txt", "a");
+    FILE *file = fopen("output_files/semantics.txt", "a");
     if (!file) {
         fprintf(stderr, "Error: Could not open file for writing.\n");
         return;
@@ -138,7 +123,7 @@ void checkUnusedVariables() {
     for (int i = 0; i < scopeCount; i++) {
         SymbolTableEntry *entry = allScopes[i]->symbols;
         while (entry) {
-            if (!entry->isTemp&&!entry->isUsed) {
+            if (!entry->isTempVarOrFunction&&!entry->isUsed) {
                fprintf(file, "Unused variable: %s in scope %d\n", entry->name, i);
                 printf("Unused variable: %s in scope %d\n", entry->name, i);
             }

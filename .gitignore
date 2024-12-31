@@ -9,10 +9,10 @@ lex.yy.c
 Parser.tab.c
 Parser.tab.h
 compiler.exe
-symbol_table.txt
-quadruples.txt
-syntax_err.txt 
-semantic_err.txt
+output_files/symbol_table.txt
+output_files/quadruples.txt
+output_files/syntax_err.txt 
+output_files/semantics.txt
 Parser.output
 compiler.exe
 
@@ -20,8 +20,8 @@ compiler.exe
 *~
 *.bak
 
-# Ignore quadruples.txt
-quadruples.txt
+# Ignore output_files/quadruples.txt
+output_files/quadruples.txt
 
 # GUI
 env/

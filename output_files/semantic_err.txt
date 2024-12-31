@@ -1,2 +1,0 @@
-Semantic error: Function return type does not match at line 17
-Semantic error: Type mismatch in assignment at line 23
