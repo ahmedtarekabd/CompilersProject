@@ -5,10 +5,10 @@ Quadruple quadruples[MAX_QUADRUPLES];
 int quadIndex = 0;
 // Function to add a quadruple to the array
 SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, SymbolTableEntry *operand2)
-{    char * operand1_name = operand1->name;
+{   char * operand1_name = operand1->name;
     char * operand1_type = operand1->type;
-    char * operand2_name = operand2->name;
-    char * operand2_type = operand2->type;
+    char * operand2_name = operand2? operand2->name : NULL;
+    char * operand2_type = operand2? operand2->type : NULL;
     // Generate a new temporary variable for the result
     char *result = newTemp();
     // printf("Adding quadruple: (%s, %s, %s, %s)\n", operat, operand1->name, operand2->name, result);
@@ -57,13 +57,6 @@ SymbolTableEntry *addQuadruple(const char *operat, SymbolTableEntry *operand1, S
     char *varType;
     char *operand_name;
     char *message;
-    // CHECK FOR IMPILICIT TYPE CONVERSION
-    printf("adding quadruple\n");
-    printf("operand1 name: %s\n", operand1_name);
-    printf("operand1 type: %s\n", operand1_type);
-    printf("operand2 name: %s\n", operand2_name);
-    printf("operand2 type: %s\n", operand2_type);
-    
     if (operand2)
     if (strcmp(operand1_type, operand2_type) == 0)
     {   

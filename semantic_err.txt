@@ -1,2 +1,1 @@
-Semantic error: Cannot assign a value to a function. at line 10
-Unused variable: x in scope 0
+Semantic error: Variable 'bresult' not declared in the current scope at line 6
