@@ -33,11 +33,22 @@ def run_make():
         subprocess.run(["flex", "Lexer.l"], check=True, cwd=FLEX_BISON_DIR)
         subprocess.run(["bison", "-d", "Parser.y"], check=True, cwd=FLEX_BISON_DIR)
         # Compile generated C files into compiler.exe
-        subprocess.run(
-            ["gcc", ".\Parser.tab.c", "utils\\generic_stack.c", "symbol_table.c", "utils\\helper_functions.c", "utils\\data_structures.h", "lex.yy.c", "quadruple.c", "-o", "compiler.exe"],
-            check=True,
-            cwd=FLEX_BISON_DIR,
-        )
+        gcc_command = [
+            "gcc",
+            "./Parser.tab.c",
+            "utils/generic_stack.c",
+            "symbol_table.c",
+            "utils/helper_functions.c",
+            "utils/data_structures.h",
+            "lex.yy.c",
+            "quadruple.c",
+            "-o",
+            "compiler.exe"
+        ]
+        if os.name == 'nt':  # If the system is Windows
+            gcc_command = [cmd.replace("/", "\\") for cmd in gcc_command]
+        
+        subprocess.run(gcc_command, check=True, cwd=FLEX_BISON_DIR)
         return "Make process completed successfully."
     except subprocess.CalledProcessError as e:
         return f"Error during make: {e}"
