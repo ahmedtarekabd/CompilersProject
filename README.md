@@ -4,10 +4,15 @@
 
 This project is a compiler for a custom programming language called `Not C++`.Written in lex , yacc The language closely resembles C but with specific modifications and restrictions. The compiler translates the source code written in `Not C++` into intermediate quadruples, which can be further processed or executed.
 The compiler is written using **Lex** and **Yacc** for defining lexical and grammar rules. The grammar is designed to have **zero shift/reduce and reduce/reduce conflicts**.
+
+---
+
 ## Features
 
 - **Variable and Constants Declarations**: Variables must be declared and initialized in separate statements.
+
   - Example:
+
     ```c
     int x;
     x = 1; // Correct
@@ -16,6 +21,7 @@ The compiler is written using **Lex** and **Yacc** for defining lexical and gram
     ```
 
 - **Mathematical Operations**: Supports addition, subtraction, multiplication, division, modulus, and negation.
+
   - Example:
     ```c
     int a = 5;
@@ -29,6 +35,7 @@ The compiler is written using **Lex** and **Yacc** for defining lexical and gram
     ```
 
 - **Relational Operators**: Supports `<`, `>`, `<=`, `>=`, `==`, `!=`.
+
   - Example:
     ```c
     int a = 5;
@@ -42,6 +49,7 @@ The compiler is written using **Lex** and **Yacc** for defining lexical and gram
     ```
 
 - **Logical Operations**: Supports `AND`, `OR`, `NOT`.
+
   - Example:
     ```c
     int a = 1; // true
@@ -58,7 +66,9 @@ The compiler is written using **Lex** and **Yacc** for defining lexical and gram
     ```
 
 - **Implicit Casting**: Supported.
+
   - Example:
+
     ```c
     int x = 5;
     float y = 3.2;
@@ -70,7 +80,9 @@ The compiler is written using **Lex** and **Yacc** for defining lexical and gram
     ```
 
 - **Loops**: Supports infinitely nested `while`, `for`, and `repeat-until` loops.
+
   - Example:
+
     ```c
     int i = 0;
     while (i < 10) {
@@ -90,7 +102,9 @@ The compiler is written using **Lex** and **Yacc** for defining lexical and gram
     ```
 
 - **Conditional Statements**: Supports infinitely nested `if-else`, `if-else` and one level `switch` statements.
+
   - Example:
+
     ```c
     int a = 5;
     if (a > 3) {
@@ -111,8 +125,11 @@ The compiler is written using **Lex** and **Yacc** for defining lexical and gram
             break;
     }
     ```
+
 - **Functions**: Supports function definitions and calls with restrictions.
+
   - Example:
+
     ```c
     int add(int x, int y) {
         return x + y;
@@ -123,8 +140,11 @@ The compiler is written using **Lex** and **Yacc** for defining lexical and gram
         return 0;
     }
     ```
-## Sample Input 
+
 ---
+
+## Sample Input
+
 ```c
 {
     int i;
@@ -145,19 +165,23 @@ The compiler is written using **Lex** and **Yacc** for defining lexical and gram
     }
 }
 ```
-## Sample Output 
+
 ---
+
+## Sample Output
+
 ### quadruples
+
 ```
 ASSIGN  i  0 :=t0
-int proc sum 
+int proc sum
 return 0
 
-void proc print 
+void proc print
 return
 EQ  x  0 :=t1
 if t1 goto L0
-goto L1 
+goto L1
 L0:
 ASSIGN  i  0 :=t2
 L2:
@@ -173,7 +197,9 @@ L3:
 L1:
 
 ```
+
 ### Symbol Table
+
 ```
 +-------+----------------+--------+-------------+---------+------------+
 | Scope | Symbol         | Type   | Initialized | Value   | Is Func    |
@@ -188,7 +214,54 @@ L1:
 +-------+----------------+--------+-------------+---------+------------+
 
 ```
-### Semantics 
+
+### Semantics
+
 - Semantic error: Variable used before initialization at line 11
 - Semantic error: void value cannot be assigned to a variable at line 15
-- Warning       : Unused variable: y in scope 0
+- Warning : Unused variable: y in scope 0
+
+---
+
+# Requirements
+
+- **Flex** and **Bison** should be installed on the system. (For both CLI and GUI)
+- **Python** should be installed on the system. (For GUI)
+
+---
+
+# How to Run
+
+## Using CLI - Makefile
+
+- Run the following command to compile the code:
+
+  ```bash
+  make
+  ```
+
+- Run the following command to execute the code:
+
+  ```bash
+  ./compiler.exe <file_path> # Example: ./compiler.exe testcases/forloop.txt
+  ```
+
+## Using GUI
+
+### Local
+
+Run the following command to start the server:
+
+```bash
+python -m venv venv
+source venv/bin/activate # For Linux
+venv\Scripts\activate # For Windows
+pip install -r requirements.txt
+streamlit run gui/app.py
+```
+
+### Remote
+
+- The GUI is hosted on Streamlit. You can access it using the following link:
+
+  [Not C++ Compiler](https://not-cpp-compiler.streamlit.app/)
