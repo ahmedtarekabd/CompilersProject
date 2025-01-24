@@ -34,7 +34,7 @@ def run_make():
         subprocess.run(["bison", "-d", "Parser.y"], check=True, cwd=FLEX_BISON_DIR)
         # Compile generated C files into compiler.exe
         subprocess.run(
-            ["gcc", "-o", "compiler.exe", "Parser.tab.c", "lex.yy.c", "symbol_table.c", "quadruple.c", "utils\\for_loop_stack.c", "utils\\label_stack.c", "-lm"],
+            ["gcc", ".\Parser.tab.c", "utils\\generic_stack.c", "symbol_table.c", "utils\\helper_functions.c", "utils\\data_structures.h", "lex.yy.c", "quadruple.c", "-o", "compiler.exe"],
             check=True,
             cwd=FLEX_BISON_DIR,
         )
@@ -62,16 +62,24 @@ def display_files(files_to_display: list[str]):
             with open(file_path, "r") as file:
                 st.markdown(f"### {file_name}")
                 if file_name == "symbol_table.txt":
-                    # Display output_files/symbol_table.txt as a table
-                    keys = ["Scope", "Symbol", "Type", "Initialized"]
+                    # Display symbol_table.txt as a table
                     data = {}
                     file_content = file.read()
-                    for key in keys:
-                        pattern = re.compile(rf"(?<={key}:\s).+?(?=\b)")
-                        data[key] = pattern.findall(file_content)
-                        # Remove empty key-values
-                        if len(data[key]) == 0:
-                            del data[key]
+
+                    # Remove horizontal lines
+                    file_content = re.sub(r"(\+-+)+\+\n", "", file_content)
+                    # Split into lines
+                    lines = re.split(r"\n", file_content)
+                    # Extract keys from the first line
+                    keys = [x.group().strip() for x in re.finditer(r"(?<=\|)[\w\s'\"]+(?=\|)", lines[0])]
+                    # Rejoin & Remove the first line
+                    file_content = "\n".join(lines[1:])
+                    # Extract values
+                    values = [x.group().strip() for x in re.finditer(r"(?<=\|)[\w\s.'\"]+(?=\|)", file_content) if x.group().strip()]
+
+                    # Formate the data as a dictionary
+                    for i, key in enumerate(keys):
+                        data[key] = [values[j] for j in range(i, len(values), len(keys))]
                     df = pd.DataFrame(data)
                     st.table(df)
                 else:
