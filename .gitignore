@@ -20,9 +20,6 @@ compiler.exe
 *~
 *.bak
 
-# Ignore output_files/quadruples.txt
-output_files/quadruples.txt
-
 # GUI
 env/
 temp_files/
