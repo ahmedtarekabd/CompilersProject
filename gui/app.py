@@ -14,6 +14,8 @@ TEMP_DIR = os.path.join(WORK_DIR, "temp_files")
 
 # Ensure the temporary directory exists
 os.makedirs(TEMP_DIR, exist_ok=True)
+# Ensure the output_files directory exists
+os.makedirs(OUTPUT_FILES_DIR, exist_ok=True)
 
 # Function to save the uploaded file to a temporary location
 def save_uploaded_file(uploaded_file):
