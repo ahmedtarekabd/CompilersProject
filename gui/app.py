@@ -11,6 +11,7 @@ FLEX_BISON_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTPUT_FILES_DIR = os.path.join(FLEX_BISON_DIR, "output_files")
 WORK_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMP_DIR = os.path.join(WORK_DIR, "temp_files")
+IS_WINDOWS_SYS = os.name == 'nt'
 
 # Ensure the temporary directory exists
 os.makedirs(TEMP_DIR, exist_ok=True)
@@ -45,11 +46,12 @@ def run_make():
             "lex.yy.c",
             "quadruple.c",
             "-o",
-            "compiler.exe"
+            "compiler.out"
         ]
-        if os.name == 'nt':  # If the system is Windows
+        if IS_WINDOWS_SYS:  # If the system is Windows
             gcc_command = [cmd.replace("/", "\\") for cmd in gcc_command]
-        
+            gcc_command[-1] = gcc_command[-1].replace("compiler.out", "compiler.exe")
+
         subprocess.run(gcc_command, check=True, cwd=FLEX_BISON_DIR)
         return "Make process completed successfully."
     except subprocess.CalledProcessError as e:
@@ -58,8 +60,9 @@ def run_make():
 def run_compile(input_file):
     try:
         # Run the compiler executable with the uploaded file
+        compile_command = ["./compiler.exe", input_file] if IS_WINDOWS_SYS else ["./compiler.out", input_file]
         process = subprocess.run(
-            ["compiler.exe", input_file],
+            compile_command,
             cwd=FLEX_BISON_DIR,
             text=True,
             capture_output=True,
@@ -164,8 +167,9 @@ if uploaded_file:
     if st.button("Compile"):
         print(f"Working file path: {working_file_path}")
         compile_output = run_compile(working_file_path)
-        # st.text("Compilation Output:")
-        # st.text(compile_output)
+
+        st.text("Compilation Output:")
+        st.text(compile_output)
         st.markdown("---")
         # Display the content of the four txt files
         files_to_display = ["quadruples.txt", "symbol_table.txt", "semantics.txt", "syntax_err.txt"]
