@@ -58,10 +58,10 @@
 %token <s> ID
 %token <s> STRING
 
-%type <symbolTableEntry> FINAL_EXP REL_EXP BLOCK FOR_LOOP ASSIGNMENT_FOR_LOOP_END WHILE_LOOP REPEAT_UNTIL_LOOP MATCHED_IF UNMATCHED_IF LOGICAL_EXP
+%type <symbolTableEntry> FINAL_EXP REL_EXP BLOCK FOR_LOOP ASSIGNMENT_FOR_LOOP_END WHILE_LOOP REPEAT_UNTIL_LOOP MATCHED_IF UNMATCHED_IF LOGICAL_EXP SWITCH_BLOCK
 %type <symbolTableEntry> EXP TERM FACTOR POWER 
 %type <symbolTableEntry> STMT STMTS ASSIGNMENT DECLARATION CONST_DECLARATION ASSIGNMENT_FORLOOP 
-%type <symbolTableEntry> FUNCTION_DEFINITION   PARAMS PARAM FUNCTION_BODY FUNCTION_PARAMS FUNCTION_PARAM FUNCTION_START VOID_FUNCTION_BODY FUNCTION_CALL
+%type <symbolTableEntry> FUNCTION_DEFINITION FUNCTION_BODY FUNCTION_PARAMS FUNCTION_PARAM FUNCTION_START VOID_FUNCTION_BODY FUNCTION_CALL
 %type <Dtype> PARAM_TYPE 
 
 %%
@@ -141,7 +141,6 @@ FUNCTION_DEFINITION: FUNCTION_START
     LPAREN FUNCTION_PARAMS RPAREN FUNCTION_BODY
     {
         printf("Function definition\n");
-
     }
     |
     VOID_TYPE ID
@@ -218,24 +217,9 @@ FUNCTION_PARAM: PARAM_TYPE ID {
     currentFunction->paramTypes[currentFunction->paramCount - 1] = strdup($1); 
   
         }
-        |
+        | {}
         ;
 
-PARAMS: PARAMS COMMA PARAM
-      | PARAM
-      ;
-PARAM : PARAM_TYPE ID {
-          
-            SymbolTableEntry *entry = lookupSymbol($2);
-            if (entry) {
-                semanticError("Variable already declared in this scope");
-            } else {
-                $$ = addSymbol($2, $1, false,false);  // Add variable to current scope
-            }
-            $$ = entry;
-            
-        }
-        ;
 PARAM_TYPE: INT_TYPE        { $$ = "int"; }
           | FLOAT_TYPE      { $$ = "float"; }
           | CHAR_TYPE       { $$ = "char"; }
