@@ -168,8 +168,8 @@ if uploaded_file:
         print(f"Working file path: {working_file_path}")
         compile_output = run_compile(working_file_path)
 
-        st.text("Compilation Output:")
-        st.text(compile_output)
+        # st.text("Compilation Output:")
+        # st.text(compile_output)
         st.markdown("---")
         # Display the content of the four txt files
         files_to_display = ["quadruples.txt", "symbol_table.txt", "semantics.txt", "syntax_err.txt"]
